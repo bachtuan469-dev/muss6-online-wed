@@ -1,0 +1,68 @@
+@import (reference) '@/controllers/interface/components/mu_text/style.less';
+
+// Hidden by default; the media query below is the whole gate. It can only
+// match on a touch device (the root carries `mu-mobile` only there), held
+// upright, at a phone's width - a narrowed desktop window never qualifies,
+// and landscape never matches.
+.rotate-overlay {
+  display: none;
+}
+
+@media (orientation: portrait) and (max-width: 600px) {
+  html.mu-mobile .rotate-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 950;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.88);
+    pointer-events: auto;
+
+    .rotate-plate {
+      padding: 24px 28px;
+      text-align: center;
+      .mu-font();
+      color: #fff;
+    }
+
+    // A phone outline that turns sideways and back, on a loop.
+    .rotate-phone {
+      position: relative;
+      width: 40px;
+      height: 68px;
+      margin: 0 auto 20px;
+      border: 3px solid #ffe08a;
+      border-radius: 8px;
+      animation: rotate-hint 2.4s ease-in-out infinite;
+    }
+
+    .rotate-phone-dot {
+      position: absolute;
+      left: 50%;
+      bottom: 5px;
+      width: 6px;
+      height: 6px;
+      margin-left: -3px;
+      border-radius: 50%;
+      background: #ffe08a;
+    }
+
+    .rotate-line {
+      font-size: 16px;
+      color: rgb(255, 204, 26);
+      text-shadow: 1px 1px 0 #000;
+    }
+  }
+}
+
+@keyframes rotate-hint {
+  0%,
+  30% {
+    transform: rotate(0deg);
+  }
+  70%,
+  100% {
+    transform: rotate(90deg);
+  }
+}

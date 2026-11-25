@@ -1,0 +1,139 @@
+@import (reference) '@/controllers/interface/components/mu_text/style.less';
+// `CNewUIMoveCommandWindow`: a black(0.8) panel in the top-left corner, the
+// chat-log scrollbar sprites down its right edge and a red(0.6) close bar
+// along the bottom. Coordinates live in the component; this is the look.
+.move-window {
+  position: absolute;
+  left: 1px;
+  top: 1px;
+  transform-origin: top left;
+  pointer-events: auto;
+  user-select: none;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.8);
+  font-size: 11px;
+
+  .move-label {
+    position: absolute;
+    white-space: nowrap;
+    text-shadow: 1px 1px 0 #000;
+    // `RT3_WRITE_CENTER`: the x given is the centre of the text.
+    transform: translateX(-50%);
+  }
+
+  // The favourite star sits at the row's left edge, not centred like the
+  // three columns.
+  .move-star {
+    transform: none;
+  }
+
+  .move-row {
+    position: absolute;
+    cursor: default;
+
+    &.can-move {
+      cursor: pointer;
+    }
+
+    // `_bSelected`: the yellow(0.8, 0.8, 0.1, 0.6) box under the hovered row.
+    &.can-move:hover {
+      background: rgba(204, 204, 26, 0.6);
+    }
+  }
+
+  .move-scrollbar {
+    position: absolute;
+  }
+
+  .move-scroll-thumb {
+    position: absolute;
+    cursor: pointer;
+  }
+
+  // `RenderColor` at (0.6, 0, 0, 1) with GlobalText[1002] centred on it.
+  .move-close {
+    position: absolute;
+    background: rgba(153, 0, 0, 1);
+    cursor: pointer;
+    text-align: center;
+    color: #fff;
+    text-shadow: 1px 1px 0 #000;
+  }
+}
+
+// FIX22: the phone panel - a grid of big-tap cards like 0.97's move modal.
+// Centred under the top edge by the component; the grid scrolls, the panel
+// itself never drags.
+.move-window-mobile {
+  .move-card-grid {
+    position: absolute;
+    left: 8px;
+    right: 8px;
+    top: 34px;
+    bottom: 44px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    overflow-y: auto;
+    align-content: start;
+    // Touch scrolls the grid; the panel never drags.
+    touch-action: pan-y;
+  }
+
+  .move-card {
+    position: relative;
+    min-height: 54px;
+    padding: 6px 8px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 2px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 6px;
+    cursor: pointer;
+    user-select: none;
+
+    &.can-move:active {
+      background: rgba(255, 255, 255, 0.14);
+    }
+
+    &.cannot-move {
+      opacity: 0.45;
+      cursor: default;
+
+      .move-card-name {
+        color: rgb(164, 39, 17);
+      }
+    }
+  }
+
+  .move-card-star {
+    position: absolute;
+    right: 6px;
+    top: 2px;
+    color: rgb(255, 204, 26);
+    font-size: 12px;
+    line-height: 12px;
+  }
+
+  .move-card-name {
+    font-size: 14px;
+    font-weight: bold;
+    line-height: 16px;
+    color: #fff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .move-card-req {
+    font-size: 11px;
+    line-height: 13px;
+    color: rgba(255, 255, 255, 0.65);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}

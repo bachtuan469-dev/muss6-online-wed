@@ -8,17 +8,23 @@ Repo này chỉ chứa phần do nhóm mình làm/thêm vào. Code gốc OpenMU 
 client Babylon **không** copy vào đây — xem mục [Code gốc](#code-gốc)
 để lấy đúng nguồn.
 
-> **Trạng thái đợt 1:** đã có `server/` (bridge, accounts API, script chạy
-> stack, export dữ liệu) + `web/` (portal). Thư mục `client/` (source
-> Babylon đã sửa) sẽ được thêm sau khi 2 bản sửa client đang chạy
-> (FIX29: kiểm tra mật khẩu 3–9 ký tự; FIX30: màn hình chờ kiểu 0.97)
-> hoàn thành — đừng tìm client ở đây lúc này.
+> **Trạng thái đợt 2 (2026-11-25):** đã có đủ 3 phần — `server/`
+> (bridge, accounts API, script chạy stack, export dữ liệu),
+> `web/` (portal), `client/` (source Babylon đã sửa, build live
+> `mww0wj78`).
 >
-> **FIX31 (2026-11-25):** vị trí NPC shop trả về như gốc (bỏ 2 hàng
-> FIX28; NPC trùng chỉ giữ ở map thấp nhất), tỉ lệ EXP tăng gấp 10 so
-> với trước, nhân vật mới khởi tạo có **2.000.000.000 Zen**. Export dữ
-> liệu `server/sql/` được lấy lại sau FIX31 nên khớp với các giá trị
-> mới này.
+> **FIX31 + sau đó (2026-11-25):** vị trí NPC shop trả về như gốc
+> (bỏ 2 hàng FIX28; NPC trùng chỉ giữ ở map thấp nhất), tỉ lệ EXP
+> **×100** (tăng từ ×10 theo lệnh user 18:15), nhân vật mới khởi
+> tạo có **2.000.000.000 Zen** (plugin AddStartingZenPlugIn),
+> quái thường ngoài map **×3** (4.842 → 14.526 con, lệnh user 17:54).
+> Export `server/sql/` khớp với các giá trị này.
+>
+> **FIX32 (2026-11-25, build `mww0wj78`):** đồ Excellent phát ánh
+> tím tĩnh RGB 148,0,211; glow 3 set theo mã màu bên phát triển
+> 0.97 — Grand Soul hồng 255,105,180; Great Dragon cam 255,127,0;
+> Dark Soul cam 255,127,0; ảnh nền màn hình loading đổi chữ
+> "Version 0.97" thành "Season 6".
 
 ## Repo gồm những gì
 
@@ -30,13 +36,15 @@ muss6-online-wed/
 │   ├── bridge/           # Cầu nối WS<->TCP + dịch giao thức client web <-> OpenMU
 │   ├── accounts/         # API đăng ký tài khoản (ghi trực tiếp vào PostgreSQL OpenMU)
 │   ├── deploy/           # start-stack.sh / stop-stack.sh / stack.env.example
-│   └── sql/              # Export dữ liệu: shop + vị trí NPC (lấy lại sau FIX31)
+│   └── sql/              # Export dữ liệu live 2026-11-25: game config (EXP ×100),
+│                         # toàn bộ spawn area (NPC gốc + quái thường ×3),
+│                         # cấu hình plugin (AddStartingZenPlugIn)
 ├── web/                  # Web portal (giao diện 0.97 + backend Node cho DB OpenMU)
 │   ├── public/           # Trang tĩnh: index / account / admin / news
 │   ├── server/           # Backend Node (server.js + openmu-accounts.js + ...)
 │   ├── scripts/          # test-local.sh (smoke test) + local-test-db.sql
 │   └── deploy/           # deploy.sh + mu-web.service + mu-web.nginx + setup-db.sql
-└── client/               # SẮP CÓ (sau FIX29/FIX30) — source Babylon, KHÔNG kèm Data
+└── client/               # Source Babylon đã sửa (build live mww0wj78) — KHÔNG kèm Data
 ```
 
 ## Yêu cầu trước
@@ -139,18 +147,27 @@ DATABASE_URL=postgres://<user>:<password>@127.0.0.1:5432/<db> \
   (hoặc `ACC_PW=<password> node create-account.js <loginName> <eMail>`).
 - Kiểm tra: `node test-accounts.js` (`npm test`).
 
-### 4. Dữ liệu shop + NPC (server/sql)
+### 4. Dữ liệu cấu hình server (server/sql)
 
-Các file `.sql` trong `server/sql/` là export dữ liệu đã áp trên server
-live: hàng trong shop (đồ +15, Luck, Option +7, Skill, Excellent) và vị
-trí NPC. Áp theo thứ tự tên file:
+Các file `.sql` trong `server/sql/` là export dữ liệu cấu hình từ
+server live ngày 2026-11-25 (chỉ bảng `config.*`, không chứa tài
+khoản/người chơi). Áp theo thứ tự tên file, trên database OpenMU đã
+khởi tạo (schema `config.*` do OpenMU tự tạo):
 
 ```bash
-psql -d <db> -v ON_ERROR_STOP=1 -f server/sql/<file-shop>.sql
-psql -d <db> -v ON_ERROR_STOP=1 -f server/sql/<file-npc>.sql
-# Kiểm chứng lại:
-psql -d <db> -f server/sql/verify-shops-applied.sql
+psql -d <db> -v ON_ERROR_STOP=1 -f server/sql/01-game-configuration.sql
+psql -d <db> -v ON_ERROR_STOP=1 -f server/sql/02-monster-spawn-area.sql
+psql -d <db> -v ON_ERROR_STOP=1 -f server/sql/03-plugin-configuration.sql
 ```
+
+| File | Nội dung |
+| --- | --- |
+| `01-game-configuration.sql` | UPDATE 1 dòng `GameConfiguration`: EXP ×100 (thường + master), level tối đa 400, master tối đa 200 |
+| `02-monster-spawn-area.sql` | DELETE + COPY toàn bộ `MonsterSpawnArea` (6.505 dòng, 18.786 con): vị trí NPC shop gốc sau FIX31 (27 NPC) + quái thường ×3 + quái event giữ nguyên |
+| `03-plugin-configuration.sql` | DELETE + COPY toàn bộ `PlugInConfiguration` (930 dòng), gồm AddStartingZenPlugIn (nhân vật mới 2 tỷ Zen) |
+
+Sau khi áp, restart OpenMU để server nạp lại cấu hình (spawn area và
+plugin chỉ đọc lúc khởi động).
 
 ### 5. Chạy cả stack bằng script (server/deploy)
 
@@ -165,10 +182,10 @@ bash deploy/stop-stack.sh    # dừng stack
 công tắc `BRIDGE_LOGIN_XOR3`, tên database. **Không commit file
 `stack.env`** (chứa đường dẫn/môi trường máy bạn).
 
-### 6. Client Babylon (SẮP CÓ — chưa có trong đợt này)
+### 6. Client Babylon (client/)
 
-Phần này sẽ nằm ở `client/` sau khi FIX29/FIX30 xong. Quy trình cài
-(kiểm chứng từ `package.json` của client) sẽ là:
+Source client Babylon đã sửa, build live `mww0wj78` (FIX29–FIX32).
+Quy trình cài (kiểm chứng từ `package.json` của client):
 
 ```bash
 git clone https://github.com/bachtuan469-dev/muss6-online-wed.git
@@ -182,12 +199,19 @@ npm run build               # vite build + copy-data + compress-assets + ...
   `items` — ~880 MB) **phải lấy từ repo gốc**
   [Ignies/OpenMu-Client-Babylon](https://github.com/Ignies/OpenMu-Client-Babylon)
   (client này là fork của repo đó; bản live build từ commit `39bced3`).
-  Build script `copy-data` sẽ copy `Data` vào `dist/`.
+  Build script `copy-data` sẽ copy `Data` vào `dist/`. Ngoại lệ duy
+  nhất trong `public/` có sẵn trong repo là ảnh nền màn hình loading
+  `public/ui/world_select/loading-classic.jpg` (chữ "Season 6").
 - Sau khi build, phục vụ thư mục `dist/` bằng web server tĩnh; cấu hình
   `server.json` (`directLogin`) + `serverlist.md` trỏ về bridge của bạn.
 - **Giữ nguyên dòng credits:** client mang dòng cảm ơn
   `afrokick/muonlinejs` (điều kiện bản quyền; tool `tools/checks/credits.ts`
   kiểm tra) và file `LICENSE` gốc — không được gỡ.
+- Các bản sửa đã có trong snapshot này: FIX29 (mật khẩu 3–9 ký tự),
+  FIX30 (màn hình chờ kiểu 0.97 + nút "Chơi ngay" + prefill tài khoản),
+  FIX30b (gỡ các phần hiển thị không thuộc bản quyền khỏi preloader),
+  FIX32 (đồ Excellent ánh tím tĩnh 148,0,211; glow 3 set Grand Soul /
+  Great Dragon / Dark Soul; ảnh loading "Season 6").
 
 ### 7. Web portal (web/)
 
@@ -295,7 +319,7 @@ trỏ DNS về server — `certbot --nginx -d mu-web.example.com`.
 ## Repo KHÔNG kèm theo
 
 - Code OpenMU gốc (lấy ở link trên, tự build).
-- Client Babylon: source sẽ có ở `client/` sau FIX29/FIX30; còn thư mục
+- Client Babylon: source có sẵn ở `client/`; còn thư mục
   `Data`/`Data-v097d` và dữ liệu `public/` (game-assets, packs, items)
   phải lấy từ repo gốc Ignies.
 - Database game: người cài phải tự có server OpenMU + database đã khởi tạo.

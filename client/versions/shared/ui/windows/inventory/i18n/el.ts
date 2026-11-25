@@ -1,0 +1,14 @@
+/** el text of `versions/shared/ui/windows/inventory`. */
+
+import type en from './en';
+
+export default {
+  'inventory.title': 'Σακίδιο',
+  'inventory.close': 'Κλείσιμο (I,V)',
+  'inventory.repair': 'Επισκευή (L)',
+  'inventory.personalShop': 'Προσωπικό κατάστημα',
+  'inventory.expand': 'Άνοιγμα επέκτασης σακιδίου (K)',
+  'inventory.useItem': 'Χρησιμοποίησε',
+  'inventory.equipItem': 'Εξόπλισε',
+  'inventory.learnSkill': 'Μάθε',
+} satisfies Partial<Record<keyof typeof en, string>>;

@@ -1,0 +1,14 @@
+/** Italian text of the `inventory` window. */
+
+import type en from './en';
+
+export default {
+  'inventory.title': 'Inventario',
+  'inventory.close': 'Chiudi (I,V)',
+  'inventory.repair': 'Ripara (L)',
+  'inventory.personalShop': 'Negozio personale',
+  'inventory.expand': 'Apri l’inventario esteso (K)',
+  'inventory.useItem': 'Usa',
+  'inventory.equipItem': 'Equipaggia',
+  'inventory.learnSkill': 'Impara',
+} satisfies Partial<Record<keyof typeof en, string>>;

@@ -1,0 +1,394 @@
+@import (reference) '@/controllers/interface/components/mu_text/style.less';
+
+// The touch HUD. Anchored to the viewport, not to the 640x480 stage: these
+// are thumb targets and must keep their size on a small screen. The move
+// stick and the skill row rules are live; the removed set's rules (warp
+// button, menu cluster, skill pad, picker, ATK cluster) stay for their
+// files, which remain in this folder unmounted.
+
+@edge-gap: 12px;
+@button-gap: 8px;
+@bar-clearance: 63px;
+
+.mobile-controls {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 400;
+  .mu-font();
+  image-rendering: pixelated;
+
+  // Every button opts back in; the layer stays transparent to taps.
+  .mobile-move-button,
+  .mobile-menu-button,
+  .mobile-skill-slot,
+  .mobile-picker-slot,
+  .mobile-picker-action,
+  .mobile-stick,
+  .mobile-pad-skill,
+  .mobile-skill-picker-backdrop,
+  .mobile-skill-picker,
+  .mobile-skill-chooser {
+    pointer-events: auto;
+    cursor: pointer;
+    touch-action: none;
+  }
+
+  .mobile-scaled {
+    position: relative;
+    overflow: hidden;
+  }
+}
+
+// ---- the warp button, top left ---------------------------------------------
+
+.mobile-move-button {
+  position: absolute;
+  top: @edge-gap;
+  left: @edge-gap;
+
+  .mobile-move-glyph {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+  }
+}
+
+// ---- the five main-frame buttons, top right --------------------------------
+
+.mobile-menu-cluster {
+  position: absolute;
+  top: @edge-gap;
+  right: @edge-gap;
+  display: flex;
+  gap: @button-gap;
+
+  &.portrait {
+    flex-direction: column;
+    align-items: flex-end;
+  }
+
+  // Landscape has width to spare and no height: the column becomes a row.
+  &.landscape {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+}
+
+// ---- the skill pad, bottom right above the bar -----------------------------
+
+.mobile-skill-pad {
+  position: absolute;
+  right: @edge-gap;
+  bottom: @bar-clearance;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+
+  .mobile-skill-slots {
+    display: flex;
+    flex-direction: row;
+    gap: @button-gap;
+  }
+}
+
+// What a skill is about to hit, so the pad is not fired blind.
+.mobile-target-label {
+  max-width: 60vw;
+  padding: 1px 5px;
+  font-size: 12px;
+  line-height: 16px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.55);
+}
+
+.mobile-skill-slot,
+.mobile-picker-slot {
+  // `RenderSkillIcon(…, x + 6, y + 6)`: the icon inside the box, at the
+  // box's own scale so the inset keeps the original's proportion.
+  .mobile-skill-art {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%) scale(2);
+    transform-origin: 50% 50%;
+  }
+
+  // RenderSkillDelay: red at half alpha rising from the slot's floor.
+  .mobile-skill-delay {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 0;
+    background: rgba(255, 128, 128, 0.5);
+    pointer-events: none;
+  }
+}
+
+// ---- the picker ------------------------------------------------------------
+
+.mobile-skill-picker {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: auto;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  .mobile-picker-panel {
+    max-width: 92vw;
+    max-height: 82vh;
+    overflow-y: auto;
+    padding: 12px;
+    background: rgba(10, 8, 6, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .mobile-picker-title {
+    color: rgb(255, 200, 50);
+    font-size: 14px;
+    text-align: center;
+  }
+
+  .mobile-picker-empty {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 12px;
+    text-align: center;
+    padding: 12px 24px;
+  }
+
+  .mobile-picker-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: @button-gap;
+    justify-content: center;
+  }
+
+  .mobile-picker-actions {
+    display: flex;
+    gap: @button-gap;
+    justify-content: center;
+  }
+
+  .mobile-picker-action {
+    min-height: 40px;
+    padding: 0 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    color: #e2e2e2;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    text-align: center;
+  }
+}
+
+// ---- the stick, bottom left -------------------------------------------------
+// The one 128 px disc, riding one gap above the bottom bar (the bottom is
+// inline now - the bar grows with the interface scale, a fixed bottom
+// would sink under it). The aim side is gone (`attackStick` removed),
+// so this rule no longer shares with an attack disc.
+.mobile-stick {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.35);
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  box-sizing: border-box;
+}
+
+.mobile-stick {
+  left: 18px;
+}
+
+.mobile-stick-knob {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.55);
+  border: 2px solid rgba(255, 255, 255, 0.55);
+  box-sizing: border-box;
+  pointer-events: none;
+}
+
+// ---- the skill row, lower right -------------------------------------------
+// Five 44 px buttons, 4 px apart (236 px): at the lower right corner,
+// riding one gap above the bar, so at 844x390 it spans x 596..832,
+// y 274..318. The aim stick is gone, so the row keeps its place: clear of
+// the open minimap above (ends y 244 at uiScale 1.3), the chat window
+// (ends x 548) and the bottom bar (top y 324).
+// The row itself takes no taps; its buttons do.
+.mobile-skill-row {
+  position: absolute;
+  display: flex;
+  gap: 4px;
+  pointer-events: none;
+
+  .mobile-pad-skill {
+    position: relative;
+  }
+}
+
+.mobile-pad-skill {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.45);
+  border: 2px solid rgba(255, 255, 255, 0.45);
+  box-sizing: border-box;
+  overflow: hidden;
+  z-index: 1;
+}
+
+.mobile-pad-skill-art {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%) scale(1.5);
+  transform-origin: 50% 50%;
+
+  &[data-lit] {
+    filter: brightness(1.5);
+  }
+}
+
+// RenderSkillDelay, as on the bar: red at half alpha rising from the floor.
+.mobile-pad-skill-delay {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 0;
+  background: rgba(255, 128, 128, 0.5);
+  pointer-events: none;
+}
+
+// ---- the skill picker, centred --------------------------------------------
+// A held skill button opens it: the learned skills for that digit slot, a
+// tap rebinds the slot, the clear row leaves it empty. The backdrop
+// dismisses it; it floats above the game, not inside the row.
+.mobile-skill-picker-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 40;
+}
+
+// FIX25 Viec 1: the picker is a compact panel above the skill row now,
+// not the centred row that cut skills off at the edge. Its own class:
+// the unmounted skill pad keeps `.mobile-skill-picker` for its
+// fullscreen overlay, so this panel takes nothing from that rule.
+.mobile-skill-chooser {
+  position: absolute;
+  z-index: 41;
+  max-height: 60vh;
+  overflow-y: auto;
+  box-sizing: border-box;
+  background: rgba(0, 0, 0, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 8px;
+  padding: 8px;
+  color: #e2e2e2;
+}
+
+.mobile-skill-chooser-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 24px;
+  margin-bottom: 8px;
+  font-weight: bold;
+  font-size: 14px;
+  color: rgb(255, 200, 50);
+}
+
+.mobile-skill-chooser-close {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 4px;
+  color: #e2e2e2;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.mobile-skill-chooser-grid {
+  display: grid;
+  gap: 8px;
+}
+
+.mobile-skill-chooser-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  padding: 0;
+  background: transparent;
+  border: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.12);
+  }
+}
+
+// The 20x28 art, scaled like the row's icons (1.5x) inside a 44 px box.
+.mobile-skill-chooser-icon {
+  position: relative;
+  width: 44px;
+  height: 44px;
+
+  > * {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%) scale(1.5);
+  }
+}
+
+.mobile-skill-chooser-name {
+  width: 100%;
+  font-size: 11px;
+  line-height: 15px;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mobile-skill-chooser-clear {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 32px;
+  margin-top: 8px;
+  padding: 0;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
