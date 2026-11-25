@@ -1,0 +1,17 @@
+[Unit]
+Description=MU web portal (OpenMU accounts website)
+After=network.target postgresql.service
+Wants=postgresql.service
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/mu-web
+ExecStart=/usr/bin/node /opt/mu-web/server.js
+EnvironmentFile=/opt/mu-web/.env
+Restart=on-failure
+RestartSec=5
+StandardOutput=append:/opt/mu-web/logs/mu-web.log
+StandardError=append:/opt/mu-web/logs/mu-web.log
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,1 @@
+{"dependencies":{"ws":"^8.23.0"},"description":"Cầu nối WS<->TCP + dịch giao thức cho client web MU Lục Địa <-> OpenMU (lát 2a, dự án muss20-web).","license":"ISC","main":"bridge.js","name":"mu-openmu-bridge","private":true,"scripts":{"start":"node bridge.js","test:ws":"node test-ws-replay.js"},"version":"0.1.0"}

@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Quản lý tài khoản — MU Online</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  html, body { margin: 0; padding: 0; background: #04070d; color: #e6edf7; font-family: Montserrat, system-ui, sans-serif; -webkit-tap-highlight-color: transparent; }
+  a { color: #3b82f6; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .wrap { max-width: 880px; margin: 0 auto; padding: 0 14px; }
+  .topbar { background: #070b13; border-bottom: 1px solid #1d2a3c; }
+  .topbar .wrap { display: flex; align-items: center; justify-content: flex-end; gap: 10px; padding-top: 8px; padding-bottom: 8px; flex-wrap: wrap; }
+  .topbar .who { color: #9fb0c6; font-size: 13px; }
+  .topbar .who b { color: #fbbf24; }
+  .lang { display: flex; border: 1px solid #1d2a3c; border-radius: 8px; overflow: hidden; }
+  .lang button { background: #0e1622; color: #9fb0c6; border: none; padding: 8px 14px; min-height: 40px; font-family: inherit; font-size: 13px; font-weight: 700; cursor: pointer; }
+  .lang button.active { background: #f59e0b; color: #04070d; }
+  header { background: #070b13; border-bottom: 1px solid #16202f; padding: 12px 0 10px; }
+  header .wrap { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+  .logo { font-size: 22px; font-weight: 800; color: #f59e0b; letter-spacing: 1px; margin: 0; }
+  .logo small { display: block; font-size: 11px; font-weight: 600; color: #9fb0c6; letter-spacing: 2px; }
+  nav { display: flex; gap: 8px; flex-wrap: wrap; margin-left: auto; }
+  nav a { display: inline-flex; align-items: center; background: #0e1622; color: #e6edf7; border: 1px solid #1d2a3c; border-radius: 8px; padding: 8px 14px; min-height: 40px; font-size: 13px; font-weight: 600; }
+  nav a:hover { text-decoration: none; border-color: #f59e0b; color: #fbbf24; }
+  nav a.current { border-color: #f59e0b; color: #fbbf24; }
+  section { margin: 14px 0; }
+  .card { background: #0a1018; border: 1px solid #16202f; border-radius: 14px; padding: 18px 16px; }
+  .card h2 { margin: 0 0 12px; font-size: 17px; color: #fbbf24; }
+  .muted { color: #9fb0c6; font-size: 14px; line-height: 1.6; }
+  .note { color: #6b7c93; font-size: 12px; line-height: 1.5; }
+  .btn { display: inline-flex; align-items: center; justify-content: center; background: #2f6bff; color: #fff; border: none; border-radius: 10px; padding: 10px 18px; min-height: 44px; font-family: inherit; font-size: 14px; font-weight: 700; cursor: pointer; }
+  .btn:hover { text-decoration: none; filter: brightness(1.1); }
+  .btn.gold { background: #f59e0b; color: #04070d; }
+  .btn.ghost { background: #0e1622; color: #e6edf7; border: 1px solid #1d2a3c; }
+  .btn.danger { background: #b91c1c; }
+  .btn:disabled { opacity: .5; cursor: default; }
+  .pill { display: inline-block; padding: 2px 10px; border-radius: 20px; font-size: 12px; font-weight: 700; }
+  .pill.ok { background: #14532d; color: #4ade80; }
+  .pill.bad { background: #3f1d1d; color: #f87171; }
+  .pill.idle { background: #1d2a3c; color: #9fb0c6; }
+  .kv { display: grid; grid-template-columns: 1fr; gap: 0; font-size: 15px; margin: 0; }
+  .kv dt { color: #9fb0c6; font-size: 12px; font-weight: 600; letter-spacing: .4px; margin: 0; padding-top: 12px; }
+  .kv dt:first-child { padding-top: 0; }
+  .kv dd { margin: 2px 0 0; padding-bottom: 12px; border-bottom: 1px solid #101825; overflow-wrap: anywhere; }
+  .kv dd:last-child { border-bottom: none; padding-bottom: 0; }
+  .actions { display: flex; gap: 10px; flex-wrap: wrap; margin: 16px 0 0; }
+  .actions .btn { flex: 1 1 140px; }
+  label.lbl { display: block; color: #9fb0c6; font-size: 13px; font-weight: 600; margin: 14px 0 6px; }
+  label.lbl:first-of-type { margin-top: 2px; }
+  input[type=text], input[type=email], input[type=password] { background: #0c131d; color: #e6edf7; border: 1px solid #1d2a3c; border-radius: 10px; padding: 12px; min-height: 48px; font-family: inherit; font-size: 16px; width: 100%; max-width: 480px; }
+  input:focus { outline: none; border-color: #2f6bff; }
+  .submit { margin: 16px 0 0; }
+  .form-msg { font-size: 13px; margin-top: 8px; min-height: 18px; }
+  .form-msg.ok { color: #4ade80; }
+  .form-msg.bad { color: #f87171; }
+  #loginHistory { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td { text-align: left; padding: 9px 6px; border-bottom: 1px solid #16202f; }
+  th { color: #9fb0c6; font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: .5px; }
+  td:first-child { white-space: nowrap; }
+  tr:last-child td { border-bottom: none; }
+  .chars { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+  .char-card { background: #0c131d; border: 1px solid #1d2a3c; border-radius: 12px; padding: 14px; }
+  .char-head { display: flex; gap: 12px; align-items: center; margin-bottom: 10px; }
+  .avatar { width: 52px; height: 52px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 17px; font-weight: 800; color: #04070d; flex: none; }
+  .avatar.dw { background: #3b82f6; }
+  .avatar.dk { background: #f59e0b; }
+  .avatar.elf { background: #4ade80; }
+  .avatar.mg { background: #a78bfa; }
+.avatar.dl { background: #ef4444; }
+.avatar.su { background: #14b8a6; }
+.avatar.rf { background: #f97316; }
+  .avatar.unknown { background: #6b7c93; }
+  .char-name { font-size: 16px; font-weight: 800; margin: 0; overflow-wrap: anywhere; }
+  .char-class { color: #9fb0c6; font-size: 13px; margin: 2px 0 0; }
+  .char-stats { font-size: 13px; line-height: 1.7; color: #e6edf7; }
+  .char-stats .k { color: #9fb0c6; }
+  .char-actions { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; align-items: center; }
+  .char-actions a { display: inline-flex; align-items: center; font-size: 13px; min-height: 44px; padding: 6px 8px; }
+  .char-actions .btn { flex: 1 1 auto; }
+  .rules { margin: 0; padding-left: 18px; font-size: 14px; line-height: 1.8; }
+  .rules b { color: #fbbf24; }
+  .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .row input { flex: 1; min-width: 180px; max-width: none; }
+  #msg { position: fixed; bottom: calc(12px + env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); background: #121c2b; border: 1px solid #2f6bff; color: #e6edf7; padding: 12px 16px; border-radius: 10px; display: none; width: min(92vw, 480px); text-align: center; z-index: 50; font-size: 14px; }
+  footer { border-top: 1px solid #16202f; padding: 16px 0 calc(20px + env(safe-area-inset-bottom)); text-align: center; color: #6b7c93; font-size: 12px; }
+  @media (max-width: 640px) {
+    nav { flex-wrap: nowrap; overflow-x: auto; margin-left: 0; width: 100%; padding-bottom: 4px; scrollbar-width: none; }
+    nav::-webkit-scrollbar { display: none; }
+    nav a { flex: none; }
+    header .wrap { gap: 10px; }
+    form .btn[type=submit] { width: 100%; }
+    .row .btn { width: 100%; }
+  }
+  @media (min-width: 641px) {
+    .kv { grid-template-columns: 170px 1fr; gap: 10px 14px; align-items: center; }
+    .kv dt { padding-top: 0; font-size: 14px; letter-spacing: 0; }
+    .kv dd { margin: 0; padding-bottom: 0; border-bottom: none; }
+    .actions .btn { flex: none; }
+  }
+  .tabs { display: flex; gap: 8px; overflow-x: auto; flex-wrap: nowrap; padding: 12px 2px 10px; scrollbar-width: none; position: sticky; top: 0; background: #04070d; z-index: 30; }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tab-btn { flex: none; background: #0e1622; color: #9fb0c6; border: 1px solid #1d2a3c; border-radius: 999px; padding: 9px 14px; min-height: 40px; font-family: inherit; font-size: 13px; font-weight: 700; cursor: pointer; }
+  .tab-btn.active { background: #f59e0b; color: #04070d; border-color: #f59e0b; }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+  select { background: #0c131d; color: #e6edf7; border: 1px solid #1d2a3c; border-radius: 10px; padding: 12px; min-height: 48px; font-family: inherit; font-size: 16px; width: 100%; max-width: 480px; }
+  select:focus { outline: none; border-color: #2f6bff; }
+  .soon { border: 1px dashed #2a3a52; border-radius: 10px; padding: 14px; color: #9fb0c6; font-size: 14px; line-height: 1.6; background: #0c131d; }
+  .soon b { color: #fbbf24; }
+  .subh { font-size: 15px; color: #fbbf24; margin: 20px 0 10px; }
+  .reset-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 0; border-bottom: 1px solid #101825; }
+  .reset-row:last-child { border-bottom: none; }
+  .mu-modal { position: fixed; inset: 0; z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 16px; }
+  .mu-modal[hidden] { display: none; }
+  .mu-modal-backdrop { position: absolute; inset: 0; background: rgba(2,6,12,.74); backdrop-filter: blur(3px); }
+  .mu-modal-box { position: relative; background: #0a1018; border: 1px solid rgba(245,158,11,.45); border-radius: 16px; padding: 24px 22px 20px; width: 100%; max-width: 420px; box-shadow: 0 24px 60px rgba(0,0,0,.6); text-align: center; max-height: 92vh; overflow-y: auto; }
+  .mu-modal-icon { width: 64px; height: 64px; margin: 0 auto 12px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 30px; font-weight: 800; border: 2px solid #f59e0b; color: #f59e0b; background: rgba(245,158,11,.08); }
+  .mu-modal-icon.ok { border-color: #4ade80; color: #4ade80; background: rgba(74,222,128,.08); }
+  .mu-modal-icon.bad { border-color: #f87171; color: #f87171; background: rgba(248,113,113,.08); }
+  .mu-modal-title { margin: 0 0 10px; font-size: 19px; color: #f5c86e; }
+  .mu-modal-name { font-size: 17px; font-weight: 800; color: #fff; }
+  .mu-modal-sub { color: #9fb0c6; font-size: 13px; margin: 2px 0 10px; }
+  .mu-modal-kv { text-align: left; margin: 0 auto 6px; max-width: 330px; }
+  .mu-modal-text { font-size: 15px; line-height: 1.55; margin: 6px 0; }
+  .mu-modal-actions { display: flex; gap: 10px; justify-content: center; margin-top: 16px; }
+  .mu-modal-actions .btn { flex: 1; max-width: 180px; }
+  .reset-row .btn { flex: none; }
+
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="wrap">
+    <span class="who" id="topWho" style="display:none"><span data-i18n="auth.hello">Xin chào</span> <b id="topUsername"></b></span>
+    <a class="btn ghost" href="index.html" data-i18n="common.home">Về trang chủ</a>
+    <button type="button" class="btn ghost" id="logoutBtnTop" style="display:none" data-i18n="account.logout">Đăng xuất</button>
+    <span class="lang" role="group" aria-label="Language">
+      <button type="button" id="langVi">VI</button>
+      <button type="button" id="langEn">EN</button>
+    </span>
+  </div>
+</div>
+<div class="wrap">
+  <div class="tabs" role="tablist" id="tabBar">
+    <button type="button" class="tab-btn active" data-tab="overview" data-i18n="tab.overview">Tổng quan</button>
+    <button type="button" class="tab-btn" data-tab="chars" data-i18n="chars.title">Nhân vật của tôi</button>
+    <button type="button" class="tab-btn" data-tab="password" data-i18n="password.title">Đổi mật khẩu</button>
+  </div>
+
+  <!-- Tab: tổng quan (trạng thái + tài khoản + online + lịch sử) -->
+  <section class="card tab-panel active" data-panel="overview">
+    <h2 data-i18n="tab.overview">Tổng quan</h2>
+    <dl class="kv">
+      <dt data-i18n="account.username">Tên tài khoản</dt>
+      <dd><b id="accUsername">—</b></dd>
+      <dt data-i18n="account.email">Email</dt>
+      <dd><b id="accEmail">—</b></dd>
+      <dt data-i18n="account.status">Trạng thái</dt>
+      <dd><span class="pill idle" id="accStatus">—</span></dd>
+      <dt data-i18n="account.online">Đang online</dt>
+      <dd><span id="accOnline">—</span> <span class="note" id="accOnlineNote"></span></dd>
+    </dl>
+    <p class="note" data-i18n="status.note">Tài khoản bị khóa sẽ không đăng nhập được vào game và trang web.</p>
+  </section>
+
+  <!-- Tab 3: đổi mật khẩu -->
+  <section class="card tab-panel" data-panel="password">
+    <h2 data-i18n="password.title">Đổi mật khẩu</h2>
+    <form id="passwordForm">
+      <label class="lbl" for="curPass" data-i18n="password.current">Mật khẩu hiện tại</label>
+      <input type="password" id="curPass" required autocomplete="current-password" minlength="3" maxlength="9">
+      <label class="lbl" for="newPass" data-i18n="password.new">Mật khẩu mới</label>
+      <input type="password" id="newPass" required autocomplete="new-password" minlength="3" maxlength="9">
+      <label class="lbl" for="newPass2" data-i18n="password.confirm">Nhập lại mật khẩu mới</label>
+      <input type="password" id="newPass2" required autocomplete="new-password" minlength="3" maxlength="9">
+      <p class="submit"><button type="submit" class="btn" data-i18n="password.save">Đổi mật khẩu</button></p>
+      <p class="form-msg" id="passwordMsg"></p>
+    </form>
+    <p class="note" data-i18n="password.note">Mật khẩu mới dài 4–128 ký tự.</p>
+  </section>
+
+  <!-- Tab 7: nhân vật -->
+  <section class="card tab-panel" data-panel="chars">
+    <h2 data-i18n="chars.title">Nhân vật của tôi</h2>
+    <div class="chars" id="charList"><p class="muted" data-i18n="common.loading">Đang tải…</p></div>
+  </section>
+
+
+
+</div>
+
+<div id="msg"></div>
+
+<script>
+(function () {
+  'use strict';
+
+  /* ---------- i18n ---------- */
+  var I18N = {
+    vi: {
+      'auth.hello': 'Xin chào',
+      'logo.sub': 'HUYỀN THOẠI TRỞ LẠI',
+      'nav.home': 'Trang chủ', 'nav.serverInfo': 'Thông tin server', 'nav.news': 'Tin tức', 'nav.topReset': 'Top Level', 'nav.account': 'Tài khoản',
+      'account.title': 'Quản lý tài khoản',
+      'account.username': 'Tên tài khoản', 'account.email': 'Email', 'account.emailAsName': 'Email (tên tài khoản)', 'account.status': 'Trạng thái', 'account.online': 'Đang online',
+      'account.logout': 'Đăng xuất',
+      'account.normal': 'Bình thường', 'account.banned': 'Bị khóa',
+      'account.onlineYes': 'Đang online', 'account.onlineNo': 'Offline',
+      'account.onlinePending': 'đang cập nhật',
+      'account.noEmail': 'Chưa có email',
+      'common.home': 'Về trang chủ',
+      'common.loading': 'Đang tải…',
+      'common.error': 'Không tải được dữ liệu, vui lòng thử lại sau.',
+      'common.notFound': 'Không tìm thấy.',
+      'email.title': 'Đổi email', 'email.new': 'Email mới', 'email.ph': 'Nhập email mới…', 'email.save': 'Lưu email mới',
+      'email.note': 'Email chính là tên tài khoản đăng nhập — đổi email là đổi luôn tên đăng nhập. Có hiệu lực ngay; mail xác minh sẽ được bổ sung sau.',
+      'email.invalid': 'Nhập email hợp lệ.',
+      'email.ok': 'Đã đổi email.',
+      'password.title': 'Đổi mật khẩu', 'password.current': 'Mật khẩu hiện tại', 'password.new': 'Mật khẩu mới',
+      'password.confirm': 'Nhập lại mật khẩu mới', 'password.save': 'Đổi mật khẩu',
+      'password.note': 'Mật khẩu mới dài 3–9 ký tự (giới hạn của game).',
+      'password.mismatch': 'Mật khẩu nhập lại không khớp.',
+      'password.len': 'Mật khẩu phải dài 3–9 ký tự.',
+      'password.ok': 'Đã đổi mật khẩu.',
+      'chars.title': 'Nhân vật của tôi',
+      'chars.empty': 'Bạn chưa có nhân vật nào.',
+      'chars.level': 'Cấp', 'chars.resets': 'Reset',
+      'chars.class': 'Class', 'chars.map': 'Bản đồ', 'chars.pos': 'Tọa độ', 'chars.lastPlayed': 'Chơi lần cuối',
+      'chars.realm': 'Realm', 'chars.exp': 'EXP',
+      'chars.viewPublic': 'Xem hồ sơ công khai',
+      'chars.resetBtn': 'Reset nhân vật',
+      'reset.title': 'Reset nhân vật',
+      'reset.reqLevel': 'Cấp yêu cầu', 'reset.fee': 'Phí reset', 'reset.bonus': 'Thưởng', 'reset.points': 'điểm',
+      'reset.how': 'Bấm nút “Reset nhân vật” trên thẻ của nhân vật muốn reset, xác nhận rồi chờ kết quả trả về từ server.',
+      'reset.confirm': 'Bạn có chắc muốn reset lần {num} nhân vật "{name}"? Yêu cầu cấp {level}, phí {fee} Zen, thưởng {points} điểm. Reset xong về cấp 1, đồ + stat giữ nguyên.',
+      'reset.confirmNoInfo': 'Bạn có chắc muốn reset nhân vật "{name}"?',
+      'reset.next': 'Reset tiếp theo',
+      'reset.online': 'Nhân vật đang online — hãy thoát game rồi reset.',
+      'reset.ok': 'Reset thành công.',
+      'reset.doIt': 'Reset ngay', 'reset.working': 'Đang reset…', 'reset.successTitle': 'Reset thành công!', 'reset.failTitle': 'Reset thất bại',
+      'reset.numberN': 'Reset lần thứ {num}', 'reset.zenLeft': 'Zen còn lại',
+      'common.cancel': 'Hủy', 'common.close': 'Đóng',
+      'public.title': 'Hồ sơ nhân vật công khai', 'public.ph': 'Nhập tên nhân vật…', 'public.search': 'Tra cứu',
+      'public.notFound': 'Không tìm thấy nhân vật “{name}”.',
+      'public.createdAt': 'Tạo lúc',
+      'history.title': 'Lịch sử đăng nhập',
+      'history.empty': 'Chưa có lịch sử đăng nhập.',
+      'history.time': 'Thời gian', 'history.ip': 'IP',
+      'tab.account': 'Tài khoản & email',
+      'tab.overview': 'Tổng quan',
+      'tab.forgot': 'Quên mật khẩu',
+      'tab.rename': 'Đổi tên nhân vật',
+      'tab.class': 'Đổi class',
+      'tab.selectChar': 'Chọn nhân vật',
+      'tab.renameBtn': 'Đổi tên',
+      'tab.classBtn': 'Đổi class',
+      'rename.new': 'Tên mới', 'rename.ph': 'Nhập tên mới…',
+      'common.comingSoon': 'Tính năng đang được hoàn thiện.',
+      'status.note': 'Tài khoản bị khóa sẽ không đăng nhập được vào game và trang web.',
+      'forgot.note': 'Khi hoàn thiện: bạn nhập tên tài khoản, hệ thống gửi mã xác thực về email, xác thực xong sẽ được đặt mật khẩu mới. Hiện chưa cấu hình được dịch vụ gửi mail.',
+      'rename.note': 'Tính năng đang được hoàn thiện phía server (cần can thiệp file lưu nhân vật).',
+      'class.note': 'Đổi class cho nhân vật (DW, DK, Elf, MG). Tính năng đang được hoàn thiện phía server.',
+      'reset.pick': 'Chọn nhân vật để reset:'
+    },
+    en: {
+      'auth.hello': 'Hello',
+      'logo.sub': 'THE LEGEND RETURNS',
+      'nav.home': 'Home', 'nav.serverInfo': 'Server info', 'nav.news': 'News', 'nav.topReset': 'Top Level', 'nav.account': 'Account',
+      'account.title': 'Account management',
+      'account.username': 'Username', 'account.email': 'Email', 'account.emailAsName': 'Email (account name)', 'account.status': 'Status', 'account.online': 'Online',
+      'account.logout': 'Log out',
+      'account.normal': 'Normal', 'account.banned': 'Banned',
+      'account.onlineYes': 'Online', 'account.onlineNo': 'Offline',
+      'account.onlinePending': 'updating',
+      'account.noEmail': 'No email yet',
+      'common.home': 'Back to home',
+      'common.loading': 'Loading…',
+      'common.error': 'Could not load data, please try again later.',
+      'common.notFound': 'Not found.',
+      'email.title': 'Change email', 'email.new': 'New email', 'email.ph': 'Enter the new email…', 'email.save': 'Save new email',
+      'email.note': 'Your email is also your login name — changing it changes the name you sign in with. Takes effect immediately; verification mail will be added later.',
+      'email.invalid': 'Please enter a valid email.',
+      'email.ok': 'Email changed.',
+      'password.title': 'Change password', 'password.current': 'Current password', 'password.new': 'New password',
+      'password.confirm': 'Confirm new password', 'password.save': 'Change password',
+      'password.note': 'The new password must be 3–9 characters (game limit).',
+      'password.mismatch': 'The confirmation password does not match.',
+      'password.len': 'Password must be 3–9 characters.',
+      'password.ok': 'Password changed.',
+      'chars.title': 'My characters',
+      'chars.empty': 'You have no characters yet.',
+      'chars.level': 'Level', 'chars.resets': 'Resets',
+      'chars.class': 'Class', 'chars.map': 'Map', 'chars.pos': 'Position', 'chars.lastPlayed': 'Last played',
+      'chars.realm': 'Realm', 'chars.exp': 'EXP',
+      'chars.viewPublic': 'View public profile',
+      'chars.resetBtn': 'Reset character',
+      'reset.title': 'Character reset',
+      'reset.reqLevel': 'Required level', 'reset.fee': 'Reset fee', 'reset.bonus': 'Reward', 'reset.points': 'points',
+      'reset.how': 'Press the “Reset character” button on the character card you want to reset, confirm, then wait for the server result.',
+      'reset.confirm': 'Reset #{num} "{name}"? Requires level {level}, fee {fee} Zen, reward {points} points. After reset: level 1, items + stats kept.',
+      'reset.confirmNoInfo': 'Are you sure you want to reset "{name}"?',
+      'reset.next': 'Next reset',
+      'reset.online': 'Character is online — log out of the game first, then reset.',
+      'reset.ok': 'Reset successful.',
+      'reset.doIt': 'Reset now', 'reset.working': 'Resetting…', 'reset.successTitle': 'Reset successful!', 'reset.failTitle': 'Reset failed',
+      'reset.numberN': 'Reset #{num}', 'reset.zenLeft': 'Zen left',
+      'common.cancel': 'Cancel', 'common.close': 'Close',
+      'public.title': 'Public character profile', 'public.ph': 'Enter a character name…', 'public.search': 'Look up',
+      'public.notFound': 'Character “{name}” not found.',
+      'public.createdAt': 'Created',
+      'history.title': 'Login history',
+      'history.empty': 'No login history yet.',
+      'history.time': 'Time', 'history.ip': 'IP',
+      'tab.account': 'Account & email',
+      'tab.overview': 'Overview',
+      'tab.forgot': 'Forgot password',
+      'tab.rename': 'Rename character',
+      'tab.class': 'Change class',
+      'tab.selectChar': 'Choose a character',
+      'tab.renameBtn': 'Rename',
+      'tab.classBtn': 'Change class',
+      'rename.new': 'New name', 'rename.ph': 'Enter a new name…',
+      'common.comingSoon': 'This feature is being built.',
+      'status.note': 'A banned account cannot sign in to the game or the website.',
+      'forgot.note': 'When ready: enter your account name, a verification code is emailed to you, and after verifying you set a new password. The mail service is not configured yet.',
+      'rename.note': 'Being built on the server side (needs changes to the character save file).',
+      'class.note': 'Change the character class (DW, DK, Elf, MG). Being built on the server side.',
+      'reset.pick': 'Choose a character to reset:'
+    }
+  };
+  var lang = 'vi';
+  try { lang = localStorage.getItem('mu_lang') || 'vi'; } catch (e) {}
+  if (lang !== 'vi' && lang !== 'en') lang = 'vi';
+  function t(key, vars) {
+    var s = (I18N[lang] && I18N[lang][key]) || I18N.vi[key] || key;
+    if (vars) Object.keys(vars).forEach(function (k) { s = s.replace('{' + k + '}', vars[k]); });
+    return s;
+  }
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+  function fmtDateTime(s) {
+    if (!s) return '—';
+    try { return new Date(s).toLocaleString(lang === 'vi' ? 'vi-VN' : 'en-GB'); } catch (e) { return String(s); }
+  }
+  function fmtNum(n) {
+    if (n == null) return '—';
+    try { return Number(n).toLocaleString(lang === 'vi' ? 'vi-VN' : 'en-GB'); } catch (e) { return String(n); }
+  }
+
+  /* ---------- auth: không có mu_token → trang chủ + modal đăng nhập (/?login=1, về lại đây sau khi đăng nhập) ---------- */
+  function getToken() { try { return (localStorage.getItem('mu_token') || '').trim(); } catch (e) { return ''; } }
+  var token = getToken();
+  if (!token) { location.href = '/?login=1&next=' + encodeURIComponent('/account.html'); return; }
+
+  function doLogout() {
+    try { localStorage.removeItem('mu_token'); localStorage.removeItem('mu_user'); } catch (e) {}
+    location.href = 'index.html';
+  }
+  document.getElementById('logoutBtnTop').addEventListener('click', doLogout);
+
+  /* ---------- api: cùng cách gọi + token như index.html ---------- */
+  async function api(method, path, body) {
+    var r = await fetch(path, {
+      method: method,
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body: body ? JSON.stringify(body) : undefined
+    });
+    var d = null;
+    try { d = await r.json(); } catch (e) { d = { success: false, message: 'Server trả về dữ liệu không phải JSON (HTTP ' + r.status + ')' }; }
+    if (r.status === 401) { doLogout(); throw new Error('unauthorized'); }
+    return d;
+  }
+  var msgTimer = null;
+  function showMsg(text, ok) {
+    var m = document.getElementById('msg');
+    m.textContent = text; m.style.display = 'block';
+    m.style.borderColor = ok === false ? '#b91c1c' : '#2f6bff';
+    clearTimeout(msgTimer); msgTimer = setTimeout(function () { m.style.display = 'none'; }, 4500);
+  }
+  function setFormMsg(id, text, ok) {
+    var el = document.getElementById(id);
+    el.textContent = text || '';
+    el.className = 'form-msg' + (text ? (ok ? ' ok' : ' bad') : '');
+  }
+
+  /* ---------- class avatar: ô màu + chữ viết tắt (không tải asset ngoài) ---------- */
+  function classAbbr(code) {
+    var m = { 0: 'DW', 16: 'DK', 32: 'Elf', 48: 'MG', 64: 'DL', 80: 'SU', 96: 'RF' };
+    return m[Number(code)] || '?';
+  }
+  function classCss(code) {
+    var m = { 0: 'dw', 16: 'dk', 32: 'elf', 48: 'mg', 64: 'dl', 80: 'su', 96: 'rf' };
+    return m[Number(code)] || 'unknown';
+  }
+
+  /* ---------- dữ liệu cache để render lại khi đổi ngôn ngữ ---------- */
+  var lastAccount = null, lastInfo = null, lastChars = [], lastPublic = null, lastPublicName = '';
+
+  function renderAccount() {
+    var a = lastAccount;
+    if (!a) return;
+    document.getElementById('accUsername').textContent = a.username || '';
+    document.getElementById('accEmail').textContent = a.email || t('account.noEmail');
+    var st = document.getElementById('accStatus');
+    if (a.banned) { st.textContent = t('account.banned'); st.className = 'pill bad'; }
+    else { st.textContent = t('account.normal'); st.className = 'pill ok'; }
+    document.getElementById('topUsername').textContent = a.username || '';
+    document.getElementById('topWho').style.display = '';
+    document.getElementById('logoutBtnTop').style.display = '';
+    // Online: CHỈ hiện khi /api/user/info trả field `online`; chưa có thì "—" + chú thích.
+    var on = document.getElementById('accOnline');
+    var note = document.getElementById('accOnlineNote');
+    if (lastInfo && Object.prototype.hasOwnProperty.call(lastInfo, 'online')) {
+      on.textContent = lastInfo.online ? t('account.onlineYes') : t('account.onlineNo');
+      note.textContent = '';
+    } else {
+      on.textContent = '—';
+      note.textContent = '(' + t('account.onlinePending') + ')';
+    }
+  }
+
+  function charCardHTML(c) {
+    var h = '<div class="char-card"><div class="char-head">' +
+      '<div class="avatar ' + classCss(c.class_code) + '">' + esc(classAbbr(c.class_code)) + '</div>' +
+      '<div><p class="char-name">' + esc(c.name) + '</p>' +
+      '<p class="char-class">' + esc(c.class_name || classAbbr(c.class_code)) + '</p></div></div>' +
+      '<div class="char-stats">' +
+      '<div><span class="k">' + esc(t('chars.level')) + ':</span> <b>' + fmtNum(c.level) + '</b></div>' +
+      '<div><span class="k">Zen:</span> ' + fmtNum(c.zen) + '</div>';
+    // Online: CHỈ hiện khi API trả field đó (track Presence bổ sung sau).
+    if (Object.prototype.hasOwnProperty.call(c, 'online')) {
+      h += '<div><span class="k">' + esc(t('account.online')) + ':</span> ' + esc(c.online ? t('account.onlineYes') : t('account.onlineNo')) + '</div>';
+    }
+    h += '</div></div>';
+    return h;
+  }
+
+  function renderChars() {
+    var box = document.getElementById('charList');
+    if (!lastChars.length) { box.innerHTML = '<p class="muted">' + esc(t('chars.empty')) + '</p>'; return; }
+    box.innerHTML = lastChars.map(charCardHTML).join('');
+  }
+
+  function fillCharSelects() {
+    ['renameChar', 'classChar'].forEach(function (id) {
+      var sel = document.getElementById(id);
+      if (!sel) return;
+      var cur = sel.value;
+      sel.innerHTML = lastChars.map(function (c) { return '<option value="' + esc(c.name) + '">' + esc(c.name) + '</option>'; }).join('');
+      if (cur) sel.value = cur;
+    });
+  }
+
+  function renderAll() {
+    renderAccount(); renderChars(); fillCharSelects();
+  }
+
+  /* ---------- load dữ liệu ---------- */
+  async function loadAll() {
+    try {
+      var a = await api('GET', '/api/user/account');
+      if (a && a.success && a.account) { lastAccount = a.account; }
+      else if (a && !a.success) showMsg(a.message || t('common.error'), false);
+    } catch (e) { if (e.message !== 'unauthorized') showMsg(t('common.error'), false); }
+    try {
+      var u = await api('GET', '/api/user/info');
+      if (u && u.success && u.user) lastInfo = u.user;
+    } catch (e) { /* /api/user/info lỗi thì vẫn hiện phần còn lại; online giữ "—" */ }
+    try {
+      var ch = await api('GET', '/api/characters');
+      if (ch && ch.success) lastChars = Array.isArray(ch.characters) ? ch.characters : [];
+      else if (ch && !ch.success) showMsg(ch.message || t('common.error'), false);
+    } catch (e) { if (e.message !== 'unauthorized') showMsg(t('common.error'), false); }
+    renderAll();
+  }
+
+  /* ---------- đổi mật khẩu (chỉ 1 mật khẩu — không có mật khẩu cấp 2) ---------- */
+  document.getElementById('passwordForm').addEventListener('submit', async function (e) {
+    e.preventDefault();
+    var cur = document.getElementById('curPass').value;
+    var nw = document.getElementById('newPass').value;
+    var nw2 = document.getElementById('newPass2').value;
+    if (nw.length < 3 || nw.length > 9) { setFormMsg('passwordMsg', t('password.len'), false); return; }
+    if (nw !== nw2) { setFormMsg('passwordMsg', t('password.mismatch'), false); return; }
+    var btn = e.target.querySelector('button[type=submit]'); btn.disabled = true;
+    try {
+      var d = await api('POST', '/api/user/change-password', { current_password: cur, new_password: nw });
+      if (d && d.success) {
+        setFormMsg('passwordMsg', d.message || t('password.ok'), true);
+        showMsg(d.message || t('password.ok'), true);
+        e.target.reset();
+      } else setFormMsg('passwordMsg', (d && d.message) || t('common.error'), false);
+    } catch (err) { if (err.message !== 'unauthorized') setFormMsg('passwordMsg', t('common.error'), false); }
+    btn.disabled = false;
+  });
+
+  /* ---------- modal đẹp dùng chung (xác nhận + kết quả) ---------- */
+  var modalCleanup = null, modalBtn = null, modalDismissible = true;
+  function closeModal() {
+    var r = document.getElementById('muModal');
+    if (r) r.hidden = true;
+    if (modalCleanup) { modalCleanup(); modalCleanup = null; }
+    if (modalBtn) { modalBtn.disabled = false; modalBtn = null; }
+  }
+  function modalSetIcon(icon) {
+    var el = document.getElementById('muModalIcon');
+    el.className = 'mu-modal-icon' + (icon === 'ok' ? ' ok' : icon === 'bad' ? ' bad' : '');
+    el.textContent = icon === 'ok' ? '✓' : icon === 'bad' ? '✕' : '↻';
+  }
+  function openModal(o) {
+    var root = document.getElementById('muModal');
+    var bd = document.getElementById('muModalBackdrop');
+    if (bd && !bd.__bound) { bd.__bound = true; bd.addEventListener('click', function () { if (modalDismissible) closeModal(); }); }
+    modalSetIcon(o.icon);
+    document.getElementById('muModalTitle').textContent = o.title || '';
+    document.getElementById('muModalBody').innerHTML = o.bodyHTML || '';
+    var acts = document.getElementById('muModalActions');
+    var btns = [];
+    function fillButtons(list) {
+      acts.innerHTML = '';
+      btns.length = 0;
+      (list || []).forEach(function (b) {
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'btn ' + (b.cls || '');
+        btn.textContent = b.label;
+        btn.addEventListener('click', function () { if (b.onClick) b.onClick(handle); else closeModal(); });
+        acts.appendChild(btn);
+        btns.push(btn);
+      });
+    }
+    fillButtons(o.buttons);
+    modalDismissible = o.dismissible !== false;
+    var handle = {
+      close: closeModal,
+      setBusy: function (label) {
+        btns.forEach(function (x) { x.disabled = true; });
+        if (label && btns.length) btns[btns.length - 1].textContent = label;
+        modalDismissible = false;
+      },
+      setContent: function (c) {
+        modalSetIcon(c.icon);
+        document.getElementById('muModalTitle').textContent = c.title || '';
+        document.getElementById('muModalBody').innerHTML = c.bodyHTML || '';
+        fillButtons(c.buttons);
+        modalDismissible = true;
+      }
+    };
+    function onKey(e) { if (e.key === 'Escape' && modalDismissible) closeModal(); }
+    document.addEventListener('keydown', onKey);
+    modalCleanup = function () { document.removeEventListener('keydown', onKey); };
+    root.hidden = false;
+    return handle;
+  }
+
+  /* ---------- i18n apply ---------- */
+  function applyLang() {
+    document.documentElement.lang = lang;
+    var els = document.querySelectorAll('[data-i18n]');
+    for (var i = 0; i < els.length; i++) els[i].textContent = t(els[i].getAttribute('data-i18n'));
+    var phs = document.querySelectorAll('[data-i18n-ph]');
+    for (var j = 0; j < phs.length; j++) phs[j].setAttribute('placeholder', t(phs[j].getAttribute('data-i18n-ph')));
+    document.getElementById('langVi').classList.toggle('active', lang === 'vi');
+    document.getElementById('langEn').classList.toggle('active', lang === 'en');
+    renderAll();
+  }
+  function setLang(l) {
+    lang = l;
+    try { localStorage.setItem('mu_lang', l); } catch (e) {}
+    applyLang();
+  }
+  document.getElementById('langVi').addEventListener('click', function () { setLang('vi'); });
+  document.getElementById('langEn').addEventListener('click', function () { setLang('en'); });
+
+  /* ---------- tabs: 11 tab cho 11 chức năng (ACCOUNT-FEATURES.md) ---------- */
+  var tabBtns = Array.prototype.slice.call(document.querySelectorAll('.tab-btn'));
+  var tabPanels = Array.prototype.slice.call(document.querySelectorAll('.tab-panel'));
+  function activateTab(name) {
+    var ok = tabBtns.some(function (b) { return b.getAttribute('data-tab') === name; });
+    if (!ok) name = 'overview';
+    tabBtns.forEach(function (b) { b.classList.toggle('active', b.getAttribute('data-tab') === name); });
+    tabPanels.forEach(function (p) { p.classList.toggle('active', p.getAttribute('data-panel') === name); });
+    try { history.replaceState(null, '', '#' + name); } catch (e) {}
+    var act = document.querySelector('.tab-btn.active');
+    if (act && act.scrollIntoView) { try { act.scrollIntoView({ block: 'nearest', inline: 'center' }); } catch (e) {} }
+  }
+  tabBtns.forEach(function (b) { b.addEventListener('click', function () { activateTab(b.getAttribute('data-tab')); }); });
+
+  /* ---------- boot ---------- */
+  applyLang();
+  activateTab((location.hash || '#overview').slice(1));
+  loadAll();
+})();
+</script>
+  <div class="mu-modal" id="muModal" hidden>
+    <div class="mu-modal-backdrop" id="muModalBackdrop"></div>
+    <div class="mu-modal-box" role="dialog" aria-modal="true">
+      <div class="mu-modal-icon" id="muModalIcon">↻</div>
+      <h3 class="mu-modal-title" id="muModalTitle"></h3>
+      <div class="mu-modal-body" id="muModalBody"></div>
+      <div class="mu-modal-actions" id="muModalActions"></div>
+    </div>
+  </div>
+</body>
+</html>

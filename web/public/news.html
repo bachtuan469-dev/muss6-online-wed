@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tin tức — MU Online</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: #04070d; color: #e6edf7; font-family: Montserrat, system-ui, sans-serif; }
+  a { color: #3b82f6; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .wrap { max-width: 1020px; margin: 0 auto; padding: 0 16px; }
+  .topbar { background: #070b13; border-bottom: 1px solid #1d2a3c; }
+  .topbar .wrap { display: flex; align-items: center; justify-content: flex-end; gap: 10px; padding-top: 8px; padding-bottom: 8px; }
+  .lang { display: flex; border: 1px solid #1d2a3c; border-radius: 8px; overflow: hidden; }
+  .lang button { background: #0e1622; color: #9fb0c6; border: none; padding: 8px 12px; font-family: inherit; font-size: 13px; font-weight: 700; cursor: pointer; }
+  .lang button.active { background: #f59e0b; color: #04070d; }
+  header { background: #070b13; border-bottom: 1px solid #16202f; padding: 18px 0 14px; }
+  header .wrap { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
+  .logo { font-size: 26px; font-weight: 800; color: #f59e0b; letter-spacing: 1px; margin: 0; }
+  .logo small { display: block; font-size: 12px; font-weight: 600; color: #9fb0c6; letter-spacing: 2px; }
+  nav { display: flex; gap: 8px; flex-wrap: wrap; margin-left: auto; }
+  nav a { background: #0e1622; color: #e6edf7; border: 1px solid #1d2a3c; border-radius: 8px; padding: 8px 14px; font-size: 13px; font-weight: 600; }
+  nav a:hover { text-decoration: none; border-color: #f59e0b; color: #fbbf24; }
+  section { margin: 20px 0; }
+  .card { background: #0a1018; border: 1px solid #16202f; border-radius: 12px; padding: 16px; }
+  .card h1 { margin: 0 0 8px; font-size: 20px; color: #fbbf24; line-height: 1.4; }
+  .meta { color: #9fb0c6; font-size: 13px; margin-bottom: 14px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .body { font-size: 14px; line-height: 1.8; white-space: pre-wrap; }
+  .muted { color: #9fb0c6; font-size: 13px; }
+  .pill { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 700; white-space: nowrap; }
+  .pill.maintenance { background: #3f1d1d; color: #f87171; }
+  .pill.event { background: #14532d; color: #4ade80; }
+  .pill.update { background: #1e3a5f; color: #93c5fd; }
+  .pill.other { background: #1d2a3c; color: #9fb0c6; }
+  .btn { display: inline-block; background: #2f6bff; color: #fff; border: none; border-radius: 8px; padding: 8px 14px; font-family: inherit; font-size: 13px; font-weight: 700; cursor: pointer; }
+  .btn:hover { text-decoration: none; filter: brightness(1.1); }
+  .btn.ghost { background: #0e1622; color: #e6edf7; border: 1px solid #1d2a3c; }
+  footer { border-top: 1px solid #16202f; padding: 16px 0 24px; text-align: center; color: #6b7c93; font-size: 12px; }
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="wrap">
+    <span class="lang" role="group" aria-label="Language">
+      <button type="button" id="langVi">VI</button>
+      <button type="button" id="langEn">EN</button>
+    </span>
+  </div>
+</div>
+<div class="wrap">
+  <section class="card" id="article">
+    <p class="muted" data-i18n="common.loading">Đang tải…</p>
+  </section>
+  <p><a class="btn ghost" href="index.html" data-i18n="common.home">Về trang chủ</a></p>
+</div>
+
+<script>
+(function () {
+  'use strict';
+  var I18N = {
+    vi: {
+      'nav.home': 'Trang chủ', 'nav.serverInfo': 'Thông tin server', 'nav.news': 'Tin tức', 'nav.topReset': 'Top Level',
+      'common.loading': 'Đang tải…', 'common.error': 'Không tải được dữ liệu, vui lòng thử lại sau.',
+      'common.home': 'Về trang chủ', 'common.notFound': 'Không tìm thấy tin tức này.',
+      'news.cat.maintenance': 'Bảo trì', 'news.cat.event': 'Sự kiện', 'news.cat.update': 'Cập nhật'
+    },
+    en: {
+      'nav.home': 'Home', 'nav.serverInfo': 'Server info', 'nav.news': 'News', 'nav.topReset': 'Top Level',
+      'common.loading': 'Loading…', 'common.error': 'Could not load data, please try again later.',
+      'common.home': 'Back to home', 'common.notFound': 'This news article was not found.',
+      'news.cat.maintenance': 'Maintenance', 'news.cat.event': 'Event', 'news.cat.update': 'Update'
+    }
+  };
+  var lang = 'vi';
+  try { lang = localStorage.getItem('mu_lang') || 'vi'; } catch (e) {}
+  if (lang !== 'vi' && lang !== 'en') lang = 'vi';
+  function t(key) { return (I18N[lang] && I18N[lang][key]) || I18N.vi[key] || key; }
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+  function fmtDate(iso) {
+    try { return new Date(iso).toLocaleDateString(lang === 'vi' ? 'vi-VN' : 'en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' }); }
+    catch (e) { return iso; }
+  }
+  function catLabel(cat) {
+    var c = String(cat || '').toLowerCase();
+    if (c === 'maintenance') return t('news.cat.maintenance');
+    if (c === 'event') return t('news.cat.event');
+    if (c === 'update') return t('news.cat.update');
+    return cat || '';
+  }
+  function catClass(cat) {
+    var c = String(cat || '').toLowerCase();
+    return (c === 'maintenance' || c === 'event' || c === 'update') ? c : 'other';
+  }
+  var article = null;
+  function render() {
+    var box = document.getElementById('article');
+    if (!article) return;
+    var title = lang === 'en' ? (article.title_en || article.title_vi) : (article.title_vi || article.title_en);
+    var body = lang === 'en' ? (article.body_en || article.body_vi) : (article.body_vi || article.body_en);
+    document.title = title + ' — MU Online';
+    box.innerHTML = '<h1>' + esc(title) + '</h1>' +
+      '<div class="meta"><span class="pill ' + esc(catClass(article.category)) + '">' + esc(catLabel(article.category)) + '</span>' +
+      '<span>' + esc(fmtDate(article.created_at)) + '</span></div>' +
+      '<div class="body">' + esc(body) + '</div>';
+  }
+  function applyLang() {
+    document.documentElement.lang = lang;
+    var els = document.querySelectorAll('[data-i18n]');
+    for (var i = 0; i < els.length; i++) els[i].textContent = t(els[i].getAttribute('data-i18n'));
+    document.getElementById('langVi').classList.toggle('active', lang === 'vi');
+    document.getElementById('langEn').classList.toggle('active', lang === 'en');
+    render();
+  }
+  function setLang(l) {
+    lang = l;
+    try { localStorage.setItem('mu_lang', l); } catch (e) {}
+    applyLang();
+  }
+  document.getElementById('langVi').addEventListener('click', function () { setLang('vi'); });
+  document.getElementById('langEn').addEventListener('click', function () { setLang('en'); });
+
+  function notFound() {
+    document.getElementById('article').innerHTML =
+      '<h1>' + esc(t('common.notFound')) + '</h1>' +
+      '<p><a href="index.html">' + esc(t('common.home')) + '</a></p>';
+  }
+  var id = '';
+  try { id = new URLSearchParams(window.location.search).get('id') || ''; } catch (e) {}
+  if (!id) { notFound(); }
+  else {
+    fetch('/api/news/' + encodeURIComponent(id)).then(function (r) {
+      if (r.status === 404) { notFound(); return null; }
+      return r.json();
+    }).then(function (d) {
+      if (!d) return;
+      if (!d.success || !d.news) { notFound(); return; }
+      article = d.news;
+      render();
+    }).catch(function () {
+      document.getElementById('article').innerHTML = '<p class="muted">' + esc(t('common.error')) + '</p>';
+    });
+  }
+
+  applyLang();
+})();
+</script>
+</body>
+</html>

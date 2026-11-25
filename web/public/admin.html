@@ -1,0 +1,2509 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quản trị MU Online</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Grenze:wght@600;700&family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body { margin: 0; background: #04070d; color: #e6edf7; font-family: Montserrat, system-ui, sans-serif; }
+  a { color: #3b82f6; }
+  ::-webkit-scrollbar { width: 9px; height: 9px; }
+  ::-webkit-scrollbar-thumb { background: #1d2a3c; border-radius: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+
+  .layout { display: flex; min-height: 100vh; align-items: stretch; }
+
+  /* ---- Sidebar ---- */
+  .side { width: 250px; flex: none; background: linear-gradient(180deg, #080d16, #060a11); border-right: 1px solid #1d2a3c; padding: 20px 14px 16px; position: sticky; top: 0; height: 100vh; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
+  .brand h1 { margin: 0; font-family: Grenze, Montserrat, serif; font-size: 21px; font-weight: 700; color: #f59e0b; letter-spacing: 1.5px; line-height: 1.15; }
+  .brand .sub { color: #9fb0c6; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; margin-top: 3px; }
+  .who-chip { background: #0c131d; border: 1px solid #1d2a3c; border-radius: 10px; padding: 8px 12px; font-size: 12px; color: #9fb0c6; }
+  .who-chip:empty { display: none; }
+  nav#tabs { display: flex; flex-direction: column; gap: 3px; }
+  .nav-group { font-size: 10px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; color: #5f7288; margin: 12px 6px 4px; }
+  .nav-group:first-child { margin-top: 2px; }
+  nav#tabs button { display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; background: transparent; color: #c7d2e4; border: 1px solid transparent; border-radius: 10px; padding: 9px 12px; font-family: inherit; font-size: 13.5px; font-weight: 600; cursor: pointer; transition: background .15s, color .15s; }
+  nav#tabs button .ic { width: 20px; text-align: center; flex: none; }
+  nav#tabs button:hover { background: #0e1622; color: #fff; }
+  nav#tabs button.active { background: linear-gradient(90deg, #f59e0b, #d97706); color: #04070d; border-color: #f59e0b; font-weight: 800; box-shadow: 0 4px 14px rgba(245,158,11,.25); }
+  .side-foot { margin-top: auto; display: flex; flex-direction: column; gap: 8px; padding-top: 14px; border-top: 1px solid #16202f; }
+  .side-foot .btn { width: 100%; }
+
+  /* ---- Content ---- */
+  main { flex: 1; min-width: 0; width: 100%; max-width: 1240px; margin: 0 auto; padding: 24px 28px 48px; }
+  section { display: none; }
+  section.active { display: block; animation: fadein .18s ease-out; }
+  @keyframes fadein { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+  .card { background: #0a1018; border: 1px solid #16202f; border-radius: 14px; padding: 18px; margin-bottom: 18px; box-shadow: 0 8px 24px rgba(0,0,0,.25); }
+  .card h2 { margin: 0 0 14px; padding-bottom: 10px; border-bottom: 1px solid #16202f; font-size: 17px; color: #fbbf24; letter-spacing: .3px; }
+  .card h3 { margin: 14px 0 8px; font-size: 15px; color: #e6edf7; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; }
+  .stat { background: linear-gradient(180deg, #0d1521, #0a111c); border: 1px solid #1d2a3c; border-radius: 12px; padding: 16px; }
+  .stat .num { font-size: 30px; font-weight: 800; color: #f59e0b; line-height: 1.1; }
+  .stat-compact { grid-template-columns: repeat(auto-fit, minmax(105px, 1fr)); gap: 8px; }
+  .stat-compact .stat { padding: 9px 12px; border-radius: 10px; }
+  .stat-compact .num { font-size: 20px; }
+  .stat-compact .lbl { font-size: 11px; margin-top: 2px; }
+  .stat .lbl { color: #9fb0c6; font-size: 12px; margin-top: 5px; }
+  .stat.warn-red { border-color: #b91c1c; background: #2a0a0a; }
+  .stat.warn-red .num { color: #f87171; }
+  .stat.warn-yellow { border-color: #f59e0b; background: #2a1503; }
+  .stat.warn-yellow .num { color: #fbbf24; }
+
+  /* ---- Tables ---- */
+  #acc-list, #char-list, #item-search-list, #item-log-list, #blocked-list, #dupe-list,
+  #shop-list, #news-list, #menu-list, #modules-list, #audit-list, #alogin-list,
+  #events-list { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td { text-align: left; padding: 9px 8px; border-bottom: 1px solid #16202f; vertical-align: top; }
+  th { color: #9fb0c6; font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: .6px; white-space: nowrap; }
+  tbody tr:hover td, tr:hover td { background: rgba(245,158,11,.045); }
+  td .btn { padding: 5px 10px; font-size: 12px; border-radius: 7px; margin: 1px 0; }
+  td.acc-act { white-space: nowrap; }
+  .acc-admin-name { color: #f87171; font-weight: 700; }
+
+  /* ---- Character detail (2026-11-15) ---- */
+  #char-list tr.char-row { cursor: pointer; }
+  .acc-head { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .acc-avatar { width: 42px; height: 42px; flex: none; border-radius: 50%; background: linear-gradient(135deg, #f59e0b, #b45309); color: #04070d; font-weight: 800; font-size: 18px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(245,158,11,.3); }
+  .acc-name { display: flex; align-items: baseline; gap: 8px; min-width: 0; flex: 1; }
+  .acc-name b { font-size: 16px; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .acc-id { color: #5f7288; font-size: 12px; font-weight: 700; flex: none; }
+  .acc-pills { display: flex; gap: 6px; flex-wrap: wrap; order: 3; flex-basis: 100%; margin-left: 54px; justify-content: flex-start; }
+  @media (min-width: 760px) { .acc-pills { order: 0; flex-basis: auto; margin-left: auto; justify-content: flex-end; } }
+  .pill.acc-on { background: #14532d; color: #4ade80; display: inline-flex; align-items: center; gap: 6px; }
+  .pill.acc-on .dot { width: 7px; height: 7px; border-radius: 50%; background: #4ade80; animation: accpulse 1.8s infinite; }
+  @keyframes accpulse { 0% { box-shadow: 0 0 0 0 rgba(74,222,128,.55); } 70% { box-shadow: 0 0 0 6px rgba(74,222,128,0); } 100% { box-shadow: 0 0 0 0 rgba(74,222,128,0); } }
+  .pill.acc-admin { background: #3b2f0b; color: #fbbf24; }
+  .pill.acc-dim { background: #1e293b; color: #c7d2e4; }
+  .acc-meta { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 9px 14px; }
+  .acc-meta label { display: block; font-size: 10px; color: #5f7288; font-weight: 700; text-transform: uppercase; letter-spacing: .6px; margin-bottom: 2px; }
+  .acc-meta span { font-size: 13px; color: #e6edf7; word-break: break-all; }
+  .acc-meta-flat { }
+  .grant-warn { color: #f87171; font-weight: 700; margin-top: 10px; }
+  .grant-head { display: flex; align-items: center; justify-content: space-between; cursor: pointer; }
+  .grant-head h2 { margin: 0; }
+  .grant-chev { color: #f5b942; font-size: 12px; font-weight: 700; flex: none; }
+  .grant-grid { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
+  .grant-item { display: flex; gap: 6px; align-items: center; flex: 1 1 0; min-width: 190px; }
+  .grant-item label { width: 42px; flex: none; color: #94a7bd; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .4px; margin: 0; }
+  .grant-item input { flex: 1; min-width: 80px; }
+  .grant-item select { flex: 1; min-width: 80px; }
+  /* ---- Character items (inventory / vault grids, 2026-11-15) ---- */
+  .item-grid { display: grid; grid-template-columns: repeat(8, 1fr); gap: 4px; margin: 8px 0 4px; }
+  .equip-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px; margin: 8px 0 4px; }
+  /* Equipment slots are a FIXED size; the item image inside resizes to
+     fit (2026-11-15). */
+  .equip-grid .item-cell { height: 72px; min-height: 72px; }
+  /* Items view: 2 columns 50/50 — col 1 = equipment + inventory,
+     col 2 = vault. Stacks to 1 column on narrow screens. */
+  .items-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start; }
+  .items-col { min-width: 0; }
+  @media (max-width: 720px) { .items-2col { grid-template-columns: 1fr; } }
+  .item-cell { min-height: 38px; background: #0d1521; border: 1px solid #1d2a3c; border-radius: 6px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 11px; line-height: 1.25; color: #e6edf7; text-align: center; padding: 2px; word-break: break-all; }
+  .item-cell.empty { opacity: .3; }
+  .item-cell.exc { border-color: #f59e0b; background: #2a1503; }
+  .item-cell .mk { color: #fbbf24; font-size: 10px; }
+  .item-sec { margin: 10px 0 4px; font-size: 13px; font-weight: 700; color: #9fb0c6; }
+  .item-cell img { max-width: 100%; max-height: 100%; object-fit: contain; flex: 1 1 auto; min-height: 0; }
+  /* ---- Item tooltip (game-accurate content, 2026-11-15) ---- */
+  #item-tip { display: none; position: fixed; z-index: 9999; max-width: 320px; background: #0a0f16; border: 1px solid #f59e0b; border-radius: 10px; padding: 10px 12px; font-size: 13px; line-height: 1.5; color: #e6edf7; box-shadow: 0 10px 30px rgba(0,0,0,.5); pointer-events: none; }
+  #item-tip .tip-name { font-weight: 800; font-size: 15px; color: #fbbf24; margin-bottom: 4px; }
+  #item-tip .tip-line { color: #c7d2e4; }
+  #item-tip .tip-blue { color: #60a5fa; }
+  #item-tip .tip-yellow { color: #facc15; }
+  #item-tip .tip-exc { color: #4ade80; margin-top: 4px; }
+  #item-tip .tip-serial { color: #5f7288; font-size: 11px; margin-top: 6px; }
+  /* ---- Grant wizard (thêm đồ vào kho, 2026-11-15) ---- */
+  .vg-step { font-size: 13px; font-weight: 700; color: #fbbf24; margin: 12px 0 6px; }
+  .vg-picker { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 6px; margin: 6px 0; max-height: 320px; overflow-y: auto; padding-right: 4px; }
+  .vg-pick { background: #0d1521; border: 1px solid #1d2a3c; border-radius: 8px; padding: 6px 4px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; cursor: pointer; text-align: center; min-height: 64px; }
+  .vg-pick:hover { border-color: #f59e0b; }
+  .vg-pick.sel { border-color: #f59e0b; background: #2a1503; box-shadow: 0 0 0 2px rgba(245,158,11,.35); }
+  .vg-pick img { max-width: 100%; max-height: 40px; object-fit: contain; }
+  .vg-pick-name { font-size: 11px; line-height: 1.25; color: #e6edf7; word-break: break-word; }
+  .vg-lines { display: flex; gap: 16px; flex-wrap: wrap; align-items: center; }
+  .vg-lines label { display: inline-flex; gap: 6px; align-items: center; font-size: 13px; color: #e6edf7; cursor: pointer; }
+  .vg-exc-list { display: flex; flex-direction: column; gap: 6px; margin: 6px 0 6px 22px; }
+  .vg-exc-list label { display: flex; gap: 6px; align-items: center; font-size: 13px; color: #7dd3fc; cursor: pointer; }
+  .vg-summary { color: #e6edf7; font-size: 13.5px; }
+  .vg-adv { margin-top: 14px; border-top: 1px solid #16202f; padding-top: 10px; }
+  .vg-adv summary { cursor: pointer; font-size: 12.5px; color: #9fb0c6; font-weight: 700; }
+  td input[type=number] { width: 110px; padding: 6px 8px; }
+  tr.expired td { color: #f87171; }
+
+  /* ---- Forms & buttons ---- */
+  input, select, textarea { background: #0c131d; color: #e6edf7; border: 1px solid #1d2a3c; border-radius: 9px; padding: 9px 11px; font-family: inherit; font-size: 14px; outline: none; transition: border-color .15s, box-shadow .15s; }
+  input:focus, select:focus, textarea:focus { border-color: #f59e0b; box-shadow: 0 0 0 3px rgba(245,158,11,.18); }
+  input[type=number] { width: 130px; }
+  input[type=checkbox] { accent-color: #f59e0b; width: 16px; height: 16px; vertical-align: -3px; }
+  textarea { width: 100%; min-height: 84px; resize: vertical; line-height: 1.5; }
+  button.btn { background: #2f6bff; color: #fff; border: 1px solid #2f6bff; border-radius: 9px; padding: 9px 15px; font-family: inherit; font-size: 13.5px; font-weight: 700; cursor: pointer; transition: filter .15s, transform .05s; }
+  button.btn:hover { filter: brightness(1.12); }
+  button.btn:active { transform: scale(.98); }
+  button.btn.gold { background: #f59e0b; border-color: #f59e0b; color: #04070d; }
+  button.btn.danger { background: #b91c1c; border-color: #b91c1c; }
+  button.btn.ghost { background: #0e1622; color: #e6edf7; border: 1px solid #1d2a3c; }
+  button.btn:disabled { opacity: .45; cursor: default; filter: none; }
+  .row { display: flex; gap: 9px; align-items: center; flex-wrap: wrap; margin: 8px 0; }
+  .row label { font-size: 13px; color: #c7d2e4; font-weight: 600; }
+  .warn { background: #2a1503; border: 1px solid #f59e0b; color: #fcd34d; border-radius: 12px; padding: 13px 14px; font-size: 13px; line-height: 1.55; margin: 10px 0; }
+  .danger-box { background: #2a0a0a; border: 1px solid #b91c1c; color: #fca5a5; border-radius: 12px; padding: 13px 14px; font-size: 13px; line-height: 1.55; margin: 10px 0; }
+  .note { color: #9fb0c6; font-size: 12.5px; line-height: 1.55; }
+  .ok { color: #4ade80; } .bad { color: #f87171; }
+  .count-ok { color: #4ade80; font-weight: 700; }
+  .count-over { color: #f87171; font-weight: 700; }
+  #msg { position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%); background: #121c2b; border: 1px solid #2f6bff; color: #e6edf7; padding: 12px 18px; border-radius: 12px; display: none; max-width: min(92vw, 560px); text-align: center; z-index: 50; font-size: 14px; box-shadow: 0 16px 40px rgba(0,0,0,.55); }
+  .pill { display: inline-block; padding: 2px 9px; border-radius: 20px; font-size: 11px; font-weight: 700; }
+  .pill.hot { background: #14532d; color: #4ade80; }
+  .pill.restart { background: #3b2f0b; color: #fbbf24; }
+  .pill.off { background: #3f1d1d; color: #f87171; }
+  pre { background: #070b13; border: 1px solid #16202f; border-radius: 9px; padding: 10px; overflow: auto; font-size: 12px; max-height: 300px; }
+  .subtabs { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
+  .subtabs button { background: #0e1622; color: #e6edf7; border: 1px solid #1d2a3c; border-radius: 999px; padding: 7px 14px; font-family: inherit; font-weight: 600; cursor: pointer; }
+  .subtabs button.active { background: #f59e0b; color: #04070d; border-color: #f59e0b; }
+  .inline-form { background: #0c131d; border: 1px solid rgba(245,158,11,.5); border-radius: 12px; padding: 14px; margin: 12px 0; box-shadow: 0 10px 26px rgba(0,0,0,.35); }
+  .inline-form h3 { margin: 0 0 10px; font-size: 14px; color: #fbbf24; }
+
+  .field { display: flex; flex-direction: column; gap: 5px; margin: 7px 0; }
+  .field label { font-size: 12px; color: #9fb0c6; font-weight: 700; text-transform: uppercase; letter-spacing: .4px; }
+  .formgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; }
+  code { background: #0e1622; border: 1px solid #1d2a3c; border-radius: 5px; padding: 0 5px; font-size: .92em; }
+
+  /* ---- Confirm modal (replaces the native browser dialog) ---- */
+  #confirm-modal { position: fixed; inset: 0; background: rgba(2, 6, 12, .72); display: none; align-items: center; justify-content: center; z-index: 100; padding: 16px; }
+  .confirm-modal-box { background: #0a1018; border: 1px solid #f59e0b; border-radius: 14px; padding: 20px; max-width: 520px; width: 100%; box-shadow: 0 20px 50px rgba(0,0,0,.6); }
+  .confirm-modal-title { color: #fbbf24; font-size: 16px; font-weight: 800; letter-spacing: .3px; margin-bottom: 10px; }
+  #confirm-modal-msg { color: #e6edf7; font-size: 14.5px; line-height: 1.6; white-space: pre-line; word-break: break-word; }
+  .confirm-modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 18px; }
+  @media (max-width: 900px) {
+    .layout { flex-direction: column; }
+    .side { width: 100%; height: auto; position: static; padding: 14px; }
+    nav#tabs { flex-direction: row; flex-wrap: nowrap; overflow-x: auto; padding-bottom: 4px; }
+    nav#tabs button { flex: none; width: auto; }
+    .nav-group { display: none; }
+    .side-foot { flex-direction: row; }
+    main { padding: 14px 12px 36px; }
+    table { font-size: 12px; }
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+  <aside class="side">
+    <div class="brand">
+      <h1>⚔️ QUẢN TRỊ MU ONLINE</h1>
+      <div class="sub">MU Online — Admin</div>
+    </div>
+    <div class="who-chip" id="who"></div>
+    <nav id="tabs">
+    <button data-tab="overview" class="active"><span class="ic">📊</span>Tổng quan</button>
+    <button data-tab="accounts"><span class="ic">👤</span>Tài khoản</button>
+    <button data-tab="characters"><span class="ic">🧑</span>Nhân vật</button>
+    <button data-tab="feedback"><span class="ic">💬</span>Góp ý</button>
+    </nav>
+    <div class="side-foot">
+      <button class="btn ghost" onclick="location.href='/index.html'">← Về trang chủ</button>
+      <button class="btn ghost" onclick="logout()">Đăng xuất</button>
+    </div>
+  </aside>
+  <main>
+  <section id="tab-overview" class="active">
+    <div class="card"><h2>Tổng quan</h2><div class="grid" id="ov-stats"></div>
+      <p class="note" id="ov-maint"></p></div>
+  </section>
+
+
+  <section id="tab-accounts">
+    <div class="card"><h2>Tài khoản</h2>
+      <div class="row"><input id="acc-q" placeholder="Tìm theo tên tài khoản…" style="flex:1;min-width:180px">
+        <input id="acc-email" placeholder="Tìm theo email…" style="min-width:180px">
+        <select id="acc-filter"><option value="">Tất cả</option><option value="banned">Đang khóa</option><option value="admin">Admin</option></select>
+        <button class="btn" onclick="loadAccounts()">🔍 Tìm</button></div>
+      <div id="acc-ban-form" class="inline-form" style="display:none"></div>
+      <div id="acc-list"></div>
+      <div id="acc-detail" style="display:none"></div></div>
+  </section>
+
+
+
+
+  <section id="tab-characters">
+    <div class="card" id="char-list-card"><h2>Nhân vật</h2>
+      <div class="row"><input id="char-q" placeholder="Tìm theo tên nhân vật…" style="flex:1;min-width:180px">
+        <input id="char-account" placeholder="Tài khoản (tên hoặc ID)…" style="min-width:190px">
+        <select id="char-class"><option value="">Mọi class</option><option value="0">DW</option><option value="16">DK</option><option value="32">Elf</option><option value="48">MG</option><option value="64">DL</option><option value="80">SU</option><option value="96">RF</option></select>
+        <button class="btn" onclick="loadCharacters(0)">🔍 Tìm</button></div>
+      <p class="note">Bấm vào một nhân vật trong bảng để xem chi tiết.</p>
+      <div id="char-list"></div></div>
+    <div id="char-detail" style="display:none"></div>
+  </section>
+
+
+
+  <section id="tab-feedback">
+    <div class="card"><h2>Góp ý</h2>
+      <div class="row">
+        <select id="fb-filter-status"><option value="">Mọi trạng thái</option><option value="moi">Mới</option><option value="dang_xu_ly">Đang xử lý</option><option value="xong">Xong</option></select>
+        <button class="btn" onclick="loadFeedback(0)">🔍 Tìm</button></div>
+      <p class="note">Bấm vào một mục để xem chi tiết và đổi trạng thái.</p>
+      <div id="fb-list"></div></div>
+    <div id="fb-detail" style="display:none"></div>
+  </section>
+
+
+
+
+
+
+  </main>
+</div>
+<div id="msg"></div>
+<div id="confirm-modal" style="display:none">
+  <div class="confirm-modal-box">
+    <div class="confirm-modal-title">⚠️ Xác nhận</div>
+    <div id="confirm-modal-msg"></div>
+    <div class="confirm-modal-actions">
+      <button class="btn gold" id="confirm-modal-ok" type="button">OK</button>
+      <button class="btn ghost" id="confirm-modal-cancel" type="button">Hủy</button>
+    </div>
+  </div>
+</div>
+<script>
+(function () {
+  'use strict';
+  var token = localStorage.getItem('mu_token') || localStorage.getItem('mu_user_token') || sessionStorage.getItem('mu_token');
+  if (!token) { location.href = '/?login=1&next=' + encodeURIComponent('/admin.html'); return; }
+  var msgTimer = null;
+  function showMsg(t, ok) {
+    var m = document.getElementById('msg');
+    m.textContent = t; m.style.display = 'block';
+    m.style.borderColor = ok === false ? '#b91c1c' : '#2f6bff';
+    clearTimeout(msgTimer); msgTimer = setTimeout(function () { m.style.display = 'none'; }, 4500);
+  }
+  // ---- Custom confirm modal (replaces the native browser dialog): resolves true
+  // on OK, false on Cancel / backdrop click / Escape. If called while a
+  // previous confirm is still open, the previous one resolves false first.
+  var confirmResolve = null;
+  function onConfirmBackdrop(e) { if (e.target === document.getElementById('confirm-modal')) closeConfirm(false); }
+  function onConfirmKey(e) { if (e.key === 'Escape') closeConfirm(false); }
+  function closeConfirm(v) {
+    if (!confirmResolve) return;
+    var r = confirmResolve; confirmResolve = null;
+    document.getElementById('confirm-modal').style.display = 'none';
+    document.getElementById('confirm-modal').removeEventListener('click', onConfirmBackdrop);
+    document.removeEventListener('keydown', onConfirmKey);
+    r(v);
+  }
+  window.confirmDlg = function (msg) {
+    closeConfirm(false);
+    document.getElementById('confirm-modal-msg').textContent = msg;
+    var modal = document.getElementById('confirm-modal');
+    modal.style.display = 'flex';
+    document.getElementById('confirm-modal-ok').onclick = function () { closeConfirm(true); };
+    document.getElementById('confirm-modal-cancel').onclick = function () { closeConfirm(false); };
+    modal.addEventListener('click', onConfirmBackdrop);
+    document.addEventListener('keydown', onConfirmKey);
+    document.getElementById('confirm-modal-ok').focus();
+    return new Promise(function (resolve) { confirmResolve = resolve; });
+  };
+  // Đăng xuất → trang chủ + modal đăng nhập (không `next`: như trang đăng
+  // nhập riêng cũ, đăng nhập xong về '/' chứ không tự quay lại trang quản trị).
+  window.logout = function () {
+    localStorage.removeItem('mu_token'); localStorage.removeItem('mu_user_token'); localStorage.removeItem('mu_user');
+    sessionStorage.removeItem('mu_token'); location.href = '/?login=1';
+  };
+  function headers() { return { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token }; }
+  async function api(method, path, body) {
+    var r = await fetch(path, { method: method, headers: headers(), body: body ? JSON.stringify(body) : undefined });
+    var d = null; try { d = await r.json(); } catch (e) { d = { success: false, message: 'Server trả về dữ liệu không phải JSON (HTTP ' + r.status + ')' }; }
+    // 401 = token đã chết: xóa token cũ TRƯỚC khi chuyển về modal đăng nhập,
+    // nếu không trang chủ thấy token còn đó sẽ tưởng đã đăng nhập mà đẩy
+    // thẳng về /admin.html rồi lại 401 (lặp vô hạn).
+    if (r.status === 401) { showMsg('Phiên đăng nhập hết hạn — chuyển về trang đăng nhập…', false); localStorage.removeItem('mu_token'); localStorage.removeItem('mu_user_token'); localStorage.removeItem('mu_user'); sessionStorage.removeItem('mu_token'); setTimeout(function () { location.href = '/?login=1&next=' + encodeURIComponent('/admin.html'); }, 1200); }
+    if (r.status === 403 && !d.success) showMsg(d.message || 'Không có quyền.', false);
+    return { status: r.status, data: d };
+  }
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  function fmtDate(s) { if (!s) return '—'; var d = new Date(s); return isNaN(d.getTime()) ? '—' : d.toLocaleString('vi-VN'); }
+  function switchTab(name) {
+    document.querySelectorAll('#tabs button').forEach(function (x) { x.classList.remove('active'); });
+    var btn = document.querySelector('#tabs button[data-tab="' + name + '"]');
+    if (btn) btn.classList.add('active');
+    document.querySelectorAll('main section').forEach(function (s) { s.classList.remove('active'); });
+    var sec = document.getElementById('tab-' + name);
+    if (sec) sec.classList.add('active');
+    loadTab(name);
+  }
+  window.gotoTab = switchTab;
+
+  // Tabs
+  document.querySelectorAll('#tabs button').forEach(function (b) {
+    b.addEventListener('click', function () { switchTab(b.dataset.tab); });
+  });
+  function loadTab(name) {
+    if (name === 'overview') { loadOverview(); }
+    if (name === 'accounts') loadAccounts();
+    if (name === 'characters') loadCharacters();
+    if (name === 'feedback') loadFeedback();
+  }
+
+  // ---- Góp ý ----
+  var FB_STATUS = { moi: 'Mới', dang_xu_ly: 'Đang xử lý', xong: 'Xong' };
+  async function loadFeedback(offset) {
+    offset = offset || 0;
+    var st = document.getElementById('fb-filter-status').value;
+    var qs = '?limit=20&offset=' + offset;
+    if (st) qs += '&status=' + encodeURIComponent(st);
+    var r = await api('GET', '/api/admin/feedback' + qs);
+    if (!r.data || !r.data.success) return;
+    var h = '<p class="note">Tổng: ' + r.data.total + ' mục.</p><table><tr><th>Tiêu đề</th><th>Tài khoản</th><th>Trạng thái</th><th>Gửi lúc</th></tr>';
+    (r.data.feedback || []).forEach(function (f) {
+      h += '<tr class="char-row" onclick="showFeedback(\'' + f.id + '\')"><td>' + esc(f.title) + '</td><td>' + esc(f.login_name) + '</td><td>' + esc(FB_STATUS[f.status] || f.status) + '</td><td>' + fmtDate(f.created_at) + '</td></tr>';
+    });
+    if (!(r.data.feedback || []).length) h += '<tr><td colspan="4" class="note">Chưa có góp ý nào.</td></tr>';
+    h += '</table>';
+    document.getElementById('fb-list').innerHTML = h;
+  }
+  window.showFeedback = async function (id) {
+    var box = document.getElementById('fb-detail');
+    box.style.display = '';
+    box.innerHTML = '<p class="note">Đang tải…</p>';
+    var r = await api('GET', '/api/admin/feedback/' + encodeURIComponent(id));
+    if (!r.data || !r.data.success) { box.innerHTML = '<p class="note">Không tải được nội dung.</p>'; return; }
+    var f = r.data.feedback;
+    var h = '<div class="card"><h2>' + esc(f.title) + '</h2>' +
+      '<p class="note">' + esc(f.login_name) + ' · ' + fmtDate(f.created_at) + ' · Trạng thái: <b>' + esc(FB_STATUS[f.status] || f.status) + '</b></p>' +
+      '<div style="white-space:pre-wrap">' + esc(f.body) + '</div>' +
+      '<div class="row" style="margin-top:12px">' +
+      '<button class="btn' + (f.status === 'moi' ? ' gold' : ' ghost') + '" onclick="setFeedbackStatus(\'' + f.id + '\', \'moi\')">Mới</button> ' +
+      '<button class="btn' + (f.status === 'dang_xu_ly' ? ' gold' : ' ghost') + '" onclick="setFeedbackStatus(\'' + f.id + '\', \'dang_xu_ly\')">Đang xử lý</button> ' +
+      '<button class="btn' + (f.status === 'xong' ? ' gold' : ' ghost') + '" onclick="setFeedbackStatus(\'' + f.id + '\', \'xong\')">Xong</button>' +
+      '</div></div>';
+    box.innerHTML = h;
+    box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  };
+  window.setFeedbackStatus = async function (id, status) {
+    var r = await api('POST', '/api/admin/feedback/' + encodeURIComponent(id) + '/status', { status: status });
+    if (r.data && r.data.success) { showMsg('Đã đổi trạng thái.'); showFeedback(id); loadFeedback(0); }
+    else showMsg((r.data && r.data.message) || 'Đổi trạng thái thất bại.', false);
+  };
+
+  // ---- Overview ----
+  async function loadOverview() {
+    var r = await api('GET', '/api/admin/overview');
+    if (!r.data || !r.data.success) return;
+    var d = r.data;
+    document.getElementById('ov-stats').innerHTML =
+      '<div class="stat"><div class="num">' + d.accounts + '</div><div class="lbl">Tài khoản</div></div>' +
+      '<div class="stat"><div class="num">' + d.characters + '</div><div class="lbl">Nhân vật</div></div>' +
+      '<div class="stat"><div class="num">' + d.new_accounts_7d + '</div><div class="lbl">Tài khoản mới (7 ngày)</div></div>' +
+      '<div class="stat"><div class="num">' + d.new_characters_7d + '</div><div class="lbl">Nhân vật mới (7 ngày)</div></div>';
+    document.getElementById('ov-maint').textContent = 'Server đang mở bình thường.';
+  }
+  function auditTable(rows) {
+    if (!rows.length) return '<p class="note">Chưa có dòng audit nào.</p>';
+    var h = '<table><tr><th>#</th><th>Thời gian</th><th>Loại</th><th>Tài khoản</th><th>Nhân vật</th><th>Chi tiết</th></tr>';
+    rows.forEach(function (r) {
+      h += '<tr><td>' + r.id + '</td><td>' + fmtDate(r.created_at) + '</td><td>' + esc(r.event_type) + '</td><td>' +
+        (r.account_id == null ? '—' : r.account_id) + '</td><td>' + esc(r.character_name || '—') + '</td><td>' +
+        esc(r.detail ? JSON.stringify(r.detail) : '') + '</td></tr>';
+    });
+    return h + '</table>';
+  }
+  function mapName(id) {
+    var names = ['0 Lorencia', '1 Dungeon', '2 Davias', '3 Noria', '4 Lost Tower', '5 Exile', '6 Stadium', '7 Atlans', '8 Tarkan', '9 Devil Square', '10 Icarus', '11 Blood Castle 1', '12 Blood Castle 2', '13 Blood Castle 3', '14 Blood Castle 4', '15 Blood Castle 5', '16 Blood Castle 6'];
+    return (id != null && names[id]) ? names[id] : ('Map ' + id);
+  }
+  window.shutdownServer = async function () {
+    var delay = Number(document.getElementById('shutdown-delay').value);
+    if (!(delay >= 0 && delay <= 300)) { showMsg('Số giây đếm ngược phải từ 0 đến 300.', false); return; }
+    if (!await confirmDlg('⚠️ NGẮT TOÀN SERVER?\n\nSẽ gửi thông báo đếm ngược ' + delay + ' giây vào game, bật chế độ bảo trì, rồi ngắt toàn bộ phiên đang chơi.\n\nKHÔNG tắt tiến trình Node — admin tự restart server sau.')) return;
+    if (!await confirmDlg('XÁC NHẬN LẦN 2 — chắc chắn ngắt toàn server sau ' + delay + ' giây? Hành động này sẽ đá toàn bộ người chơi đang online.')) return;
+    var r = await api('POST', '/api/admin/shutdown', { delay_seconds: delay });
+    if (r.data && r.data.success) {
+      document.getElementById('shutdown-note').textContent = r.data.message || ('Đã lên lịch ngắt server sau ' + delay + ' giây.');
+      showMsg('Đã gửi lệnh ngắt server (đếm ngược ' + delay + 's).');
+      refreshShutdownUI(true);
+      loadOverview();
+    } else showMsg(r.data && r.data.message || 'Ngắt server thất bại (endpoint POST /api/admin/shutdown chưa có — chờ backend).', false);
+  };
+
+  // ---- Soft-stop toggle: "ngắt" = bật bảo trì + đá hết phiên (không ai
+  // vào game được); "bật lại" = tắt bảo trì. Không tắt tiến trình Node,
+  // không cần endpoint mới — dùng POST /api/admin/config sẵn có (hot).
+  function refreshShutdownUI(isMaintenanceOn) {
+    var on = !!isMaintenanceOn;
+    document.getElementById('shutdown-row').style.display = on ? 'none' : '';
+    document.getElementById('start-row').style.display = on ? '' : 'none';
+    document.getElementById('shutdown-desc').innerHTML = on
+      ? '⚠️ Server đang ở chế độ bảo trì — không ai đăng nhập / chơi được. Bấm nút "Bật lại server" bên dưới để mở lại cho người chơi vào game.'
+      : '⚠️ Thao tác này <b>gửi thông báo đếm ngược vào game, bật chế độ bảo trì, rồi ngắt toàn bộ phiên đang chơi</b> sau khi hết đếm ngược. <b>Không tắt tiến trình Node</b> — admin tự restart server sau. Chỉ dùng khi cần bảo trì khẩn cấp.';
+  }
+  window.startServer = async function () {
+    if (!await confirmDlg('▶ Bật lại server?\n\nSẽ tắt chế độ bảo trì — người chơi đăng nhập / chơi lại được ngay.')) return;
+    var r = await api('POST', '/api/admin/config', { maintenance_mode: false });
+    if (r.data && r.data.success) {
+      document.getElementById('shutdown-note').textContent = 'Đã tắt bảo trì — người chơi vào game lại được.';
+      showMsg('Đã bật lại server (tắt bảo trì).');
+      refreshShutdownUI(false);
+      loadOverview();
+    } else showMsg(r.data && r.data.message || 'Bật lại server thất bại.', false);
+  };
+
+  // ---- Notice ----
+  function noticeByteLen(s) { try { return new TextEncoder().encode(s).length; } catch (e) { return s.length; } }
+  // Vietnamese diacritics break the in-game notice rendering, so they are
+  // blocked client-side (Bach 2026-11-15). NFD splits tone/horn/breve marks
+  // into U+0300-036F; đ/Đ never decompose, ơ/ư bases are listed explicitly.
+  function noticeHasAccents(s) {
+    if (/[\u0110\u0111\u01A0\u01A1\u01AF\u01B0]/.test(s)) return true;
+    return /[\u0300-\u036F]/.test(s.normalize('NFD'));
+  }
+  function noticeStripAccents(s) {
+    return s.replace(/\u0110/g, 'D').replace(/\u0111/g, 'd')
+      .normalize('NFD').replace(/[\u0300-\u036F]/g, '').normalize('NFC');
+  }
+  window.stripNoticeAccents = function () {
+    var el = document.getElementById('notice-msg');
+    el.value = noticeStripAccents(el.value);
+    updateNoticeCount();
+    el.focus();
+  };
+  window.updateNoticeCount = function () {
+    var v = document.getElementById('notice-msg').value;
+    var chars = v.length, bytes = noticeByteLen(v);
+    var acc = noticeHasAccents(v);
+    var el = document.getElementById('notice-count');
+    el.innerHTML = '<span class="' + (chars > 128 ? 'count-over' : 'count-ok') + '">' + chars + ' / 128 ký tự</span> · ' +
+      '<span class="' + (bytes > 250 ? 'count-over' : 'count-ok') + '">' + bytes + ' / 250 byte UTF-8</span>' +
+      (chars > 128 || bytes > 250 ? ' — <span class="bad">vượt giới hạn, không gửi được</span>' : '') +
+      (acc ? ' — <span class="bad">có tiếng Việt có dấu, vào game sẽ lỗi — bấm “Bỏ dấu” hoặc gõ lại không dấu</span>' : '');
+    document.getElementById('notice-send').disabled = chars > 128 || bytes > 250 || !v.trim() || acc;
+  };
+  window.clearNotice = function () {
+    document.getElementById('notice-msg').value = '';
+    document.getElementById('notice-target').value = '';
+    document.getElementById('notice-result').textContent = '';
+    updateNoticeCount();
+  };
+  window.sendNotice = async function () {
+    var msg = document.getElementById('notice-msg').value;
+    var type = Number(document.getElementById('notice-type').value);
+    var realm = document.getElementById('notice-realm').value;
+    var target = document.getElementById('notice-target').value.trim();
+    if (!msg.trim()) { showMsg('Nhập nội dung thông báo trước.', false); return; }
+    if (noticeHasAccents(msg)) { showMsg('Thông báo có tiếng Việt có dấu — vào game sẽ lỗi. Hãy bỏ dấu trước khi gửi.', false); return; }
+    if (msg.length > 128) { showMsg('Thông báo vượt 128 ký tự (hiện ' + msg.length + ').', false); return; }
+    if (noticeByteLen(msg) > 250) { showMsg('Thông báo vượt 250 byte UTF-8 (hiện ' + noticeByteLen(msg) + ').', false); return; }
+    var typeName = ['Banner', 'Chat log', 'Guild'][type];
+    var realmName = realm === 'all' ? 'Cả hai realm' : realm;
+    if (!await confirmDlg('Gửi thông báo?\n\nNội dung: ' + msg + '\nLoại: ' + typeName + '\nPhạm vi: ' + realmName + (target ? '\nĐích: ' + target : '\nĐích: toàn server'))) return;
+    var body = { message: msg, type: type, realm: realm };
+    if (target) body.target = target;
+    var r = await api('POST', '/api/admin/notice', body);
+    if (r.data && r.data.success) {
+      var delivered = r.data.delivered;
+      document.getElementById('notice-result').innerHTML = '<span class="ok">Đã gửi tới ' + delivered + ' người đang online.</span>';
+      showMsg('Đã gửi tới ' + delivered + ' người đang online.');
+    } else {
+      document.getElementById('notice-result').innerHTML = '<span class="bad">' + esc(r.data && r.data.message || 'Gửi thất bại.') + ' (HTTP ' + r.status + ')</span>';
+      showMsg(r.data && r.data.message || 'Gửi thông báo thất bại.', false);
+    }
+  };
+
+  // ---- Config ----
+  async function loadConfig() {
+    var r = await api('GET', '/api/admin/config');
+    if (!r.data || !r.data.success) { showMsg(r.data && r.data.message || 'Không tải được cấu hình.', false); return; }
+    var c = r.data.config;
+    document.getElementById('cfg-maint').value = c.maintenance_mode ? 'true' : 'false';
+    document.getElementById('cfg-bonus').value = c.bonus_rate;
+    document.getElementById('cfg-eventtz').value = c.event_timezone || '';
+    document.getElementById('cfg-lor-exp').value = c.realms.lorencia.expRate;
+    document.getElementById('cfg-lor-drop').value = c.realms.lorencia.dropRate;
+    document.getElementById('cfg-lor-nonpk').checked = !!c.realms.lorencia.nonPk;
+    document.getElementById('cfg-nor-exp').value = c.realms.noria.expRate;
+    document.getElementById('cfg-nor-drop').value = c.realms.noria.dropRate;
+    document.getElementById('cfg-nor-nonpk').checked = !!c.realms.noria.nonPk;
+  }
+  window.saveConfig = async function () {
+    var body = { config: {
+      maintenance_mode: document.getElementById('cfg-maint').value === 'true',
+      bonus_rate: Number(document.getElementById('cfg-bonus').value),
+      'realms.lorencia': { expRate: Number(document.getElementById('cfg-lor-exp').value), dropRate: Number(document.getElementById('cfg-lor-drop').value), nonPk: document.getElementById('cfg-lor-nonpk').checked ? 1 : 0 },
+      'realms.noria': { expRate: Number(document.getElementById('cfg-nor-exp').value), dropRate: Number(document.getElementById('cfg-nor-drop').value), nonPk: document.getElementById('cfg-nor-nonpk').checked ? 1 : 0 }
+    } };
+    var tz = document.getElementById('cfg-eventtz').value.trim();
+    if (tz) body.config.event_timezone = tz;
+    var r = await api('POST', '/api/admin/config', body);
+    if (r.data && r.data.success) {
+      var hot = (r.data.changes || []).filter(function (c) { return c.applied === 'hot'; }).length;
+      var rr = (r.data.changes || []).filter(function (c) { return c.applied === 'requires_restart'; }).length;
+      showMsg('Đã lưu cấu hình. ' + hot + ' key có hiệu lực ngay' + (rr ? ', ' + rr + ' key realm cần RESTART server mới có hiệu lực.' : '.'));
+      loadConfig();
+    } else showMsg(r.data && r.data.message || 'Lưu cấu hình thất bại.', false);
+  };
+
+  // ---- Accounts ----
+  var accCache = {};
+  var accPage = 0;
+  var ACC_PAGE_SIZE = 20;
+  async function loadAccounts(page) {
+    if (typeof page === 'number' && page >= 0) accPage = page;
+    var q = document.getElementById('acc-q').value.trim();
+    var email = document.getElementById('acc-email').value.trim();
+    var filter = document.getElementById('acc-filter').value;
+    var qs = '/api/admin/accounts?limit=' + ACC_PAGE_SIZE + '&offset=' + (accPage * ACC_PAGE_SIZE);
+    if (q) qs += '&q=' + encodeURIComponent(q);
+    if (email) qs += '&email=' + encodeURIComponent(email);
+    if (filter === 'banned') qs += '&banned=true';
+    if (filter === 'admin') qs += '&is_admin=true';
+    var r = await api('GET', qs);
+    if (!r.data || !r.data.success) { showMsg(r.data && r.data.message || 'Không tải được tài khoản.', false); return; }
+    var total = r.data.total || 0;
+    var pages = Math.max(1, Math.ceil(total / ACC_PAGE_SIZE));
+    if (accPage > pages - 1) { accPage = pages - 1; return loadAccounts(); }
+    accCache = {};
+    var h = '<p class="note">Tổng: ' + total + ' tài khoản.</p><table><tr><th>ID</th><th>Tài khoản</th><th>Khóa</th><th>Tạo lúc</th><th>Hành động</th></tr>';
+    (r.data.accounts || []).forEach(function (a) {
+      accCache[a.id] = a;
+      var accNameHtml = esc(a.username);
+      if (a.is_admin) accNameHtml = '<span class="acc-admin-name">' + accNameHtml + '</span>';
+      if (a.email) accNameHtml += '<br><span class="note">' + esc(a.email) + '</span>';
+      h += '<tr><td title="' + esc(a.id) + '">' + esc(String(a.id).slice(0, 8)) + '</td><td>' + accNameHtml +
+        '</td><td>' + (a.banned ? '<span class="bad">Đã khóa</span>' : '—') + '</td><td>' + fmtDate(a.created_at) + '</td><td class="acc-act">' +
+        '<button class="btn ghost" onclick="showAccountChars(\'' + a.id + '\')">Nhân vật</button> ' +
+        '<button class="btn gold" onclick="showResetPwForm(\'' + a.id + '\')">Đặt lại MK</button>' +
+        '</td></tr>';
+    });
+    if (!(r.data.accounts || []).length) h += '<tr><td colspan="5" class="note">Không có tài khoản nào khớp bộ lọc.</td></tr>';
+    h += '</table>' +
+      '<div class="row"><button class="btn ghost" ' + (accPage <= 0 ? 'disabled' : '') + ' onclick="loadAccounts(' + (accPage - 1) + ')">← Trước</button>' +
+      '<span class="note">Trang ' + (accPage + 1) + ' / ' + pages + '</span>' +
+      '<button class="btn ghost" ' + (accPage >= pages - 1 ? 'disabled' : '') + ' onclick="loadAccounts(' + (accPage + 1) + ')">Sau →</button></div>';
+    document.getElementById('acc-list').innerHTML = h;
+  }
+  window.showAccountChars = async function (id) {
+    var a = accCache[id] || {};
+    var box = document.getElementById('acc-detail');
+    box.style.display = '';
+    box.innerHTML = '<p class="note">Đang tải nhân vật…</p>';
+    var r = await api('GET', '/api/admin/accounts/' + encodeURIComponent(id));
+    if (!r.data || !r.data.success) { box.innerHTML = '<p class="note">Không tải được nhân vật.</p>'; return; }
+    var chars = r.data.characters || [];
+    var h = '<h3>Nhân vật của ' + esc(a.username || r.data.account.username) + '</h3>';
+    if (!chars.length) { h += '<p class="note">Tài khoản chưa có nhân vật.</p>'; }
+    else {
+      h += '<table><tr><th>Nhân vật</th><th>Class</th><th>Level</th><th>Zen</th><th>Map</th><th>Tạo lúc</th></tr>';
+      chars.forEach(function (c) {
+        h += '<tr><td>' + esc(c.name) + '</td><td>' + esc(c.class_name || '') + '</td><td>' + c.level + '</td><td>' + Number(c.zen || 0).toLocaleString('vi-VN') + '</td><td>' + esc(c.map || '—') + '</td><td>' + fmtDate(c.created_at) + '</td></tr>';
+      });
+      h += '</table>';
+    }
+    box.innerHTML = h;
+    box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  };
+  window.showResetPwForm = function (id) {
+    var a = accCache[id] || {};
+    var box = document.getElementById('acc-ban-form');
+    box.style.display = 'block';
+    box.innerHTML = '<h3>Đặt lại mật khẩu — ' + esc(a.username || id) + '</h3>' +
+      '<div class="field"><label>Mật khẩu mới (3–9 ký tự)</label><input id="resetpw-new" type="text" placeholder="Mật khẩu mới…" style="width:100%" maxlength="9"></div>' +
+      '<div class="row"><button class="btn gold" onclick="submitResetPw(\'' + id + '\')">Đặt lại mật khẩu</button> ' +
+      '<button class="btn ghost" onclick="document.getElementById(\'acc-ban-form\').style.display=\'none\'">Hủy</button></div>' +
+      '<p class="note">Mật khẩu cũ mất hiệu lực ngay; người chơi phải dùng mật khẩu mới để đăng nhập game và web.</p>';
+    box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  };
+  window.submitResetPw = async function (id) {
+    var pw = (document.getElementById('resetpw-new').value || '').trim();
+    if (pw.length < 3 || pw.length > 9) { showMsg('Mật khẩu mới phải dài 3–9 ký tự.', false); return; }
+    if (!await confirmDlg('Đặt lại mật khẩu cho tài khoản này? Mật khẩu cũ mất hiệu lực ngay.')) return;
+    var r = await api('POST', '/api/admin/accounts/' + encodeURIComponent(id) + '/reset-password', { new_password: pw });
+    if (r.data && r.data.success) { showMsg(r.data.message || 'Đã đặt lại mật khẩu.'); document.getElementById('acc-ban-form').style.display = 'none'; loadAccounts(); }
+    else showMsg(r.data && r.data.message || 'Đặt lại mật khẩu thất bại.', false);
+  };
+  window.loadAccounts = loadAccounts;
+  // ---- Characters ----
+  var charPage = 0;
+  var CHAR_PAGE_SIZE = 20;
+  // Account data (IP, email, status) lives on the account, not the
+  // character: cache account_id -> account from the accounts endpoint
+  // (60s; Bach 2026-11-15). Used for the IP column and the detail view.
+  var accMap = null;
+  var accMapAt = 0;
+  async function ensureAccMap() {
+    if (accMap && Date.now() - accMapAt < 60000) return accMap;
+    var map = {};
+    var offset = 0;
+    var total = Infinity;
+    while (offset < total && offset < 1000) {
+      var r = await api('GET', '/api/admin/accounts?limit=200&offset=' + offset);
+      if (!r.data || !r.data.success) break;
+      total = r.data.total || 0;
+      var rows = r.data.accounts || [];
+      rows.forEach(function (a) { map[a.id] = a; });
+      offset += 200;
+      if (!rows.length) break;
+    }
+    accMap = map;
+    accMapAt = Date.now();
+    return map;
+  }
+  var charById = {};
+  var grantsOpen = false;
+  var CLASS_NAMES = { 0: 'DW', 16: 'DK', 32: 'Elf', 48: 'MG', 64: 'DL', 80: 'SU', 96: 'RF' };
+  async function loadCharacters(page) {
+    if (typeof page === 'number' && page >= 0) charPage = page;
+    var q = document.getElementById('char-q').value.trim();
+    var account = document.getElementById('char-account').value.trim();
+    var cls = document.getElementById('char-class').value;
+    var qs = '/api/admin/characters?limit=' + CHAR_PAGE_SIZE + '&offset=' + (charPage * CHAR_PAGE_SIZE);
+    if (q) qs += '&q=' + encodeURIComponent(q);
+    if (account) qs += '&account=' + encodeURIComponent(account);
+    if (cls !== '') qs += '&class_code=' + encodeURIComponent(cls);
+    var r = await api('GET', qs);
+    if (!r.data || !r.data.success) { showMsg(r.data && r.data.message || 'Không tải được nhân vật.', false); return; }
+    var total = r.data.total || 0;
+    var pages = Math.max(1, Math.ceil(total / CHAR_PAGE_SIZE));
+    if (charPage > pages - 1) { charPage = pages - 1; return loadCharacters(); }
+    await ensureAccMap();
+    charById = {};
+    var det0 = document.getElementById('char-detail');
+    if (det0) { det0.style.display = 'none'; det0.innerHTML = ''; }
+    var lc0 = document.getElementById('char-list-card');
+    if (lc0) lc0.style.display = '';
+    var h = '<p class="note">Tổng: ' + total + ' nhân vật.</p>' +
+      '<table><tr><th>Nhân vật</th><th>Tài khoản</th><th>Class</th><th>Level</th><th>Zen</th><th>Map</th><th>Tạo lúc</th></tr>';
+    (r.data.characters || []).forEach(function (c) {
+      charById[c.id] = c;
+      h += '<tr class="char-row" onclick="openCharDetail(\'' + c.id + '\')"><td>' + esc(c.name) + '</td><td>' + esc(c.account_username) + '</td><td>' + (CLASS_NAMES[c.class_code] != null ? CLASS_NAMES[c.class_code] : c.class_code) +
+        '</td><td>' + c.level + '</td><td>' + Number(c.zen || 0).toLocaleString('vi-VN') + '</td><td>' + esc(c.map || '—') + '</td><td>' + fmtDate(c.created_at) + '</td></tr>';
+    });
+    if (!(r.data.characters || []).length) h += '<tr><td colspan="7" class="note">Không có nhân vật nào khớp bộ lọc.</td></tr>';
+    h += '</table>' +
+      '<div class="row"><button class="btn ghost" ' + (charPage <= 0 ? 'disabled' : '') + ' onclick="loadCharacters(' + (charPage - 1) + ')">← Trước</button>' +
+      '<span class="note">Trang ' + (charPage + 1) + ' / ' + pages + '</span>' +
+      '<button class="btn ghost" ' + (charPage >= pages - 1 ? 'disabled' : '') + ' onclick="loadCharacters(' + (charPage + 1) + ')">Sau →</button></div>';
+    document.getElementById('char-list').innerHTML = h;
+  }
+  window.loadCharacters = loadCharacters;
+  window.openCharDetail = function (id) {
+    var c = charById[id];
+    if (!c) return;
+    var a = (accMap && accMap[c.account_id]) || {};
+    var className = CLASS_NAMES[c.class_code] != null ? CLASS_NAMES[c.class_code] : ('Class ' + c.class_code);
+    var accName = a.username || c.account_username || '';
+    var status = [];
+    if (a.is_admin) status.push('Admin');
+    if (a.banned) status.push('Đã khóa');
+    if (!status.length) status.push('Bình thường');
+    function stat(num, lbl, small) {
+      return '<div class="stat"><div class="num"' + (small ? ' style="font-size:21px"' : '') + '>' + num + '</div><div class="lbl">' + lbl + '</div></div>';
+    }
+    function meta(label, value) {
+      return '<div><label>' + label + '</label><span>' + value + '</span></div>';
+    }
+    var h = '<div class="card">' +
+      '<div class="row"><button class="btn ghost" onclick="closeCharDetail()">← Quay lại danh sách</button></div>' +
+      '<div class="acc-head">' +
+        '<div class="acc-avatar">' + esc((c.name || '?').charAt(0).toUpperCase()) + '</div>' +
+        '<div class="acc-name"><b style="font-size:20px">' + esc(c.name) + '</b><span class="acc-id">#' + c.id + '</span></div>' +
+        '<div class="acc-pills">' +
+          '<span class="pill acc-admin">' + esc(className) + '</span>' +
+        '</div>' +
+      '</div></div>' +
+      '<div class="card"><h2>Thông tin nhân vật</h2><div class="grid stat-compact">' +
+        stat(c.level, 'Level') +
+        stat(Number(c.exp || 0).toLocaleString('vi-VN'), 'EXP', true) +
+        stat(Number(c.zen || 0).toLocaleString('vi-VN'), 'Zen', true) +
+        stat(c.points, 'Point') +
+      '</div></div>' +
+      '<div class="card"><h2>Vị trí & hoạt động</h2><div class="acc-meta acc-meta-flat">' +
+        meta('Map', c.map ? esc(c.map) : '—') +
+        meta('Tọa độ', c.x == null ? '—' : c.x + ', ' + c.y) +
+        meta('Tạo lúc', fmtDate(c.created_at)) +
+      '</div></div>' +
+      '<div class="card"><h2>Tài khoản sở hữu</h2><div class="acc-meta acc-meta-flat">' +
+        meta('Email', esc(a.email || accName || '—')) +
+        meta('Tên tài khoản', esc(accName || '—')) +
+        meta('Trạng thái', status.join(' · ')) +
+        meta('Tạo tài khoản', fmtDate(a.created_at)) +
+      '</div>' +
+      '<div class="row"><button class="btn" onclick="gotoAccount(\'' + c.account_id + '\')">Xem trong tab Tài khoản</button></div></div>';
+    var det = document.getElementById('char-detail');
+    det.innerHTML = h;
+    det.style.display = '';
+    document.getElementById('char-list-card').style.display = 'none';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+  window.closeCharDetail = function () {
+    var det = document.getElementById('char-detail');
+    det.style.display = 'none';
+    det.innerHTML = '';
+    document.getElementById('char-list-card').style.display = '';
+  };
+  window.gotoAccount = function (accountId) {
+    var a = (accMap && accMap[accountId]) || {};
+    switchTab('accounts');
+    if (a.username) document.getElementById('acc-q').value = a.username;
+    loadAccounts(0);
+  };
+  window.toggleGrants = function () {
+    var body = document.getElementById('grant-body');
+    var chev = document.getElementById('grant-chev');
+    if (!body) return;
+    var willOpen = body.style.display === 'none';
+    body.style.display = willOpen ? '' : 'none';
+    grantsOpen = willOpen;
+    if (chev) chev.textContent = willOpen ? '▾ Thu gọn' : '▸ Mở';
+  };
+  function grantAmount(inputId) {
+    var el = document.getElementById(inputId);
+    var v = el ? parseInt(el.value, 10) : NaN;
+    return isFinite(v) && v > 0 ? v : null;
+  }
+  async function refreshCharDetail(id) {
+    await loadCharacters(charPage);
+    if (charById[id]) openCharDetail(id);
+  }
+  window.grantZen = async function (id) {
+    var amount = grantAmount('grant-zen');
+    if (!amount) { showMsg('Nhập số Zen hợp lệ (lớn hơn 0).', false); return; }
+    var r = await api('POST', '/api/admin/characters/' + id + '/give-zen', { amount: amount });
+    if (r.data && r.data.success) { showMsg('Đã tặng ' + amount.toLocaleString('vi-VN') + ' Zen.'); refreshCharDetail(id); }
+    else showMsg((r.data && (r.data.message || r.data.error)) || 'Tặng Zen thất bại.', false);
+  };
+  window.grantPoints = async function (id) {
+    var amount = grantAmount('grant-points');
+    if (!amount) { showMsg('Nhập số point hợp lệ (lớn hơn 0).', false); return; }
+    var r = await api('POST', '/api/admin/characters/' + id + '/give-points', { points: amount });
+    if (r.data && r.data.success) { showMsg('Đã tặng ' + amount.toLocaleString('vi-VN') + ' point.'); refreshCharDetail(id); }
+    else showMsg((r.data && (r.data.message || r.data.error)) || 'Tặng point thất bại.', false);
+  };
+  window.grantLevel = async function (id) {
+    var amount = grantAmount('grant-level');
+    if (!amount) { showMsg('Nhập số level hợp lệ (lớn hơn 0).', false); return; }
+    var c = charById[id];
+    if (!c) return;
+    var target = Number(c.level || 0) + amount;
+    var clamped = false;
+    if (target > 400) { target = 400; clamped = true; }
+    var r = await api('PATCH', '/api/admin/characters/' + id, { level: target });
+    if (r.data && r.data.success) { showMsg('Đã đặt level = ' + target + (clamped ? ' (trần tối đa 400)' : '') + '.'); refreshCharDetail(id); }
+    else showMsg((r.data && (r.data.message || r.data.error)) || 'Tặng level thất bại.', false);
+  };
+  window.grantResets = async function (id) {
+    var amount = grantAmount('grant-resets');
+    if (!amount) { showMsg('Nhập số reset hợp lệ (lớn hơn 0).', false); return; }
+    var c = charById[id];
+    if (!c) return;
+    var target = Number(c.resets || 0) + amount;
+    var clamped = false;
+    if (target > 999) { target = 999; clamped = true; }
+    var r = await api('PATCH', '/api/admin/characters/' + id, { resets: target });
+    if (r.data && r.data.success) { showMsg('Đã đặt reset = ' + target + (clamped ? ' (trần tối đa 999)' : '') + '.'); refreshCharDetail(id); }
+    else showMsg((r.data && (r.data.message || r.data.error)) || 'Tặng reset thất bại.', false);
+  };
+  // ---- Change class + view items + grant to vault (2026-11-15) ----
+  var CLASS_LABEL_FULL = { 0: 'Dark Wizard', 16: 'Dark Knight', 32: 'Elf', 48: 'Magic Gladiator' };
+  window.changeClass = async function (id) {
+    var c = charById[id];
+    if (!c) return;
+    var sel = document.getElementById('grant-class');
+    var code = sel ? parseInt(sel.value, 10) : NaN;
+    if (!isFinite(code) || [0, 16, 32, 48].indexOf(code) < 0) { showMsg('Chọn class hợp lệ (DW / DK / Elf / MG).', false); return; }
+    if (code === Number(c.class_code)) { showMsg('Nhân vật đã là ' + (CLASS_LABEL_FULL[code] || code) + ' rồi.', false); return; }
+    var oldName = CLASS_LABEL_FULL[Number(c.class_code)] || ('Class ' + c.class_code);
+    var newName = CLASS_LABEL_FULL[code] || ('Class ' + code);
+    if (!await confirmDlg('ĐỔI CLASS cho ' + c.name + '?\n\nTừ: ' + oldName + '\nSang: ' + newName + '\n\nStat (STR/AGI/VIT/ENE) sẽ về base của class mới, toàn bộ điểm đã kiếm được hoàn lại thành Point để cộng lại. Level / EXP / Zen / Reset không đổi.\n\nNhân vật phải đang offline.')) return;
+    var r = await api('POST', '/api/admin/characters/' + id + '/change-class', { class_code: code });
+    if (r.data && r.data.success) { showMsg('Đã đổi class sang ' + newName + ' — Point mới: ' + r.data.new_lup + '.'); refreshCharDetail(id); }
+    else showMsg((r.data && (r.data.message || r.data.error)) || 'Đổi class thất bại.', false);
+  };
+  // ---- Item names + icons + tooltip (2026-11-15) ----
+  // ITEM_INFO: "section_index" -> [name, skillId?] — names from the LIVE
+  // server's Item.txt (drop-investigate-20261113/live/Item.txt, 309 items).
+  // Skill id from Item.txt's Skill column (0 = no skill). An item not in
+  // this map falls back to "section-index" in the tooltip (never invented).
+var ITEM_INFO = {
+    '0_0':['Kris'],
+    '0_1':['Short Sword'],
+    '0_2':['Rapier'],
+    '0_3':['Katana',20],
+    '0_4':['Sword of Assassin',21],
+    '0_5':['Blade',22],
+    '0_6':['Gladius',20],
+    '0_7':['Falchion',21],
+    '0_8':['Serpent Sword',21],
+    '0_9':['Sword of Salamander',20],
+    '0_10':['Light Saber',22],
+    '0_11':['Legendary Sword',20],
+    '0_12':['Heliacal Sword',19],
+    '0_13':['Double Blade',22],
+    '0_14':['Lightning Sword',22],
+    '0_15':['Giant Sword',23],
+    '0_16':['Sword of Destruction',22],
+    '0_17':['Dark Breaker',23],
+    '0_18':['Thunder Blade',23],
+    '0_19':['Divine Sword of Archangel',22],
+    '0_20':['Knight Blade',22],
+    '0_21':['Double Blunt Sword',56],
+    '0_31':['Rune Blade',56],
+    '1_0':['Small Axe'],
+    '1_1':['Hand Axe'],
+    '1_2':['Double Axe',19],
+    '1_3':['Tomahawk',19],
+    '1_4':['Elven Axe'],
+    '1_5':['Battle Axe',19],
+    '1_6':['Nikea Axe',19],
+    '1_7':['Larkan Axe',19],
+    '1_8':['Crescent Axe',19],
+    '2_0':['Mace'],
+    '2_1':['Morning Star',19],
+    '2_2':['Flail'],
+    '2_3':['Great Hammer',19],
+    '2_4':['Crystal Morning Star',19],
+    '2_5':['Crystal Sword',23],
+    '2_6':['Chaos Dragon Axe',23],
+    '2_7':['Elemental Mace'],
+    '2_8':['Skeleton Mace'],
+    '2_9':['Slayer\'s Mace',19],
+    '2_10':['Stalker\'s Mace',19],
+    '2_11':['Mace of Gimli',19],
+    '2_12':['Phantom Mace'],
+    '2_13':['Mace of the King',19],
+    '3_0':['Light Spear',22],
+    '3_1':['Spear'],
+    '3_2':['Dragon Lance'],
+    '3_3':['Giant Trident'],
+    '3_4':['Serpent Spear',20],
+    '3_5':['Double Poleaxe'],
+    '3_6':['Halberd'],
+    '3_7':['Berdysh',22],
+    '3_8':['Great Scythe',22],
+    '3_9':['Bill of Balrog',22],
+    '3_10':['Dragon Spear',22],
+    '4_0':['Short Bow',24],
+    '4_1':['Bow',24],
+    '4_2':['Elven Bow',24],
+    '4_3':['Battle Bow',24],
+    '4_4':['Tiger Bow',24],
+    '4_5':['Silver Bow',24],
+    '4_6':['Chaos Nature Bow',24],
+    '4_7':['Bolts'],
+    '4_8':['Crossbow',24],
+    '4_9':['Golden Crossbow',24],
+    '4_10':['Arquebus',24],
+    '4_11':['Light Crossbow',24],
+    '4_12':['Serpent Crossbow',24],
+    '4_13':['Bluewing Crossbow',24],
+    '4_14':['Aquagold Crossbow',24],
+    '4_15':['Arrows'],
+    '4_16':['Saint Crossbow',24],
+    '4_17':['Celestial Bow',24],
+    '4_18':['Divine Crossbow of Archangel',24],
+    '5_0':['Skull Staff'],
+    '5_1':['Angelic Staff'],
+    '5_2':['Serpent Staff'],
+    '5_3':['Thunder Staff'],
+    '5_4':['Gorgon Staff'],
+    '5_5':['Legendary Staff'],
+    '5_6':['Staff of Resurrection'],
+    '5_7':['Chaos Lightning Staff'],
+    '5_8':['Staff of Destruction'],
+    '5_9':['Dragon Soul Staff'],
+    '5_10':['Divine Staff of Archangel'],
+    '5_11':['Kundun Staff'],
+    '6_0':['Small Shield'],
+    '6_1':['Horn Shield'],
+    '6_2':['Kite Shield'],
+    '6_3':['Elven Shield'],
+    '6_4':['Buckler',18],
+    '6_5':['Dragon Slayer Shield',18],
+    '6_6':['Skull Shield',18],
+    '6_7':['Spiked Shield',18],
+    '6_8':['Tower Shield',18],
+    '6_9':['Plate Shield',18],
+    '6_10':['Large Round Shield',18],
+    '6_11':['Serpent Shield',18],
+    '6_12':['Bronze Shield',18],
+    '6_13':['Dragon Shield',18],
+    '6_14':['Legendary Shield'],
+    '6_15':['Grand Soul Shield'],
+    '6_16':['Elemental Shield'],
+    '7_0':['Bronze Helm'],
+    '7_1':['Dragon Helm'],
+    '7_2':['Pad Helm'],
+    '7_3':['Legendary Helm'],
+    '7_4':['Bone Helm'],
+    '7_5':['Leather Helm'],
+    '7_6':['Scale Helm'],
+    '7_7':['Sphinx Helm'],
+    '7_8':['Brass Helm'],
+    '7_9':['Plate Helm'],
+    '7_10':['Vine Helm'],
+    '7_11':['Silk Helm'],
+    '7_12':['Wind Helm'],
+    '7_13':['Spirit Helm'],
+    '7_14':['Guardian Helm'],
+    '7_16':['Black Dragon Helm'],
+    '7_17':['Dark Phoenix Helm'],
+    '7_18':['Grand Soul Helm'],
+    '7_19':['Divine Helm'],
+    '7_21':['Great Dragon Helm'],
+    '7_22':['Dark Side Helm'],
+    '7_24':['Nature Helmet'],
+    '7_26':['Storm Mask'],
+    '8_0':['Bronze Armor'],
+    '8_1':['Dragon Armor'],
+    '8_2':['Pad Armor'],
+    '8_3':['Legendary Armor'],
+    '8_4':['Bone Armor'],
+    '8_5':['Leather Armor'],
+    '8_6':['Scale Armor'],
+    '8_7':['Sphinx Armor'],
+    '8_8':['Brass Armor'],
+    '8_9':['Plate Armor'],
+    '8_10':['Vine Armor'],
+    '8_11':['Silk Armor'],
+    '8_12':['Wind Armor'],
+    '8_13':['Spirit Armor'],
+    '8_14':['Guardian Armor'],
+    '8_15':['Storm Crow Armor'],
+    '8_16':['Black Dragon Armor'],
+    '8_17':['Dark Phoenix Armor'],
+    '8_18':['Grand Soul Armor'],
+    '8_19':['Divine Armor'],
+    '8_20':['Thunder Hawk Armor'],
+    '8_21':['Great Dragon Armor'],
+    '8_22':['Dark Side Armor'],
+    '8_23':['Hurricane Armor'],
+    '8_24':['Nature Armor'],
+    '8_26':['Storm Armor'],
+    '9_0':['Bronze Pants'],
+    '9_1':['Dragon Pants'],
+    '9_2':['Pad Pants'],
+    '9_3':['Legendary Pants'],
+    '9_4':['Bone Pants'],
+    '9_5':['Leather Pants'],
+    '9_6':['Scale Pants'],
+    '9_7':['Sphinx Pants'],
+    '9_8':['Brass Pants'],
+    '9_9':['Plate Pants'],
+    '9_10':['Vine Pants'],
+    '9_11':['Silk Pants'],
+    '9_12':['Wind Pants'],
+    '9_13':['Spirit Pants'],
+    '9_14':['Guardian Pants'],
+    '9_15':['Storm Crow Pants'],
+    '9_16':['Black Dragon Pants'],
+    '9_17':['Dark Phoenix Pants'],
+    '9_18':['Grand Soul Pants'],
+    '9_19':['Divine Pants'],
+    '9_20':['Thunder Hawk Pants'],
+    '9_21':['Great Dragon Pants'],
+    '9_22':['Dark Side Pants'],
+    '9_23':['Hurricane Pants'],
+    '9_24':['Nature Pants'],
+    '9_26':['Storm Pants'],
+    '10_0':['Bronze Gloves'],
+    '10_1':['Dragon Gloves'],
+    '10_2':['Pad Gloves'],
+    '10_3':['Legendary Gloves'],
+    '10_4':['Bone Gloves'],
+    '10_5':['Leather Gloves'],
+    '10_6':['Scale Gloves'],
+    '10_7':['Sphinx Gloves'],
+    '10_8':['Brass Gloves'],
+    '10_9':['Plate Gloves'],
+    '10_10':['Vine Gloves'],
+    '10_11':['Silk Gloves'],
+    '10_12':['Wind Gloves'],
+    '10_13':['Spirit Gloves'],
+    '10_14':['Guardian Gloves'],
+    '10_15':['Storm Crow Gloves'],
+    '10_16':['Black Dragon Gloves'],
+    '10_17':['Dark Phoenix Gloves'],
+    '10_18':['Grand Soul Gloves'],
+    '10_19':['Divine Gloves'],
+    '10_20':['Thunder Hawk Gloves'],
+    '10_21':['Great Dragon Gloves'],
+    '10_22':['Dark Side Gloves'],
+    '10_23':['Hurricane Gloves'],
+    '10_24':['Nature Gloves'],
+    '10_26':['Storm Gloves'],
+    '11_0':['Bronze Boots'],
+    '11_1':['Dragon Boots'],
+    '11_2':['Pad Boots'],
+    '11_3':['Legendary Boots'],
+    '11_4':['Bone Boots'],
+    '11_5':['Leather Boots'],
+    '11_6':['Scale Boots'],
+    '11_7':['Sphinx Boots'],
+    '11_8':['Brass Boots'],
+    '11_9':['Plate Boots'],
+    '11_10':['Vine Boots'],
+    '11_11':['Silk Boots'],
+    '11_12':['Wind Boots'],
+    '11_13':['Spirit Boots'],
+    '11_14':['Guardian Boots'],
+    '11_15':['Storm Crow Boots'],
+    '11_16':['Black Dragon Boots'],
+    '11_17':['Dark Phoenix Boots'],
+    '11_18':['Grand Soul Boots'],
+    '11_19':['Divine Boots'],
+    '11_20':['Thunder Hawk Boots'],
+    '11_21':['Great Dragon Boots'],
+    '11_22':['Dark Side Boots'],
+    '11_23':['Hurricane Boots'],
+    '11_24':['Nature Boots'],
+    '11_26':['Storm Boots'],
+    '12_0':['Wings of Elf'],
+    '12_1':['Wings of Heaven'],
+    '12_2':['Wings of Satan'],
+    '12_3':['Wings of Spirits'],
+    '12_4':['Wings of Soul'],
+    '12_5':['Wings of Dragon'],
+    '12_6':['Wings of Darkness'],
+    '12_7':['Orb of Twisting Slash'],
+    '12_8':['Healing Orb'],
+    '12_9':['Orb of Greater Defense'],
+    '12_10':['Orb of Greater Damage'],
+    '12_11':['Orb of Summoning'],
+    '12_12':['Orb of Rageful Blow'],
+    '12_13':['Orb of Impale'],
+    '12_14':['Orb of Greater Fortitude'],
+    '12_15':['Jewel of Chaos'],
+    '12_16':['Orb of Fire Slash'],
+    '12_17':['Orb of Penetration'],
+    '12_18':['Orb of Ice Arrow'],
+    '12_19':['Orb of Death Stab'],
+    '13_0':['Guardian Angel'],
+    '13_1':['Imp'],
+    '13_2':['Horn of Uniria'],
+    '13_3':['Horn of Dinorant',49],
+    '13_8':['Ring of Ice'],
+    '13_9':['Ring of Poison'],
+    '13_10':['Transformation Ring'],
+    '13_12':['Pendant of Lightning'],
+    '13_13':['Pendant of Fire'],
+    '13_14':['Loch\'s Feather'],
+    '13_15':['Fruit'],
+    '13_16':['Scroll of Archangel'],
+    '13_17':['Blood Bone'],
+    '13_18':['Cloak of Invisibility'],
+    '13_19':['Divine Weapon of Archangel'],
+    '14_0':['Apple'],
+    '14_1':['Small Healing Potion'],
+    '14_2':['Medium Healing Potion'],
+    '14_3':['Large Healing Potion'],
+    '14_4':['Small Mana Potion'],
+    '14_5':['Medium Mana Potion'],
+    '14_6':['Large Mana Potion'],
+    '14_8':['Antidote'],
+    '14_9':['Ale'],
+    '14_10':['Town Portal Scroll'],
+    '14_11':['Box of Luck'],
+    '14_12':['Heart'],
+    '14_13':['Jewel of Bless'],
+    '14_14':['Jewel of Soul'],
+    '14_15':['Zen'],
+    '14_16':['Jewel of Life'],
+    '14_17':['Devil\'s Eye'],
+    '14_18':['Devil\'s Key'],
+    '14_19':['Devil\'s Invitation'],
+    '14_20':['Remedy of Love'],
+    '14_21':['Rena'],
+    '14_22':['Jewel of Creation'],
+    '14_23':['Scroll of Emperor'],
+    '14_24':['Broken Sword'],
+    '14_25':['Tear of Elf'],
+    '14_26':['Soul Shard of Wizard'],
+    '15_0':['Scroll of Poison'],
+    '15_1':['Scroll of Meteorite'],
+    '15_2':['Scroll of Lightning'],
+    '15_3':['Scroll of Fire Ball'],
+    '15_4':['Scroll of Flame'],
+    '15_5':['Scroll of Teleport'],
+    '15_6':['Scroll of Ice'],
+    '15_7':['Scroll of Twister'],
+    '15_8':['Scroll of Evil Spirit'],
+    '15_9':['Scroll of Hellfire'],
+    '15_10':['Scroll of Power Wave'],
+    '15_11':['Scroll of Aqua Beam'],
+    '15_12':['Scroll of Cometfall'],
+    '15_13':['Scroll of Inferno'],
+    '15_14':['Scroll of Teleport Ally'],
+    '15_15':['Scroll of Soul Barrier']
+  };
+  // Item images (images/item_icons/): 276 .jpg from kayitoEditor Data/Items
+  // + a user-made Zen coin 14/15.jpg + user-made transparent PNGs: Knight
+  // Blade 0/20.png and the full Great Dragon set 7/21, 8/21, 9/21, 10/21,
+  // 11/21.png. 27 of our 309 items have no image (1 the user is finding:
+  // Mace of the King 2/8 + 26 server-only items) — those show text.
+    var ITEM_ICONS = { '0_0':1, '0_1':1, '0_2':1, '0_3':1, '0_4':1, '0_5':1, '0_6':1, '0_7':1, '0_8':1, '0_9':1, '0_10':1, '0_11':1, '0_12':1, '0_13':1, '0_14':1, '0_15':1, '0_16':1, '0_17':1, '0_18':1, '0_19':1, '0_31':1, '1_0':1, '1_1':1, '1_2':1, '1_3':1, '1_4':1, '1_5':1, '1_6':1, '1_7':1, '1_8':1, '2_0':1, '2_1':1, '2_2':1, '2_3':1, '2_4':1, '2_5':1, '2_6':1, '2_7':1, '3_0':1, '3_1':1, '3_2':1, '3_3':1, '3_4':1, '3_5':1, '3_6':1, '3_7':1, '3_8':1, '3_9':1, '3_10':1, '4_0':1, '4_1':1, '4_2':1, '4_3':1, '4_4':1, '4_5':1, '4_6':1, '4_7':1, '4_8':1, '4_9':1, '4_10':1, '4_11':1, '4_12':1, '4_13':1, '4_14':1, '4_15':1, '4_16':1, '4_17':1, '4_18':1, '5_0':1, '5_1':1, '5_2':1, '5_3':1, '5_4':1, '5_5':1, '5_6':1, '5_7':1, '5_8':1, '5_9':1, '5_10':1, '6_0':1, '6_1':1, '6_2':1, '6_3':1, '6_4':1, '6_5':1, '6_6':1, '6_7':1, '6_8':1, '6_9':1, '6_10':1, '6_11':1, '6_12':1, '6_13':1, '6_14':1, '6_15':1, '6_16':1, '7_0':1, '7_1':1, '7_2':1, '7_3':1, '7_4':1, '7_5':1, '7_6':1, '7_7':1, '7_8':1, '7_9':1, '7_10':1, '7_11':1, '7_12':1, '7_13':1, '7_14':1, '7_16':1, '7_17':1, '7_18':1, '7_19':1, '8_0':1, '8_1':1, '8_2':1, '8_3':1, '8_4':1, '8_5':1, '8_6':1, '8_7':1, '8_8':1, '8_9':1, '8_10':1, '8_11':1, '8_12':1, '8_13':1, '8_14':1, '8_15':1, '8_16':1, '8_17':1, '8_18':1, '8_19':1, '8_20':1, '9_0':1, '9_1':1, '9_2':1, '9_3':1, '9_4':1, '9_5':1, '9_6':1, '9_7':1, '9_8':1, '9_9':1, '9_10':1, '9_11':1, '9_12':1, '9_13':1, '9_14':1, '9_15':1, '9_16':1, '9_17':1, '9_18':1, '9_19':1, '9_20':1, '10_0':1, '10_1':1, '10_2':1, '10_3':1, '10_4':1, '10_5':1, '10_6':1, '10_7':1, '10_8':1, '10_9':1, '10_10':1, '10_11':1, '10_12':1, '10_13':1, '10_14':1, '10_15':1, '10_16':1, '10_17':1, '10_18':1, '10_19':1, '10_20':1, '11_0':1, '11_1':1, '11_2':1, '11_3':1, '11_4':1, '11_5':1, '11_6':1, '11_7':1, '11_8':1, '11_9':1, '11_10':1, '11_11':1, '11_12':1, '11_13':1, '11_14':1, '11_15':1, '11_16':1, '11_17':1, '11_18':1, '11_19':1, '11_20':1, '12_0':1, '12_1':1, '12_2':1, '12_3':1, '12_4':1, '12_5':1, '12_6':1, '12_7':1, '12_8':1, '12_9':1, '12_10':1, '12_11':1, '12_12':1, '12_13':1, '12_14':1, '12_15':1, '12_16':1, '12_17':1, '12_18':1, '12_19':1, '13_0':1, '13_1':1, '13_2':1, '13_3':1, '13_8':1, '13_9':1, '13_10':1, '13_12':1, '13_13':1, '13_14':1, '13_15':1, '13_16':1, '13_17':1, '13_18':1, '13_19':1, '14_0':1, '14_1':1, '14_2':1, '14_3':1, '14_4':1, '14_5':1, '14_6':1, '14_8':1, '14_9':1, '14_10':1, '14_11':1, '14_12':1, '14_13':1, '14_14':1, '14_15':1, '14_16':1, '14_17':1, '14_18':1, '14_19':1, '14_20':1, '14_21':1, '14_22':1, '14_23':1, '14_24':1, '14_25':1, '14_26':1, '15_0':1, '15_1':1, '15_2':1, '15_3':1, '15_4':1, '15_5':1, '15_6':1, '15_7':1, '15_8':1, '15_9':1, '15_10':1, '15_11':1, '15_12':1, '15_13':1, '15_14':1, '15_15':1 };
+  // PNG images (transparent, user-provided). Lookup order for an item
+  // is .jpg first (ITEM_ICONS), then .png (ITEM_ICON_PNG); the <img> also
+  // falls back at runtime via itemImgErr if the file is missing.
+  var ITEM_ICON_PNG = { '0_20': 1, '0_21': 1, '2_8': 1, '2_9': 1, '2_10': 1, '2_11': 1, '2_12': 1, '2_13': 1, '5_11': 1, '7_21': 1, '7_22': 1, '7_24': 1, '7_26': 1, '8_21': 1, '8_22': 1, '8_23': 1, '8_24': 1, '8_26': 1, '9_21': 1, '9_22': 1, '9_23': 1, '9_24': 1, '9_26': 1, '10_21': 1, '10_22': 1, '10_23': 1, '10_24': 1, '10_26': 1, '11_21': 1, '11_22': 1, '11_23': 1, '11_24': 1, '11_26': 1 };
+  // Item inventory size [width, height] in cells, from OUR server Item.txt
+  // (fields Width/Height). Only non-1x1 items are listed; anything
+  // missing here is 1x1 (jewels, potions, ...). Used by renderItemGrid
+  // so boots/pants render 2x2, armor 2x3, swords 1x3/2x4... like in game.
+  var ITEM_SIZE = {"0_0":[1,2],"0_1":[1,3],"0_2":[1,3],"0_3":[1,3],"0_4":[1,3],"0_5":[1,3],"0_6":[1,3],"0_7":[1,3],"0_8":[1,3],"0_9":[2,3],"0_10":[2,4],"0_11":[2,3],"0_12":[2,3],"0_13":[1,3],"0_14":[1,3],"0_15":[2,3],"0_16":[1,4],"0_17":[2,4],"0_18":[2,3],"0_19":[1,4],"0_20":[1,4],"0_21":[2,4],"0_31":[2,4],"1_0":[1,3],"1_1":[1,3],"1_2":[1,3],"1_3":[1,3],"1_4":[1,3],"1_5":[2,3],"1_6":[2,3],"1_7":[2,3],"1_8":[2,3],"2_0":[1,3],"2_1":[1,3],"2_2":[1,3],"2_3":[2,3],"2_4":[2,3],"2_5":[2,4],"2_6":[2,4],"2_7":[1,3],"2_8":[1,3],"2_9":[1,3],"2_10":[1,3],"2_11":[1,3],"2_12":[1,4],"2_13":[1,3],"3_0":[2,4],"3_1":[2,4],"3_2":[2,4],"3_3":[2,4],"3_4":[2,4],"3_5":[2,4],"3_6":[2,4],"3_7":[2,4],"3_8":[2,4],"3_9":[2,4],"3_10":[2,4],"4_0":[2,3],"4_1":[2,3],"4_2":[2,3],"4_3":[2,3],"4_4":[2,4],"4_5":[2,4],"4_6":[2,4],"4_8":[2,2],"4_9":[2,2],"4_10":[2,2],"4_11":[2,3],"4_12":[2,3],"4_13":[2,3],"4_14":[2,3],"4_16":[2,4],"4_17":[2,4],"4_18":[2,3],"5_0":[1,3],"5_1":[2,3],"5_2":[2,3],"5_3":[2,4],"5_4":[2,4],"5_5":[1,4],"5_6":[1,4],"5_7":[2,4],"5_8":[2,4],"5_9":[1,4],"5_10":[1,4],"5_11":[1,4],"6_0":[2,2],"6_1":[2,2],"6_2":[2,2],"6_3":[2,2],"6_4":[2,2],"6_5":[2,2],"6_6":[2,2],"6_7":[2,2],"6_8":[2,2],"6_9":[2,2],"6_10":[2,2],"6_11":[2,2],"6_12":[2,2],"6_13":[2,2],"6_14":[2,3],"6_15":[2,3],"6_16":[2,2],"7_0":[2,2],"7_1":[2,2],"7_2":[2,2],"7_3":[2,2],"7_4":[2,2],"7_5":[2,2],"7_6":[2,2],"7_7":[2,2],"7_8":[2,2],"7_9":[2,2],"7_10":[2,2],"7_11":[2,2],"7_12":[2,2],"7_13":[2,2],"7_14":[2,2],"7_16":[2,2],"7_17":[2,2],"7_18":[2,2],"7_19":[2,2],"7_21":[2,2],"7_22":[2,2],"7_24":[2,2],"7_26":[2,2],"8_0":[2,2],"8_1":[2,3],"8_2":[2,2],"8_3":[2,2],"8_4":[2,2],"8_5":[2,3],"8_6":[2,2],"8_7":[2,3],"8_8":[2,2],"8_9":[2,2],"8_10":[2,2],"8_11":[2,2],"8_12":[2,2],"8_13":[2,2],"8_14":[2,2],"8_15":[2,3],"8_16":[2,3],"8_17":[2,3],"8_18":[2,3],"8_19":[2,2],"8_20":[2,3],"8_21":[2,3],"8_22":[2,3],"8_23":[2,3],"8_24":[2,2],"8_26":[2,3],"9_0":[2,2],"9_1":[2,2],"9_2":[2,2],"9_3":[2,2],"9_4":[2,2],"9_5":[2,2],"9_6":[2,2],"9_7":[2,2],"9_8":[2,2],"9_9":[2,2],"9_10":[2,2],"9_11":[2,2],"9_12":[2,2],"9_13":[2,2],"9_14":[2,2],"9_15":[2,2],"9_16":[2,2],"9_17":[2,2],"9_18":[2,2],"9_19":[2,2],"9_20":[2,2],"9_21":[2,2],"9_22":[2,2],"9_23":[2,2],"9_24":[2,2],"9_26":[2,2],"10_0":[2,2],"10_1":[2,2],"10_2":[2,2],"10_3":[2,2],"10_4":[2,2],"10_5":[2,2],"10_6":[2,2],"10_7":[2,2],"10_8":[2,2],"10_9":[2,2],"10_10":[2,2],"10_11":[2,2],"10_12":[2,2],"10_13":[2,2],"10_14":[2,2],"10_15":[2,2],"10_16":[2,2],"10_17":[2,2],"10_18":[2,2],"10_19":[2,2],"10_20":[2,2],"10_21":[2,2],"10_22":[2,2],"10_23":[2,2],"10_24":[2,2],"10_26":[2,2],"11_0":[2,2],"11_1":[2,2],"11_2":[2,2],"11_3":[2,2],"11_4":[2,2],"11_5":[2,2],"11_6":[2,2],"11_7":[2,2],"11_8":[2,2],"11_9":[2,2],"11_10":[2,2],"11_11":[2,2],"11_12":[2,2],"11_13":[2,2],"11_14":[2,2],"11_15":[2,2],"11_16":[2,2],"11_17":[2,2],"11_18":[2,2],"11_19":[2,2],"11_20":[2,2],"11_21":[2,2],"11_22":[2,2],"11_23":[2,2],"11_24":[2,2],"11_26":[2,2],"12_0":[3,2],"12_1":[5,3],"12_2":[5,2],"12_3":[5,3],"12_4":[5,3],"12_5":[3,3],"12_6":[4,2],"13_14":[1,2],"13_16":[1,2],"13_17":[1,2],"13_18":[2,2],"13_19":[1,2],"14_9":[1,2],"14_10":[1,2],"14_24":[1,2],"15_0":[1,2],"15_1":[1,2],"15_2":[1,2],"15_3":[1,2],"15_4":[1,2],"15_5":[1,2],"15_6":[1,2],"15_7":[1,2],"15_8":[1,2],"15_9":[1,2],"15_10":[1,2],"15_11":[1,2],"15_12":[1,2],"15_13":[1,2],"15_14":[1,2],"15_15":[1,2]};
+
+  // ITEM_STATS: base stats from OUR server's Item.txt (extracted from live
+  // muserver.data, drop-investigate-20261113/live/Item.txt) — NOT kayito's
+  // standard 0.97k values. Layout: [dmgMin, dmgMax, magiDmg, defense,
+  // reqLvl, reqStr, reqAgi, reqEne, reqVit]. Weapons (sec 0-5) fill dmg/magi;
+  // armor/shields (sec 6-11) fill defense; wings/consumables have no entry.
+var ITEM_STATS = {
+    '0_0':[6,11,0,0,0,40,40,0,0],
+    '0_1':[3,7,0,0,0,60,0,0,0],
+    '0_2':[9,15,0,0,0,50,40,0,0],
+    '0_3':[16,26,0,0,0,80,40,0,0],
+    '0_4':[12,18,0,0,0,60,40,0,0],
+    '0_5':[36,47,0,0,0,80,50,0,0],
+    '0_6':[20,30,0,0,0,110,0,0,0],
+    '0_7':[24,34,0,0,0,120,0,0,0],
+    '0_8':[30,40,0,0,0,130,0,0,0],
+    '0_9':[32,46,0,0,0,103,0,0,0],
+    '0_10':[47,61,0,0,0,80,60,0,0],
+    '0_11':[56,72,0,0,0,120,0,0,0],
+    '0_12':[73,98,0,0,0,140,0,0,0],
+    '0_13':[48,56,0,0,0,70,70,0,0],
+    '0_14':[59,67,0,0,0,90,50,0,0],
+    '0_15':[60,85,0,0,0,140,0,0,0],
+    '0_16':[82,90,0,0,0,160,60,0,0],
+    '0_17':[128,153,0,0,0,180,50,0,0],
+    '0_18':[140,168,0,0,0,180,50,0,0],
+    '0_19':[120,130,0,0,0,140,50,0,0],
+    '0_20':[107,115,0,0,0,116,38,0,0],
+    '0_21':[150,185,135,0,0,200,70,0,0],
+    '0_31':[104,130,104,0,0,135,62,9,0],
+    '1_0':[1,6,0,0,0,50,0,0,0],
+    '1_1':[4,9,0,0,0,70,0,0,0],
+    '1_2':[14,24,0,0,0,90,0,0,0],
+    '1_3':[18,28,0,0,0,100,0,0,0],
+    '1_4':[26,38,0,0,0,50,70,0,0],
+    '1_5':[36,44,0,0,0,120,0,0,0],
+    '1_6':[38,50,0,0,0,130,0,0,0],
+    '1_7':[54,67,0,0,0,140,0,0,0],
+    '1_8':[69,89,0,0,0,100,40,0,0],
+    '2_0':[7,13,0,0,0,100,0,0,0],
+    '2_1':[13,22,0,0,0,100,0,0,0],
+    '2_2':[22,32,0,0,0,80,50,0,0],
+    '2_3':[45,56,0,0,0,150,0,0,0],
+    '2_4':[78,107,0,0,0,130,0,0,0],
+    '2_5':[89,120,0,0,0,130,70,0,0],
+    '2_6':[102,130,0,0,0,140,50,0,0],
+    '2_7':[62,80,0,0,0,15,42,0,0],
+    '2_8':[112,135,0,0,0,155,85,0,0],
+    '2_9':[135,150,0,0,0,170,120,0,0],
+    '2_10':[145,180,0,0,0,195,145,0,0],
+    '2_11':[165,190,0,0,0,235,170,0,0],
+    '2_12':[210,240,0,0,0,315,230,0,0],
+    '2_13':[200,210,0,0,0,300,200,0,0],
+    '3_0':[50,63,0,0,0,60,70,0,0],
+    '3_1':[30,41,0,0,0,70,50,0,0],
+    '3_2':[21,33,0,0,0,70,50,0,0],
+    '3_3':[35,43,0,0,0,90,30,0,0],
+    '3_4':[58,80,0,0,0,90,30,0,0],
+    '3_5':[19,31,0,0,0,70,50,0,0],
+    '3_6':[25,35,0,0,0,70,50,0,0],
+    '3_7':[42,54,0,0,0,80,50,0,0],
+    '3_8':[71,92,0,0,0,90,50,0,0],
+    '3_9':[76,102,0,0,0,80,50,0,0],
+    '3_10':[112,140,0,0,0,170,60,0,0],
+    '4_0':[3,5,0,0,0,20,80,0,0],
+    '4_1':[9,13,0,0,0,30,90,0,0],
+    '4_2':[17,24,0,0,0,30,90,0,0],
+    '4_3':[28,37,0,0,0,30,90,0,0],
+    '4_4':[42,52,0,0,0,30,100,0,0],
+    '4_5':[59,71,0,0,0,30,100,0,0],
+    '4_6':[88,106,0,0,0,40,150,0,0],
+    '4_8':[5,8,0,0,0,20,90,0,0],
+    '4_9':[13,19,0,0,0,30,90,0,0],
+    '4_10':[22,30,0,0,0,30,90,0,0],
+    '4_11':[35,44,0,0,0,30,90,0,0],
+    '4_12':[50,61,0,0,0,30,100,0,0],
+    '4_13':[68,82,0,0,0,40,110,0,0],
+    '4_14':[78,92,0,0,0,50,130,0,0],
+    '4_16':[102,127,0,0,0,50,160,0,0],
+    '4_17':[127,155,0,0,0,54,198,0,0],
+    '4_18':[144,166,0,0,0,40,110,0,0],
+    '5_0':[3,4,6,0,0,40,0,0,0],
+    '5_1':[10,12,20,0,0,50,0,0,0],
+    '5_2':[17,18,34,0,0,50,0,0,0],
+    '5_3':[23,25,46,0,0,40,10,0,0],
+    '5_4':[29,32,58,0,0,50,0,0,0],
+    '5_5':[29,31,59,0,0,50,0,0,0],
+    '5_6':[35,39,70,0,0,60,10,0,0],
+    '5_7':[47,48,94,0,0,60,10,0,0],
+    '5_8':[50,54,101,0,0,60,10,0,0],
+    '5_9':[46,48,92,0,0,52,16,0,0],
+    '5_10':[53,55,106,0,0,36,4,0,0],
+    '5_11':[65,70,130,0,0,56,20,0,0],
+    '6_0':[0,0,0,1,0,70,0,0,0],
+    '6_1':[0,0,0,3,0,100,0,0,0],
+    '6_2':[0,0,0,4,0,110,0,0,0],
+    '6_3':[0,0,0,8,0,30,100,0,0],
+    '6_4':[0,0,0,2,0,80,0,0,0],
+    '6_5':[0,0,0,10,0,100,40,0,0],
+    '6_6':[0,0,0,5,0,110,0,0,0],
+    '6_7':[0,0,0,9,0,130,0,0,0],
+    '6_8':[0,0,0,11,0,130,0,0,0],
+    '6_9':[0,0,0,8,0,120,0,0,0],
+    '6_10':[0,0,0,6,0,120,0,0,0],
+    '6_11':[0,0,0,12,0,130,0,0,0],
+    '6_12':[0,0,0,13,0,140,0,0,0],
+    '6_13':[0,0,0,14,0,120,40,0,0],
+    '6_14':[0,0,0,7,0,90,25,0,0],
+    '6_15':[0,0,0,12,0,70,23,0,0],
+    '6_16':[0,0,0,11,0,30,60,30,0],
+    '7_0':[0,0,0,9,0,80,20,0,0],
+    '7_1':[0,0,0,24,0,120,30,0,0],
+    '7_2':[0,0,0,4,0,20,0,0,0],
+    '7_3':[0,0,0,18,0,30,0,0,0],
+    '7_4':[0,0,0,9,0,30,0,0,0],
+    '7_5':[0,0,0,5,0,80,0,0,0],
+    '7_6':[0,0,0,12,0,110,0,0,0],
+    '7_7':[0,0,0,13,0,30,0,0,0],
+    '7_8':[0,0,0,17,0,100,30,0,0],
+    '7_9':[0,0,0,20,0,130,0,0,0],
+    '7_10':[0,0,0,4,0,30,60,0,0],
+    '7_11':[0,0,0,8,0,30,70,0,0],
+    '7_12':[0,0,0,12,0,30,80,0,0],
+    '7_13':[0,0,0,16,0,40,80,0,0],
+    '7_14':[0,0,0,23,0,40,80,0,0],
+    '7_16':[0,0,0,30,0,170,60,0,0],
+    '7_17':[0,0,0,43,0,205,62,0,0],
+    '7_18':[0,0,0,27,0,59,20,0,0],
+    '7_19':[0,0,0,37,0,50,110,0,0],
+    '7_21':[0,0,0,53,0,200,58,0,0],
+    '7_22':[0,0,0,60,0,105,50,0,0],
+    '7_24':[0,0,0,43,0,125,65,0,0],
+    '7_26':[0,0,0,43,0,70,28,0,0],
+    '8_0':[0,0,0,14,0,80,20,0,0],
+    '8_1':[0,0,0,37,0,120,30,0,0],
+    '8_2':[0,0,0,7,0,30,0,0,0],
+    '8_3':[0,0,0,22,0,40,0,0,0],
+    '8_4':[0,0,0,13,0,40,0,0,0],
+    '8_5':[0,0,0,10,0,80,0,0,0],
+    '8_6':[0,0,0,18,0,110,0,0,0],
+    '8_7':[0,0,0,17,0,40,0,0,0],
+    '8_8':[0,0,0,22,0,100,30,0,0],
+    '8_9':[0,0,0,30,0,130,0,0,0],
+    '8_10':[0,0,0,8,0,30,60,0,0],
+    '8_11':[0,0,0,12,0,30,70,0,0],
+    '8_12':[0,0,0,16,0,30,80,0,0],
+    '8_13':[0,0,0,21,0,40,80,0,0],
+    '8_14':[0,0,0,29,0,40,80,0,0],
+    '8_15':[0,0,0,44,0,150,70,0,0],
+    '8_16':[0,0,0,48,0,170,60,0,0],
+    '8_17':[0,0,0,63,0,214,65,0,0],
+    '8_18':[0,0,0,33,0,59,20,0,0],
+    '8_19':[0,0,0,44,0,50,110,0,0],
+    '8_20':[0,0,0,60,0,170,70,0,0],
+    '8_21':[0,0,0,75,0,200,58,0,0],
+    '8_22':[0,0,0,65,0,110,59,0,0],
+    '8_23':[0,0,0,78,0,280,90,0,0],
+    '8_24':[0,0,0,53,0,75,90,0,0],
+    '8_26':[0,0,0,45,0,72,35,0,0],
+    '9_0':[0,0,0,10,0,80,20,0,0],
+    '9_1':[0,0,0,26,0,120,30,0,0],
+    '9_2':[0,0,0,5,0,30,0,0,0],
+    '9_3':[0,0,0,20,0,40,0,0,0],
+    '9_4':[0,0,0,10,0,40,0,0,0],
+    '9_5':[0,0,0,7,0,80,0,0,0],
+    '9_6':[0,0,0,14,0,110,0,0,0],
+    '9_7':[0,0,0,15,0,40,0,0,0],
+    '9_8':[0,0,0,18,0,100,30,0,0],
+    '9_9':[0,0,0,22,0,130,0,0,0],
+    '9_10':[0,0,0,6,0,30,60,0,0],
+    '9_11':[0,0,0,10,0,30,70,0,0],
+    '9_12':[0,0,0,14,0,30,80,0,0],
+    '9_13':[0,0,0,18,0,40,80,0,0],
+    '9_14':[0,0,0,25,0,40,80,0,0],
+    '9_15':[0,0,0,34,0,150,70,0,0],
+    '9_16':[0,0,0,40,0,170,60,0,0],
+    '9_17':[0,0,0,54,0,207,63,0,0],
+    '9_18':[0,0,0,30,0,59,20,0,0],
+    '9_19':[0,0,0,39,0,50,110,0,0],
+    '9_20':[0,0,0,49,0,150,70,0,0],
+    '9_21':[0,0,0,65,0,200,58,0,0],
+    '9_22':[0,0,0,61,0,100,50,0,0],
+    '9_23':[0,0,0,68,0,220,110,0,0],
+    '9_24':[0,0,0,47,0,90,125,0,0],
+    '9_26':[0,0,0,42,0,67,27,0,0],
+    '10_0':[0,0,0,4,0,80,20,0,0],
+    '10_1':[0,0,0,14,0,120,30,0,0],
+    '10_2':[0,0,0,2,0,20,0,0,0],
+    '10_3':[0,0,0,11,0,20,0,0,0],
+    '10_4':[0,0,0,5,0,20,0,0,0],
+    '10_5':[0,0,0,2,0,80,0,0,0],
+    '10_6':[0,0,0,7,0,110,0,0,0],
+    '10_7':[0,0,0,8,0,20,0,0,0],
+    '10_8':[0,0,0,9,0,100,30,0,0],
+    '10_9':[0,0,0,12,0,130,0,0,0],
+    '10_10':[0,0,0,2,0,30,60,0,0],
+    '10_11':[0,0,0,4,0,30,70,0,0],
+    '10_12':[0,0,0,6,0,30,80,0,0],
+    '10_13':[0,0,0,9,0,40,80,0,0],
+    '10_14':[0,0,0,15,0,40,80,0,0],
+    '10_15':[0,0,0,20,0,150,70,0,0],
+    '10_16':[0,0,0,22,0,170,60,0,0],
+    '10_17':[0,0,0,37,0,205,63,0,0],
+    '10_18':[0,0,0,20,0,49,10,0,0],
+    '10_19':[0,0,0,29,0,50,110,0,0],
+    '10_20':[0,0,0,34,0,150,70,0,0],
+    '10_21':[0,0,0,48,0,200,58,0,0],
+    '10_22':[0,0,0,48,0,95,60,0,0],
+    '10_23':[0,0,0,53,0,210,100,0,0],
+    '10_24':[0,0,0,38,0,90,90,0,0],
+    '10_26':[0,0,0,31,0,60,20,0,0],
+    '11_0':[0,0,0,4,0,80,20,0,0],
+    '11_1':[0,0,0,15,0,120,30,0,0],
+    '11_2':[0,0,0,3,0,20,0,0,0],
+    '11_3':[0,0,0,12,0,30,0,0,0],
+    '11_4':[0,0,0,6,0,30,0,0,0],
+    '11_5':[0,0,0,2,0,80,0,0,0],
+    '11_6':[0,0,0,8,0,110,0,0,0],
+    '11_7':[0,0,0,9,0,30,0,0,0],
+    '11_8':[0,0,0,10,0,100,30,0,0],
+    '11_9':[0,0,0,12,0,130,0,0,0],
+    '11_10':[0,0,0,2,0,30,60,0,0],
+    '11_11':[0,0,0,4,0,30,70,0,0],
+    '11_12':[0,0,0,7,0,30,80,0,0],
+    '11_13':[0,0,0,10,0,40,80,0,0],
+    '11_14':[0,0,0,16,0,40,80,0,0],
+    '11_15':[0,0,0,22,0,150,70,0,0],
+    '11_16':[0,0,0,24,0,170,60,0,0],
+    '11_17':[0,0,0,40,0,198,60,0,0],
+    '11_18':[0,0,0,22,0,59,10,0,0],
+    '11_19':[0,0,0,30,0,50,110,0,0],
+    '11_20':[0,0,0,37,0,150,70,0,0],
+    '11_21':[0,0,0,50,0,200,58,0,0],
+    '11_22':[0,0,0,60,0,100,50,0,0],
+    '11_23':[0,0,0,54,0,250,100,0,0],
+    '11_24':[0,0,0,36,0,100,120,0,0],
+    '11_26':[0,0,0,37,0,65,20,0,0]
+  };  // Skill names (option table in muserver.data, options 18-24, 49, 56).
+  var SKILL_NAMES = { 18: 'Defense', 19: 'Falling Slash', 20: 'Lunge', 21: 'Uppercut', 22: 'Cyclone', 23: 'Slash', 24: 'Triple Shot', 49: 'Raid Shoot', 56: 'Power Slash' };
+  // Excellent option text (option table in muserver.data, options 66-79).
+  // Bit i of the 6-bit excellent mask -> i-th option in the category list.
+  // Weapons (sec 0-4): [72,73,74,77,78,79]; Staffs (sec 5): [72,75,76,77,78,79];
+  // Armor + Wings (sec 6-12): [66,67,68,69,70,71]. Sections 13-15 have no
+  // excellent options defined — a set bit there is shown as a raw bitmask.
+  var EXC_TEXT = {
+    66: 'Increase Max HP +4%', 67: 'Increase Max Mana +4%', 68: 'Damage Decrease +4%',
+    69: 'Reflect Damage +5%', 70: 'Defense success rate +10%',
+    71: 'Increases acquisition rate of Zen after hunting monsters +30%',
+    72: 'Excellent Damage rate +10%', 73: 'Increase Damage +level/20',
+    74: 'Increase Damage +2%', 75: 'Increase Wizardry Dmg +level/20',
+    76: 'Increase Wizardry Dmg +2%', 77: 'Increase Attacking(Wizardry) speed +7',
+    78: 'Increases life acquisition rate after hunt +life/8',
+    79: 'Increases mana acquisition rate after hunt +mana/8'
+  };
+  function excOptionsFor(it) {
+    var list;
+    if (it.section >= 0 && it.section <= 4) list = [72, 73, 74, 77, 78, 79];
+    else if (it.section === 5) list = [72, 75, 76, 77, 78, 79];
+    else if (it.section >= 6 && it.section <= 12) list = [66, 67, 68, 69, 70, 71];
+    else return null;
+    var out = [];
+    for (var b = 0; b < 6; b++) if ((it.excellent >> b) & 1) out.push(EXC_TEXT[list[b]]);
+    return out;
+  }
+  function itemName(it) {
+    var info = ITEM_INFO[it.section + '_' + it.type];
+    return info ? info[0] : null;
+  }
+  function itemSkillName(it) {
+    var info = ITEM_INFO[it.section + '_' + it.type];
+    if (!info || !info[1]) return null;
+    return SKILL_NAMES[info[1]] || ('Skill ' + info[1]);
+  }
+  // Tooltip HTML — game-accurate content, all from the decoded 10-byte
+  // record + Item.txt (name/skill) + the server option table (excellent).
+  function itemTipHtml(it) {
+    var name = itemName(it);
+    var h = '<div class="tip-name">' + esc(name || (it.section + '-' + it.type)) + '</div>';
+    h += '<div class="tip-line tip-yellow">Level +' + it.level + '</div>';
+    var st = ITEM_STATS[it.section + '_' + it.type];
+    if (st) {
+      if (st[0] || st[1]) h += '<div class="tip-line">Damage ' + st[0] + ' ~ ' + st[1] + '</div>';
+      if (st[2]) h += '<div class="tip-line">Magic Damage +' + st[2] + '</div>';
+      if (st[3]) h += '<div class="tip-line">Defense ' + st[3] + '</div>';
+      var req = [];
+      if (st[4]) req.push('Level ' + st[4]);
+      if (st[5]) req.push('Strength ' + st[5]);
+      if (st[6]) req.push('Agility ' + st[6]);
+      if (st[7]) req.push('Energy ' + st[7]);
+      if (st[8]) req.push('Vitality ' + st[8]);
+      if (req.length) h += '<div class="tip-line">Requires: ' + req.join(', ') + '</div>';
+    }
+    if (it.skill) {
+      var sk = itemSkillName(it);
+      h += '<div class="tip-line tip-blue">Skill: ' + esc(sk || 'Yes') + '</div>';
+    }
+    if (it.luck) h += '<div class="tip-line tip-blue">Luck (critical damage rate +5%)</div>';
+    if (it.option) {
+      var addTxt = it.section === 5 ? 'Additional Wizardry Dmg' : (it.section >= 0 && it.section <= 4 ? 'Additional Dmg' : 'Additional defense');
+      h += '<div class="tip-line tip-blue">' + addTxt + ' +' + it.option + '</div>';
+    }
+    var exc = excOptionsFor(it);
+    if (exc && exc.length) h += '<div class="tip-exc">' + exc.map(function (t) { return esc(t); }).join('<br>') + '</div>';
+    else if (it.excellent) h += '<div class="tip-line">Excellent: 0x' + it.excellent.toString(16) + ' (no option table for section ' + it.section + ')</div>';
+    h += '<div class="tip-line">Durability: ' + it.durability + '</div>';
+    h += '<div class="tip-serial">Serial ' + esc(String(it.serial)) + '</div>';
+    return h;
+  }
+  var _tipEl = null;
+  function showItemTip(it, ev) {
+    if (!_tipEl) _tipEl = document.getElementById('item-tip');
+    if (!_tipEl || !it) return;
+    _tipEl.innerHTML = itemTipHtml(it);
+    _tipEl.style.display = 'block';
+    var x = ev.clientX + 14, y = ev.clientY + 14;
+    var r = _tipEl.getBoundingClientRect();
+    if (x + r.width > window.innerWidth - 8) x = ev.clientX - r.width - 10;
+    if (y + r.height > window.innerHeight - 8) y = ev.clientY - r.height - 10;
+    _tipEl.style.left = Math.max(8, x) + 'px';
+    _tipEl.style.top = Math.max(8, y) + 'px';
+  }
+  function hideItemTip() { if (_tipEl) _tipEl.style.display = 'none'; }
+  // Inline handlers (onmouseenter/onmouseleave/onerror in the item cells)
+  // look these up on window — the whole script is inside an IIFE, so
+  // expose them explicitly or the tooltip never shows (bug 2026-11-15).
+  // _tipItems too: the onmouseenter handler reads _tipItems[...] directly.
+  window.showItemTip = showItemTip;
+  window.hideItemTip = hideItemTip;
+  window.itemImgErr = itemImgErr;
+  // Items rendered by loadCharItems are kept here so the tooltip can look
+  // them up by location+slot.
+  var _tipItems = {};
+  // Expose AFTER the assignment above: `var` is hoisted but `= {}` runs
+  // here, so assigning window._tipItems any earlier would store
+  // `undefined` (the 2026-11-15 hover crash: "reading 'equipment:0'").
+  window._tipItems = _tipItems;
+  function itemLabel(it) {
+    var s = it.section + '/' + it.type + ' +' + it.level;
+    var mk = [];
+    if (it.skill) mk.push('S');
+    if (it.luck) mk.push('L');
+    if (it.option) mk.push('+' + it.option);
+    if (it.excellent) mk.push('★');
+    return { label: s, markers: mk.join(' ') };
+  }
+  // Item image lookup: try .jpg first (kayito), then .png (user-provided,
+  // e.g. Knight Blade 0/20). If the primary file 404s, itemImgErr retries
+  // the other extension once, then falls back to the text label.
+  function itemImgExt(it) {
+    var k = it.section + '_' + it.type;
+    if (ITEM_ICONS[k]) return 'jpg';
+    if (ITEM_ICON_PNG[k]) return 'png';
+    return null;
+  }
+  function itemImgErr(img) {
+    var alt = img.dataset.altExt;
+    if (alt) {
+      img.dataset.altExt = '';
+      img.src = img.src.replace(/\.(jpg|png)$/, '.' + alt);
+      return;
+    }
+    var cell = img.parentNode;
+    var label = img.dataset.label || '';
+    var markers = img.dataset.markers || '';
+    var span = document.createElement('span');
+    span.textContent = label;
+    cell.replaceChild(span, img);
+    if (markers) {
+      var mk = document.createElement('span');
+      mk.className = 'mk';
+      mk.textContent = markers;
+      cell.appendChild(mk);
+    }
+  }
+  // Item inventory size [width, height] in cells, from OUR server Item.txt
+  // (fields Width/Height). Missing keys are 1x1 (jewels, potions, ...).
+  function itemSize(it) {
+    var s = ITEM_SIZE[it.section + '_' + it.type];
+    return s ? s : [1, 1];
+  }
+  function itemCellHtml(it, span) {
+    var key = it.location + ':' + it.slot;
+    _tipItems[key] = it;
+    var lb = itemLabel(it);
+    var inner;
+    var ext = itemImgExt(it);
+    if (ext) {
+      var altExt = ext === 'jpg' ? 'png' : 'jpg';
+      inner = '<img src="images/item_icons/' + it.section + '/' + it.type + '.' + ext + '" alt="' + esc(lb.label) + '" data-alt-ext="' + altExt + '" data-label="' + esc(lb.label) + '" data-markers="' + esc(lb.markers) + '" onerror="itemImgErr(this)">' +
+        '<span class="mk">+' + it.level + (it.excellent ? ' \u2605' : '') + '</span>';
+    } else {
+      inner = '<span>' + esc(lb.label) + '</span>' + (lb.markers ? '<span class="mk">' + esc(lb.markers) + '</span>' : '');
+    }
+    // span: {x, y, w, h} explicit grid position for inventory/vault cells
+    // (game-accurate size + position). Equipment passes none (1x1).
+    var style = '';
+    if (span) style = ' style="grid-column: ' + span.x + ' / span ' + span.w + '; grid-row: ' + span.y + ' / span ' + span.h + ';"';
+    return '<div class="item-cell' + (it.excellent ? ' exc' : '') + '"' + style + ' data-tip="' + esc(key) + '" onmouseenter="showItemTip(_tipItems[this.dataset.tip], event)" onmouseleave="hideItemTip()">' + inner + '</div>';
+  }
+  // Equipment slot names (MU 0.97k char slots 0-11). Empty slots are
+  // always rendered with their name so the admin can tell what each
+  // empty slot is (wing / helm / armor / ring / pendant...).
+  var EQUIP_SLOT_NAMES = ['Vũ khí', 'Khiên', 'Mũ', 'Áo', 'Quần', 'Găng', 'Giày', 'Cánh', 'Thú cưng', 'Dây chuyền', 'Nhẫn', 'Nhẫn'];
+  function renderEquipment(equipment) {
+    var bySlot = {};
+    (equipment || []).forEach(function (it) { bySlot[it.slot] = it; });
+    var h = '<div class="equip-grid">';
+    for (var s = 0; s < 12; s++) {
+      var it = bySlot[s];
+      h += it ? itemCellHtml(it) : '<div class="item-cell empty"><span>' + EQUIP_SLOT_NAMES[s] + '</span></div>';
+    }
+    return h + '</div>';
+  }
+  // Grid from slot_x/slot_y (server provides bag coords for inventory,
+  // vault coords for the vault). `slots` = total cells (64 or 120).
+  // Game-accurate: each item spans its real Width x Height from Item.txt
+  // (pants/boots 2x2, armor 2x2/2x3, swords 1x3/2x4, jewels 1x1, ...),
+  // placed at its exact slot with explicit grid-column/grid-row so the
+  // positions match the game. Cells covered by a multi-cell item are
+  // skipped (they belong to that item, not empty).
+  function renderItemGrid(items, slots) {
+    var byPos = {};
+    var covered = {};
+    (items || []).forEach(function (it) {
+      if (it.slot_x == null || it.slot_y == null) return;
+      var sz = itemSize(it);
+      var w = sz[0], h = sz[1];
+      if (it.slot_x + w > 8) w = 8 - it.slot_x; // clamp to grid width
+      if (w < 1) w = 1;
+      byPos[it.slot_y * 8 + it.slot_x] = { it: it, x: it.slot_x + 1, y: it.slot_y + 1, w: w, h: h };
+      for (var dy = 0; dy < h; dy++) {
+        for (var dx = 0; dx < w; dx++) {
+          if (dx === 0 && dy === 0) continue;
+          covered[(it.slot_y + dy) * 8 + (it.slot_x + dx)] = true;
+        }
+      }
+    });
+    var h = '<div class="item-grid">';
+    for (var s = 0; s < slots; s++) {
+      if (covered[s]) continue;
+      var e = byPos[s];
+      if (e) h += itemCellHtml(e.it, { x: e.x, y: e.y, w: e.w, h: e.h });
+      else h += '<div class="item-cell empty" style="grid-column: ' + (s % 8 + 1) + '; grid-row: ' + (Math.floor(s / 8) + 1) + ';">' + s + '</div>';
+    }
+    return h + '</div>';
+  }
+  window.loadCharItems = async function (id) {
+    var box = document.getElementById('char-items');
+    if (!box) return;
+    box.innerHTML = '<p class="note">Đang tải…</p>';
+    var r = await api('GET', '/api/admin/characters/' + id + '/items');
+    if (!r.data || !r.data.success) { box.innerHTML = '<p class="note">' + esc((r.data && (r.data.message || r.data.error)) || 'Không xem được túi đồ / kho.') + '</p>'; return; }
+    var d = r.data;
+    var h = '';
+    if (d.online) h += '<p class="note grant-warn">⚠️ Nhân vật đang online — dữ liệu từ lần lưu cuối (có thể chưa có đồ mới nhặt / đổi trong phiên đang chơi).</p>';
+    h += '<p class="note">Zen nhân vật: <b>' + Number(d.character_zen || 0).toLocaleString('vi-VN') + '</b> · Zen trong kho: <b>' + Number(d.vault_zen || 0).toLocaleString('vi-VN') + '</b>' + (d.vault_file ? ' · File: ' + esc(d.vault_file) : ' · chưa có file kho') + '</p>';
+    if (!d.has_blob) { h += '<p class="note">Nhân vật chưa từng vào game nên chưa có dữ liệu túi đồ / kho.</p>'; box.innerHTML = h; return; }
+    // 2 columns 50/50: col 1 = equipment + inventory, col 2 = vault.
+    h += '<div class="items-2col"><div class="items-col">';
+    h += '<div class="item-sec">Đồ đang mặc (' + (d.equipment || []).length + '/12)</div>';
+    h += renderEquipment(d.equipment);
+    h += '<div class="item-sec">Túi đồ (' + (d.inventory || []).length + '/64)</div>';
+    h += renderItemGrid(d.inventory, 64);
+    h += '</div><div class="items-col">';
+    h += '<div class="item-sec">Kho trong game (' + (d.vault || []).length + '/120)</div>';
+    h += renderItemGrid(d.vault, 120);
+    h += '</div></div>';
+    box.innerHTML = h;
+  };
+  // ---- Grant wizard (thêm đồ vào kho, 2026-11-15) ----
+  // Guided 5-step picker that replaces the old /make text field + raw
+  // number inputs (user feedback: the old form was "cực khó").
+  // All events are wired with addEventListener in wireGrantWizard() after
+  // the detail panel HTML is inserted — NO inline handlers here, so the
+  // IIFE scoping that broke the tooltip (2026-11-15) cannot bite again.
+  // The /make command survives as a collapsed "Nâng cao" section.
+  // Vietnamese section labels — verified against ITEM_INFO / our Item.txt:
+  // sec 13 = pets/rings/pendants/quest items, sec 14 = jewels + potions,
+  // sec 15 = skill scrolls. (Hurricane has no helm — sec 7 has no idx 23.)
+  var VG_SECTIONS = [
+    [0, 'Kiếm'], [1, 'Rìu'], [2, 'Chùy'], [3, 'Giáo'], [4, 'Cung'],
+    [5, 'Gậy'], [6, 'Khiên'], [7, 'Mũ'], [8, 'Áo'], [9, 'Quần'],
+    [10, 'Găng'], [11, 'Giày'], [12, 'Cánh'], [13, 'Thú & Nhẫn'],
+    [14, 'Ngọc & Thuốc'], [15, 'Cuộn']
+  ];
+  var VG_SEC_COUNTS = (function () {
+    var counts = {};
+    Object.keys(ITEM_INFO).forEach(function (k) {
+      var s = Number(k.split('_')[0]);
+      counts[s] = (counts[s] || 0) + 1;
+    });
+    return counts;
+  })();
+  // Wizard selection — only sec/type live here; level/luck/skill/option
+  // are read from the DOM controls at submit time (no state drift).
+  var _vg = { sec: null, type: null, online: false };
+  function vgSectionOptions() {
+    var h = '<option value="">— Chọn nhóm đồ —</option>';
+    VG_SECTIONS.forEach(function (s) {
+      var n = VG_SEC_COUNTS[s[0]] || 0;
+      if (n) h += '<option value="' + s[0] + '">' + esc(s[1]) + ' (' + n + ' món)</option>';
+    });
+    return h;
+  }
+  function vgLevelOptions() {
+    var h = '';
+    for (var i = 0; i <= 11; i++) h += '<option value="' + i + '"' + (i === 0 ? ' selected' : '') + '>+' + i + '</option>';
+    return h;
+  }
+  function vgOptionOptions() {
+    var h = '';
+    for (var i = 0; i <= 7; i++) h += '<option value="' + i + '"' + (i === 0 ? ' selected' : '') + '>+' + i + '</option>';
+    return h;
+  }
+  // Excellent line texts for a section — SAME option table as the tooltip
+  // (excOptionsFor): weapons 0-4, staff 5, shields/armor/wings 6-12.
+  // Returns the 6 line texts in bit order (index = bit), or null when the
+  // section has no excellent table (sec 13-15).
+  function vgExcLinesForSection(sec) {
+    var list;
+    if (sec >= 0 && sec <= 4) list = [72, 73, 74, 77, 78, 79];
+    else if (sec === 5) list = [72, 75, 76, 77, 78, 79];
+    else if (sec >= 6 && sec <= 12) list = [66, 67, 68, 69, 70, 71];
+    else return null;
+    return list.map(function (k) { return EXC_TEXT[k]; });
+  }
+  // Render the item picker grid for a section (image + name per item;
+  // items without an image show their name as text — same fallback as the
+  // inventory view, via itemImgErr on the <img>).
+  function vgRenderItems(sec) {
+    var box = document.getElementById('vg-items');
+    if (!box) return;
+    if (sec == null) { box.innerHTML = ''; return; }
+    var keys = Object.keys(ITEM_INFO).filter(function (k) { return Number(k.split('_')[0]) === sec; });
+    keys.sort(function (a, b) { return Number(a.split('_')[1]) - Number(b.split('_')[1]); });
+    var h = '';
+    keys.forEach(function (k) {
+      var idx = Number(k.split('_')[1]);
+      var name = ITEM_INFO[k][0];
+      var ext = itemImgExt({ section: sec, type: idx });
+      h += '<div class="vg-pick' + (_vg.type === idx ? ' sel' : '') + '" data-sec="' + sec + '" data-type="' + idx + '">';
+      if (ext) {
+        var altExt = ext === 'jpg' ? 'png' : 'jpg';
+        h += '<img src="images/item_icons/' + sec + '/' + idx + '.' + ext + '" alt="' + esc(name) + '" data-alt-ext="' + altExt + '" data-label="' + esc(name) + '" onerror="itemImgErr(this)">';
+      }
+      h += '<span class="vg-pick-name">' + esc(name) + '</span></div>';
+    });
+    box.innerHTML = h || '<p class="note">Nhóm này chưa có món đồ.</p>';
+  }
+  // Render the per-line Excellent checkboxes for a section (bit order).
+  function vgRenderExcLines(sec) {
+    var lines = vgExcLinesForSection(sec);
+    var box = document.getElementById('vg-exc-lines');
+    var excOn = document.getElementById('vg-exc-on');
+    if (!box) return;
+    if (!lines) { box.innerHTML = ''; box.style.display = 'none'; return; }
+    var h = '';
+    for (var b = 0; b < lines.length; b++) {
+      h += '<label><input type="checkbox" data-bit="' + b + '"> ' + esc(lines[b]) + '</label>';
+    }
+    box.innerHTML = h;
+    box.style.display = (excOn && excOn.checked) ? '' : 'none';
+  }
+  // Excellent bitmask from the wizard controls.
+  // Master checkbox off -> 0. No excellent table for the section (13-15)
+  // -> 63 (all 6 lines). Otherwise OR of the checked line bits.
+  function vgComputeExc() {
+    var on = document.getElementById('vg-exc-on');
+    if (!on || !on.checked) return 0;
+    var lines = vgExcLinesForSection(_vg.sec);
+    if (!lines) return 63;
+    var bits = 0;
+    var boxes = document.querySelectorAll('#vg-exc-lines input[type=checkbox]');
+    for (var i = 0; i < boxes.length; i++) if (boxes[i].checked) bits |= (1 << Number(boxes[i].dataset.bit));
+    return bits;
+  }
+  function vgExcSummary() {
+    var bits = vgComputeExc();
+    if (!bits) return '';
+    var lines = vgExcLinesForSection(_vg.sec);
+    if (!lines) return 'Excellent (6 dòng)';
+    var out = [];
+    for (var b = 0; b < 6; b++) if ((bits >> b) & 1) out.push(lines[b]);
+    return 'Excellent: ' + out.join(', ');
+  }
+  function vgUpdateSummary() {
+    var sum = document.getElementById('vg-summary');
+    var btn = document.getElementById('vg-add-btn');
+    var cmdEl = document.getElementById('vg-cmd');
+    var cmdVal = cmdEl ? cmdEl.value.trim() : '';
+    if (_vg.online) { if (btn) btn.disabled = true; return; }
+    if (cmdVal) {
+      if (sum) sum.textContent = 'Lệnh /make: ' + cmdVal;
+      if (btn) btn.disabled = false;
+      return;
+    }
+    if (_vg.sec == null || _vg.type == null) {
+      if (sum) sum.textContent = 'Chọn nhóm đồ rồi chọn món đồ.';
+      if (btn) btn.disabled = true;
+      return;
+    }
+    var info = ITEM_INFO[_vg.sec + '_' + _vg.type];
+    var name = info ? info[0] : (_vg.sec + '-' + _vg.type);
+    var lvl = document.getElementById('vg-level-sel');
+    var level = lvl ? Number(lvl.value) : 0;
+    var parts = [name + ' +' + level];
+    var luck = document.getElementById('vg-luck-cb');
+    if (luck && luck.checked) parts.push('Luck');
+    var sk = document.getElementById('vg-skill-cb');
+    if (sk && sk.checked) parts.push('Skill' + (info && info[1] ? ' (' + (SKILL_NAMES[info[1]] || ('Skill ' + info[1])) + ')' : ''));
+    var opt = document.getElementById('vg-option-sel');
+    var optVal = opt ? Number(opt.value) : 0;
+    if (optVal) parts.push('Option +' + optVal);
+    var exc = vgExcSummary();
+    if (exc) parts.push(exc);
+    if (sum) sum.textContent = parts.join(' · ');
+    if (btn) btn.disabled = false;
+  }
+  function vgPickItem(sec, type) {
+    _vg.sec = sec;
+    _vg.type = type;
+    var cells = document.querySelectorAll('#vg-items .vg-pick');
+    for (var i = 0; i < cells.length; i++) {
+      var cl = cells[i];
+      cl.classList.toggle('sel', Number(cl.dataset.sec) === sec && Number(cl.dataset.type) === type);
+    }
+    var opts = document.getElementById('vg-opts');
+    if (opts) opts.style.display = '';
+    vgRenderExcLines(sec);
+    vgUpdateSummary();
+  }
+  function vgClosestPick(el, box) {
+    while (el && el !== box) {
+      if (el.classList && el.classList.contains('vg-pick')) return el;
+      el = el.parentNode;
+    }
+    return null;
+  }
+  // Wire the wizard after the character detail HTML is inserted.
+  // When the character is online the controls stay disabled (the warning
+  // above the wizard says to Kick first) and nothing is wired.
+  function wireGrantWizard(id, online) {
+    _vg = { sec: null, type: null, online: !!online };
+    var secSel = document.getElementById('vg-sec-sel');
+    if (!secSel) return;
+    if (online) { secSel.disabled = true; return; }
+    secSel.addEventListener('change', function () {
+      var v = secSel.value;
+      _vg.sec = v === '' ? null : Number(v);
+      _vg.type = null;
+      var opts = document.getElementById('vg-opts');
+      if (opts) opts.style.display = 'none';
+      vgRenderItems(_vg.sec);
+      vgUpdateSummary();
+    });
+    var box = document.getElementById('vg-items');
+    if (box) box.addEventListener('click', function (ev) {
+      var cell = vgClosestPick(ev.target, box);
+      if (!cell) return;
+      vgPickItem(Number(cell.dataset.sec), Number(cell.dataset.type));
+    });
+    var lvl = document.getElementById('vg-level-sel');
+    if (lvl) lvl.addEventListener('change', vgUpdateSummary);
+    var luck = document.getElementById('vg-luck-cb');
+    if (luck) luck.addEventListener('change', vgUpdateSummary);
+    var sk = document.getElementById('vg-skill-cb');
+    if (sk) sk.addEventListener('change', vgUpdateSummary);
+    var opt = document.getElementById('vg-option-sel');
+    if (opt) opt.addEventListener('change', vgUpdateSummary);
+    var excOn = document.getElementById('vg-exc-on');
+    if (excOn) excOn.addEventListener('change', function () {
+      var lines = document.getElementById('vg-exc-lines');
+      var hasTable = _vg.sec != null && vgExcLinesForSection(_vg.sec);
+      if (lines) lines.style.display = (excOn.checked && hasTable) ? '' : 'none';
+      vgUpdateSummary();
+    });
+    var excLines = document.getElementById('vg-exc-lines');
+    if (excLines) excLines.addEventListener('change', vgUpdateSummary);
+    var cmd = document.getElementById('vg-cmd');
+    if (cmd) cmd.addEventListener('input', vgUpdateSummary);
+    var addBtn = document.getElementById('vg-add-btn');
+    if (addBtn) addBtn.addEventListener('click', function () { grantVaultItem(id); });
+    vgUpdateSummary();
+  }
+  // After a successful grant: keep the chosen section (so the admin can
+  // add another item from the same group quickly), clear the item and
+  // reset level/lines to defaults.
+  function vgResetAfterGrant() {
+    var keepSec = _vg.sec;
+    _vg.type = null;
+    var lvl = document.getElementById('vg-level-sel');
+    if (lvl) lvl.value = '0';
+    var opt = document.getElementById('vg-option-sel');
+    if (opt) opt.value = '0';
+    var luck = document.getElementById('vg-luck-cb');
+    if (luck) luck.checked = false;
+    var sk = document.getElementById('vg-skill-cb');
+    if (sk) sk.checked = false;
+    var exc = document.getElementById('vg-exc-on');
+    if (exc) exc.checked = false;
+    var lines = document.getElementById('vg-exc-lines');
+    if (lines) { lines.innerHTML = ''; lines.style.display = 'none'; }
+    var opts = document.getElementById('vg-opts');
+    if (opts) opts.style.display = 'none';
+    if (keepSec != null) vgRenderItems(keepSec);
+    vgUpdateSummary();
+  }
+  window.grantVaultItem = async function (id) {
+    var c = charById[id];
+    if (!c) return;
+    var cmdEl = document.getElementById('vg-cmd');
+    var cmdVal = cmdEl ? cmdEl.value.trim() : '';
+    var body = {};
+    var desc = '';
+    if (cmdVal) {
+      body.game_command = cmdVal;
+      desc = cmdVal;
+    } else {
+      if (_vg.sec == null || _vg.type == null) { showMsg('Chọn nhóm đồ rồi chọn món đồ (hoặc nhập lệnh /make).', false); return; }
+      body.item_type = _vg.sec;
+      body.item_index = _vg.type;
+      var lvl = document.getElementById('vg-level-sel');
+      body.item_level = lvl ? Number(lvl.value) : 0;
+      var opt = document.getElementById('vg-option-sel');
+      body.option_level = opt ? Number(opt.value) : 0;
+      body.excellent = vgComputeExc();
+      var sk = document.getElementById('vg-skill-cb');
+      body.skill = !!(sk && sk.checked);
+      var luck = document.getElementById('vg-luck-cb');
+      body.luck = !!(luck && luck.checked);
+      var info = ITEM_INFO[_vg.sec + '_' + _vg.type];
+      desc = (info ? info[0] : (_vg.sec + '-' + _vg.type)) + ' +' + body.item_level;
+      if (body.luck) desc += ' · Luck';
+      if (body.skill) desc += ' · Skill';
+      if (body.option_level) desc += ' · Option +' + body.option_level;
+      var excTxt = vgExcSummary();
+      if (excTxt) desc += ' · ' + excTxt;
+    }
+    var reasonEl = document.getElementById('vg-reason');
+    if (reasonEl && reasonEl.value.trim()) body.reason = reasonEl.value.trim();
+    if (!await confirmDlg('THÊM ĐỒ VÀO KHO của ' + c.name + '?\n\n' + desc + '\n\nĐồ vào thẳng file kho trong game — nhân vật thấy khi mở kho sau lần đăng nhập sau.')) return;
+    var r = await api('POST', '/api/admin/characters/' + id + '/grant-vault-item', body);
+    if (r.data && r.data.success) {
+      showMsg('Đã thêm đồ vào kho (ô ' + (r.data.item && r.data.item.vault_slot) + ', serial ' + (r.data.item && r.data.item.serial) + ').');
+      loadCharItems(id);
+      vgResetAfterGrant();
+    } else showMsg((r.data && (r.data.message || r.data.error)) || 'Thêm đồ vào kho thất bại.', false);
+  };
+  // ---- Items (Vật phẩm) ----
+  async function loadDupeScan(silent) {
+    var r = await api('GET', '/api/admin/dupe-scan');
+    var box = document.getElementById('dupe-list');
+    if (!r.data || !r.data.success) {
+      if (!silent) showMsg(r.data && r.data.message || 'Quét đồ trùng thất bại (endpoint GET /api/admin/dupe-scan chưa có — chờ backend).', false);
+      box.innerHTML = '<p class="note">Chưa quét được' + (r.data && r.data.message ? ': ' + esc(r.data.message) : ' (endpoint GET /api/admin/dupe-scan chưa có — chờ backend).') + '</p>';
+      return;
+    }
+    var dups = r.data.duplicates || [];
+    var h = '<p class="note">Quét lúc ' + fmtDate(r.data.scanned_at) + ' · tổng ' + (r.data.total_items != null ? r.data.total_items : '—') + ' món · ' + (r.data.null_serial_count || 0) + ' món không có serial (NULL). ' + esc(r.data.note || '') + '</p>';
+    if (!dups.length) h += '<p class="note">Không phát hiện serial trùng trong bảng items (SQL).</p>';
+    else {
+      h += '<table><tr><th>Serial</th><th>Số lượng</th><th>Chủ sở hữu từng món</th></tr>';
+      dups.forEach(function (g) {
+        var owners = (g.items || []).map(function (it) {
+          return esc(it.owner_username || ('#' + it.owner_account_id)) + ' — ' + esc(it.owner_character_name || '—') + ' (' + esc(it.location) + ' #' + it.slot + ', type ' + it.item_type + '/' + it.item_index + ')';
+        }).join('<br>');
+        h += '<tr><td><b>' + esc(g.serial) + '</b></td><td>' + g.count + '</td><td>' + owners + '</td></tr>';
+      });
+      h += '</table>';
+    }
+    box.innerHTML = h;
+  }
+  window.searchItems = async function () {
+    var serial = document.getElementById('item-serial').value.trim();
+    var q = document.getElementById('item-q').value.trim();
+    var loc = document.getElementById('item-location').value;
+    var owner = document.getElementById('item-owner').value.trim();
+    var qs = '/api/admin/items/search?limit=50';
+    if (serial) qs += '&serial=' + encodeURIComponent(serial);
+    if (q) qs += '&q=' + encodeURIComponent(q);
+    if (loc) qs += '&location=' + encodeURIComponent(loc);
+    if (owner) qs += '&owner=' + encodeURIComponent(owner);
+    if (!serial && !q && !loc && !owner) { showMsg('Cần ít nhất một điều kiện tìm (serial / mã / vị trí / chủ sở hữu).', false); return; }
+    var r = await api('GET', qs);
+    var box = document.getElementById('item-search-list');
+    if (!r.data || !r.data.success) { showMsg(r.data && r.data.message || 'Tìm đồ thất bại.', false); box.innerHTML = '<p class="note">' + esc(r.data && r.data.message || 'Endpoint GET /api/admin/items/search chưa có — chờ backend.') + '</p>'; return; }
+    var items = r.data.items || [];
+    if (!items.length) { box.innerHTML = '<p class="note">Không tìm thấy đồ nào.</p>'; return; }
+    var h = '<p class="note">Tổng: ' + r.data.total + ' món.</p><table><tr><th>ID</th><th>Serial</th><th>Chủ sở hữu</th><th>Vị trí</th><th>Slot</th><th>Mã đồ</th><th>Cấp</th><th>Hạn dùng</th><th>Tạo lúc</th></tr>';
+    items.forEach(function (it) {
+      var expired = it.expired || (it.expires_at && new Date(it.expires_at) < new Date());
+      h += '<tr' + (expired ? ' class="expired"' : '') + '><td>' + it.id + '</td><td>' + esc(it.serial || '—') + '</td><td>' +
+        esc(it.owner_username || '—') + ' / ' + esc(it.owner_character_name || '—') + '</td><td>' + esc(it.location) + '</td><td>' + it.slot +
+        '</td><td>' + it.item_type + '/' + it.item_index + ' (skill ' + (it.skill ? 1 : 0) + ', luck ' + (it.luck ? 1 : 0) + ', opt ' + it.option_level + ', exc ' + it.excellent + ')</td><td>' + it.item_level +
+        '</td><td>' + (it.expires_at ? fmtDate(it.expires_at) + (expired ? ' — HẾT HẠN' : '') : '—') + '</td><td>' + fmtDate(it.created_at) + '</td></tr>';
+    });
+    box.innerHTML = h + '</table>';
+  };
+  async function loadItemLog() {
+    var serial = document.getElementById('log-serial').value.trim();
+    var charId = document.getElementById('log-char').value.trim();
+    var ev = document.getElementById('log-event').value;
+    var from = document.getElementById('log-from').value;
+    var to = document.getElementById('log-to').value;
+    var qs = '/api/admin/item-log?limit=50';
+    if (serial) qs += '&serial=' + encodeURIComponent(serial);
+    if (charId) qs += '&character_id=' + encodeURIComponent(charId);
+    if (ev) qs += '&event_type=' + encodeURIComponent(ev);
+    if (from) qs += '&from=' + encodeURIComponent(from);
+    if (to) qs += '&to=' + encodeURIComponent(to);
+    var r = await api('GET', qs);
+    var box = document.getElementById('item-log-list');
+    if (!r.data || !r.data.success) { box.innerHTML = '<p class="note">Chưa tải được lịch sử đồ' + (r.data && r.data.message ? ': ' + esc(r.data.message) : ' (endpoint GET /api/admin/item-log chưa có — chờ backend).') + '</p>'; return; }
+    var rows = r.data.log || [];
+    if (!rows.length) { box.innerHTML = '<p class="note">Chưa có dòng lịch sử đồ nào.</p>'; return; }
+    var h = '<p class="note">Tổng: ' + r.data.total + ' dòng.</p><table><tr><th>#</th><th>Thời gian</th><th>Loại event</th><th>Serial</th><th>Nhân vật</th><th>Chi tiết</th></tr>';
+    rows.forEach(function (l) {
+      h += '<tr><td>' + l.id + '</td><td>' + fmtDate(l.created_at) + '</td><td>' + esc(l.event_type) + '</td><td>' + esc(l.serial || '—') +
+        '</td><td>' + esc(l.character_name || (l.character_id != null ? '#' + l.character_id : '—')) + '</td><td>' + esc(l.detail ? JSON.stringify(l.detail) : '') + '</td></tr>';
+    });
+    box.innerHTML = h + '</table>';
+  }
+  async function loadBlockedSerials() {
+    var r = await api('GET', '/api/admin/blocked-serials');
+    var box = document.getElementById('blocked-list');
+    if (!r.data || !r.data.success) { box.innerHTML = '<p class="note">Chưa tải được danh sách serial bị chặn' + (r.data && r.data.message ? ': ' + esc(r.data.message) : ' (endpoint GET /api/admin/blocked-serials chưa có — chờ backend).') + '</p>'; return; }
+    // Backend GET /api/admin/blocked-serials trả key blocked_serials.
+    var rows = r.data.blocked_serials || r.data.blocked || r.data.serials || [];
+    if (!rows.length) { box.innerHTML = '<p class="note">Chưa có serial nào bị chặn.</p>'; return; }
+    var h = '<table><tr><th>Serial</th><th>Lý do</th><th>Chặn bởi</th><th>Thời gian</th><th>Hành động</th></tr>';
+    rows.forEach(function (b) {
+      h += '<tr><td><b>' + esc(b.serial) + '</b></td><td>' + esc(b.reason || '') + '</td><td>' + esc(b.blocked_by || '—') + '</td><td>' + fmtDate(b.created_at) +
+        '</td><td><button class="btn ghost" onclick="unblockSerial(' + JSON.stringify(b.serial) + ')">Gỡ chặn</button></td></tr>';
+    });
+    box.innerHTML = h + '</table>';
+  }
+  window.blockSerial = async function () {
+    var serial = document.getElementById('block-serial').value.trim();
+    var reason = document.getElementById('block-reason').value.trim();
+    if (!serial) { showMsg('Nhập serial cần chặn.', false); return; }
+    if (!reason) { showMsg('Lý do chặn là bắt buộc.', false); return; }
+    if (!await confirmDlg('Chặn serial "' + serial + '"?\nLý do: ' + reason + '\nSerial bị chặn không thể dùng để trao đồ nữa.')) return;
+    var r = await api('POST', '/api/admin/blocked-serials', { serial: serial, reason: reason });
+    if (r.data && r.data.success) { showMsg('Đã chặn serial ' + serial + '.'); loadBlockedSerials(); } else showMsg(r.data && r.data.message || 'Chặn serial thất bại.', false);
+  };
+  window.unblockSerial = async function (serial) {
+    if (!await confirmDlg('Gỡ chặn serial "' + serial + '"?')) return;
+    var r = await api('DELETE', '/api/admin/blocked-serials/' + encodeURIComponent(serial));
+    if (r.data && r.data.success) { showMsg('Đã gỡ chặn serial ' + serial + '.'); loadBlockedSerials(); } else showMsg(r.data && r.data.message || 'Gỡ chặn thất bại.', false);
+  };
+
+  // ---- Shop ----
+  async function loadShop() {
+    var r = await api('GET', '/api/admin/shop/items');
+    if (!r.data || !r.data.success) { showMsg(r.data && r.data.message || 'Không tải được shop.', false); return; }
+    var h = '<table><tr><th>ID</th><th>Tên</th><th>Giá</th><th>Loại tiền</th><th>Loại</th><th>Đang bán</th><th>Mô tả</th><th>Hành động</th></tr>';
+    (r.data.items || []).forEach(function (it) {
+      h += '<tr><td>' + esc(it.id) + '</td><td>' + esc(it.name) + '</td><td>' + it.price.toLocaleString('vi-VN') +
+        '</td><td>' + esc(it.currency || 'GCOIN') + '</td><td>' + esc(it.category) + '</td><td>' + (it.is_active ? '<span class="ok">Có</span>' : '<span class="bad">Ngừng bán</span>') +
+        '</td><td>' + esc(it.description || '') + '</td><td>' +
+        '<button class="btn ghost" onclick="editShopItem(' + JSON.stringify(it.id) + ')">Sửa</button> ' +
+        (it.is_active ? '<button class="btn danger" onclick="deleteShopItem(' + JSON.stringify(it.id) + ')">Ngừng bán</button>' : '') +
+        '</td></tr>';
+    });
+    document.getElementById('shop-list').innerHTML = h + '</table>';
+  }
+  window.editShopItem = async function (id) {
+    var r = await api('GET', '/api/admin/shop/items');
+    var it = (r.data && r.data.items || []).find(function (x) { return x.id === id; });
+    if (!it) { showMsg('Không tìm thấy vật phẩm.', false); return; }
+    document.getElementById('shop-id').value = it.id;
+    document.getElementById('shop-name').value = it.name;
+    document.getElementById('shop-price').value = it.price;
+    document.getElementById('shop-currency').value = it.currency || 'GCOIN';
+    document.getElementById('shop-cat').value = it.category;
+    document.getElementById('shop-icon').value = it.icon || '';
+    document.getElementById('shop-cmd').value = it.game_command || '';
+    document.getElementById('shop-desc').value = it.description || '';
+    document.getElementById('shop-sort').value = it.sort_order || 0;
+    document.getElementById('shop-active').checked = !!it.is_active;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+  window.saveShopItem = async function () {
+    var body = {
+      id: document.getElementById('shop-id').value.trim(),
+      name: document.getElementById('shop-name').value.trim(),
+      price: Number(document.getElementById('shop-price').value),
+      currency: document.getElementById('shop-currency').value,
+      category: document.getElementById('shop-cat').value,
+      icon: document.getElementById('shop-icon').value.trim(),
+      description: document.getElementById('shop-desc').value.trim(),
+      game_command: document.getElementById('shop-cmd').value.trim(),
+      sort_order: Number(document.getElementById('shop-sort').value),
+      is_active: document.getElementById('shop-active').checked
+    };
+    if (!body.name || !(body.price >= 0)) { showMsg('Nhập tên và giá hợp lệ.', false); return; }
+    var r = await api('POST', '/api/admin/shop/items', body);
+    if (r.data && r.data.success) { showMsg(r.data.message); loadShop(); } else showMsg(r.data && r.data.message || 'Lưu thất bại.', false);
+  };
+  window.deleteShopItem = async function (id) {
+    if (!await confirmDlg('Ngừng bán vật phẩm "' + id + '"? (soft delete — vẫn còn trong DB, có thể bật lại bằng cách sửa + tick "Đang bán".)')) return;
+    var r = await api('DELETE', '/api/admin/shop/items/' + encodeURIComponent(id), {});
+    if (r.data && r.data.success) { showMsg(r.data.message); loadShop(); } else showMsg(r.data && r.data.message || 'Xóa thất bại.', false);
+  };
+
+  // ---- News ----
+  var newsEditingId = null;
+  var newsCache = {};
+  async function loadNews() {
+    var r = await api('GET', '/api/admin/news?limit=50');
+    var box = document.getElementById('news-list');
+    if (!r.data || !r.data.success) { box.innerHTML = '<p class="note">Chưa tải được tin tức' + (r.data && r.data.message ? ': ' + esc(r.data.message) : ' (endpoint GET /api/admin/news chưa có — chờ backend; API public /api/news ẩn tin chưa publish).') + '</p>'; return; }
+    var items = r.data.news || [];
+    newsCache = {};
+    if (!items.length) { box.innerHTML = '<p class="note">Chưa có tin nào.</p>'; return; }
+    var h = '<table><tr><th>ID</th><th>Tiêu đề (VI)</th><th>Chuyên mục</th><th>Hiển thị</th><th>Tạo lúc</th><th>Hành động</th></tr>';
+    items.forEach(function (n) {
+      newsCache[n.id] = n;
+      h += '<tr><td>' + n.id + '</td><td>' + esc(n.title_vi || n.title_en || '') + '</td><td>' + esc(n.category || '') +
+        '</td><td>' + (n.published ? '<span class="ok">Hiện</span>' : '<span class="bad">Ẩn</span>') + '</td><td>' + fmtDate(n.created_at) +
+        '</td><td class="acc-act"><button class="btn ghost" onclick="editNews(' + n.id + ')">Sửa</button> ' +
+        '<button class="btn ghost" onclick="toggleNews(' + n.id + ',' + (!n.published) + ')">' + (n.published ? 'Ẩn' : 'Hiện') + '</button> ' +
+        '<button class="btn danger" onclick="deleteNews(' + n.id + ')">Xóa</button></td></tr>';
+    });
+    box.innerHTML = h + '</table>';
+  }
+  window.editNews = function (id) {
+    var n = newsCache[id];
+    if (!n) return;
+    newsEditingId = id;
+    document.getElementById('news-title-vi').value = n.title_vi || '';
+    document.getElementById('news-title-en').value = n.title_en || '';
+    document.getElementById('news-body-vi').value = n.body_vi || '';
+    document.getElementById('news-body-en').value = n.body_en || '';
+    document.getElementById('news-cat').value = n.category || 'update';
+    document.getElementById('news-published').checked = !!n.published;
+    document.getElementById('news-editing').style.display = '';
+    document.getElementById('news-editing-id').textContent = id;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+  window.clearNewsForm = function () {
+    newsEditingId = null;
+    ['news-title-vi', 'news-title-en', 'news-body-vi', 'news-body-en'].forEach(function (x) { document.getElementById(x).value = ''; });
+    document.getElementById('news-cat').value = 'update';
+    document.getElementById('news-published').checked = true;
+    document.getElementById('news-editing').style.display = 'none';
+  };
+  window.saveNews = async function () {
+    var body = {
+      title_vi: document.getElementById('news-title-vi').value.trim(),
+      title_en: document.getElementById('news-title-en').value.trim() || null,
+      body_vi: document.getElementById('news-body-vi').value.trim(),
+      body_en: document.getElementById('news-body-en').value.trim() || null,
+      category: document.getElementById('news-cat').value,
+      published: document.getElementById('news-published').checked
+    };
+    if (!body.title_vi || !body.body_vi) { showMsg('Tiêu đề VI và nội dung VI là bắt buộc.', false); return; }
+    var r;
+    if (newsEditingId != null) r = await api('PUT', '/api/admin/news/' + newsEditingId, body);
+    else r = await api('POST', '/api/admin/news', body);
+    if (r.data && r.data.success) { showMsg(r.data.message || (newsEditingId != null ? 'Đã sửa tin.' : 'Đã đăng tin.')); clearNewsForm(); loadNews(); }
+    else showMsg(r.data && r.data.message || 'Lưu tin thất bại.', false);
+  };
+  window.toggleNews = async function (id, published) {
+    var r = await api('PUT', '/api/admin/news/' + id, { published: published });
+    if (r.data && r.data.success) { showMsg(published ? 'Đã hiện tin #' + id + '.' : 'Đã ẩn tin #' + id + '.'); loadNews(); }
+    else showMsg(r.data && r.data.message || 'Đổi trạng thái thất bại.', false);
+  };
+  window.deleteNews = async function (id) {
+    if (!await confirmDlg('Xóa VĨNH VIỄN tin #' + id + '? (hard delete — không khôi phục được.)')) return;
+    var r = await api('DELETE', '/api/admin/news/' + id);
+    if (r.data && r.data.success) { showMsg('Đã xóa tin #' + id + '.'); loadNews(); }
+    else showMsg(r.data && r.data.message || 'Xóa tin thất bại.', false);
+  };
+
+  // ---- Events ----
+  var eventsCache = {};
+  async function loadEvents() {
+    var r = await api('GET', '/api/admin/events');
+    var box = document.getElementById('events-list');
+    var tzEl = document.getElementById('events-tz');
+    if (!r.data || !r.data.success) {
+      tzEl.textContent = 'Chưa tải được lịch sự kiện (endpoint GET /api/admin/events chưa có — chờ backend). Hiển thị mặc định: mỗi 2 giờ vào giờ chẵn, mở cửa trước 15 phút, cấp tối thiểu 10.';
+      var def = { interval_hours: 2, minute: 0, entry_minutes_before: 15, min_level: 10, allow_killers: false, enabled: true };
+      box.innerHTML = eventCard('blood_castle', 'Blood Castle', def, '—') + eventCard('devil_square', 'Devil Square', def, '—');
+      return;
+    }
+    // Backend GET /api/admin/events trả {event_timezone, events: [{type, ..., next_start}]}
+    // (mảng, không phải map event_schedule/next_start như bản nháp đầu — xem MERGE-NOTES).
+    // Dựng map từ mảng events; giữ fallback event_schedule/next_start nếu API đổi dạng.
+    var sched = {};
+    if (Array.isArray(r.data.events)) {
+      r.data.events.forEach(function (e) { if (e && e.type) sched[e.type] = e; });
+    } else {
+      sched = r.data.event_schedule || r.data.schedules || {};
+    }
+    var nexts = {};
+    Object.keys(sched).forEach(function (t) { if (sched[t] && sched[t].next_start) nexts[t] = sched[t].next_start; });
+    if (r.data.next_start) nexts = r.data.next_start;
+    tzEl.textContent = 'Múi giờ sự kiện: ' + (r.data.event_timezone || 'UTC') + ' (đổi ở tab Cấu hình).';
+    eventsCache = sched;
+    box.innerHTML = eventCard('blood_castle', 'Blood Castle', sched.blood_castle || {}, nexts.blood_castle || '') +
+      eventCard('devil_square', 'Devil Square', sched.devil_square || {}, nexts.devil_square || '');
+  }
+  function eventCard(type, label, s, nextStart) {
+    var en = s.enabled !== false;
+    return '<div class="card"><h3>' + label + ' <span class="pill ' + (en ? 'hot' : 'off') + '">' + (en ? 'ĐANG BẬT' : 'ĐANG TẮT') + '</span></h3>' +
+      '<div class="formgrid">' +
+      '<div class="field"><label>Bật/tắt</label><select id="ev-' + type + '-enabled"><option value="true"' + (en ? ' selected' : '') + '>Bật</option><option value="false"' + (!en ? ' selected' : '') + '>Tắt</option></select></div>' +
+      '<div class="field"><label>Chu kỳ (giờ, ước của 24: 1/2/3/4/6/8/12/24)</label><input type="number" id="ev-' + type + '-interval" min="1" max="24" value="' + (s.interval_hours != null ? s.interval_hours : 2) + '"></div>' +
+      '<div class="field"><label>Phút bắt đầu (0–59)</label><input type="number" id="ev-' + type + '-minute" min="0" max="59" value="' + (s.minute != null ? s.minute : 0) + '"></div>' +
+      '<div class="field"><label>Mở cửa trước (phút, 0–60)</label><input type="number" id="ev-' + type + '-entry" min="0" max="60" value="' + (s.entry_minutes_before != null ? s.entry_minutes_before : 15) + '"></div>' +
+      '<div class="field"><label>Cấp tối thiểu (1–350)</label><input type="number" id="ev-' + type + '-minlevel" min="1" max="350" value="' + (s.min_level != null ? s.min_level : 10) + '"></div>' +
+      '<div class="field"><label>Cho phép PK</label><select id="ev-' + type + '-pk"><option value="false"' + (!s.allow_killers ? ' selected' : '') + '>Không</option><option value="true"' + (s.allow_killers ? ' selected' : '') + '>Có</option></select></div></div>' +
+      '<p class="note">Giờ tiếp theo (theo múi giờ đã chọn): <b>' + (nextStart ? fmtDate(nextStart) : '— (chưa tính được)') + '</b></p>' +
+      '<div class="row"><button class="btn gold" onclick="saveEvent(\'' + type + '\')">💾 Lưu lịch ' + label + '</button></div></div>';
+  }
+  window.saveEvent = async function (type) {
+    var interval = Number(document.getElementById('ev-' + type + '-interval').value);
+    var minute = Number(document.getElementById('ev-' + type + '-minute').value);
+    var entry = Number(document.getElementById('ev-' + type + '-entry').value);
+    var minLevel = Number(document.getElementById('ev-' + type + '-minlevel').value);
+    if ([1, 2, 3, 4, 6, 8, 12, 24].indexOf(interval) < 0) { showMsg('Chu kỳ giờ phải là ước của 24 (1, 2, 3, 4, 6, 8, 12, 24).', false); return; }
+    if (!(minute >= 0 && minute <= 59 && entry >= 0 && entry <= 60 && minLevel >= 1 && minLevel <= 350)) { showMsg('Kiểm tra lại các giá trị (phút 0–59, mở cửa trước 0–60, cấp 1–350).', false); return; }
+    var body = { config: {} };
+    body.config['event_schedule.' + type] = {
+      enabled: document.getElementById('ev-' + type + '-enabled').value === 'true',
+      interval_hours: interval, minute: minute, entry_minutes_before: entry,
+      min_level: minLevel, allow_killers: document.getElementById('ev-' + type + '-pk').value === 'true'
+    };
+    var r = await api('POST', '/api/admin/config', body);
+    if (r.data && r.data.success) { showMsg('Đã lưu lịch sự kiện ' + type + ' (HOT — có hiệu lực ngay).'); loadEvents(); }
+    else showMsg(r.data && r.data.message || 'Lưu lịch sự kiện thất bại.', false);
+  };
+
+  // ---- Modules ----
+  var KNOWN_MODULES = [
+    { name: 'quests', desc: 'Nhiệm vụ — GET /api/quests, POST /api/quests/claim', enabled: false },
+    { name: 'arena_3v3', desc: 'Đấu trường 3v3 — GET /api/3v3/*', enabled: false },
+    { name: 'news', desc: 'Tin tức — GET /api/news* + admin news', enabled: true },
+    { name: 'events', desc: 'Sự kiện — GET /api/events, enter/score', enabled: true },
+    { name: 'party', desc: 'Party — /api/party/*', enabled: true },
+    { name: 'trade', desc: 'Giao dịch — /api/trade/*', enabled: true },
+    { name: 'guild', desc: 'Guild — /api/guild/*', enabled: true },
+    { name: 'pk', desc: 'PK — /api/pk/*', enabled: true },
+    { name: 'character_delete', desc: 'Xóa nhân vật — POST /api/character/delete', enabled: false },
+    { name: 'character_options', desc: 'Tùy chọn nhân vật — /api/character/options', enabled: false },
+  ];
+  var modulesCache = null;
+  async function loadModules() {
+    var r = await api('GET', '/api/admin/modules');
+    var box = document.getElementById('modules-list');
+    var mods = null;
+    if (r.data && r.data.success && r.data.modules) {
+      mods = r.data.modules;
+      modulesCache = mods;
+    } else {
+      mods = null;
+      modulesCache = null;
+    }
+    var h = '';
+    if (!mods) h += '<p class="note">Endpoint GET /api/admin/modules chưa có — chờ backend. Hiển thị danh sách module mặc định theo SPEC (chưa lưu được).</p>';
+    h += '<table><tr><th>Module</th><th>Mô tả</th><th>Bật/tắt</th><th>Trạng thái</th></tr>';
+    KNOWN_MODULES.forEach(function (m) {
+      var cur = mods && mods[m.name] ? mods[m.name] : null;
+      var enabled = cur ? !!cur.enabled : m.enabled;
+      var unknown = cur && cur.unknown;
+      h += '<tr><td><b>' + esc(m.name) + '</b>' + (unknown ? ' <span class="pill off">không rõ</span>' : '') + '</td><td>' + esc(m.desc) + '</td><td>' +
+        '<button class="btn ' + (enabled ? 'gold' : 'ghost') + '" onclick="toggleModule(' + JSON.stringify(m.name) + ',' + (!enabled) + ')">' + (enabled ? 'Bật' : 'Tắt') + '</button></td><td>' +
+        (enabled ? '<span class="ok">Đang bật</span>' : '<span class="bad">Đang tắt</span>') + '</td></tr>';
+    });
+    h += '</table>';
+    // Backend trả module lạ ở key riêng unknown_modules (không nằm trong modules).
+    var unk = (r.data && r.data.unknown_modules) || {};
+    Object.keys(unk).forEach(function (k) {
+      h += '<p class="note">Module lạ trong DB: <b>' + esc(k) + '</b> (enabled=' + !!unk[k].enabled + ') — giữ nguyên, không sửa ở đây.</p>';
+    });
+    if (mods) {
+      Object.keys(mods).forEach(function (k) {
+        var known = KNOWN_MODULES.some(function (m) { return m.name === k; });
+        if (!known) h += '<p class="note">Module lạ trong DB: <b>' + esc(k) + '</b> (enabled=' + !!mods[k].enabled + ') — giữ nguyên, không sửa ở đây.</p>';
+      });
+    }
+    box.innerHTML = h;
+  }
+  window.toggleModule = async function (name, enabled) {
+    if (!modulesCache) { showMsg('Endpoint module chưa có — chờ backend, chưa lưu được.', false); return; }
+    if (!await confirmDlg((enabled ? 'Bật' : 'Tắt') + ' module "' + name + '"?\n\nLưu ý: bật module KHÔNG mở lại route đang bị khóa cứng (DISABLED_ROUTES).')) return;
+    var body = { modules: {} };
+    body.modules[name] = { enabled: enabled };
+    var r = await api('POST', '/api/admin/modules', body);
+    if (r.data && r.data.success) { showMsg('Đã ' + (enabled ? 'bật' : 'tắt') + ' module ' + name + '.'); loadModules(); }
+    else showMsg(r.data && r.data.message || 'Đổi module thất bại.', false);
+  };
+
+  // ---- Menu ----
+  var menuCache = [];
+  var menuEditingId = null;
+  async function loadNavMenu() {
+    var r = await api('GET', '/api/admin/nav-menu');
+    var box = document.getElementById('menu-list');
+    if (!r.data || !r.data.success) {
+      box.innerHTML = '<p class="note">Chưa tải được menu' + (r.data && r.data.message ? ': ' + esc(r.data.message) : ' (endpoint GET /api/admin/nav-menu chưa có — chờ backend).') + '</p>';
+      menuCache = [];
+      return;
+    }
+    menuCache = r.data.menu || [];
+    renderMenuTable();
+  }
+  function renderMenuTable() {
+    var box = document.getElementById('menu-list');
+    if (!menuCache.length) { box.innerHTML = '<p class="note">Chưa có mục menu nào.</p>'; return; }
+    var sorted = menuCache.slice().sort(function (a, b) { return (a.sort_order || 0) - (b.sort_order || 0); });
+    var h = '<table><tr><th>Thứ tự</th><th>ID</th><th>Nhãn VI</th><th>Nhãn EN</th><th>Href</th><th>Hiển thị</th><th>Hành động</th></tr>';
+    sorted.forEach(function (it, i) {
+      h += '<tr><td>' + (it.sort_order != null ? it.sort_order : i) + '</td><td>' + esc(it.id) + '</td><td>' + esc(it.label_vi) + '</td><td>' + esc(it.label_en || '') +
+        '</td><td>' + esc(it.href) + '</td><td>' + (it.visible ? '<span class="ok">Hiện</span>' : '<span class="bad">Ẩn</span>') + '</td><td>' +
+        '<button class="btn ghost" onclick="moveMenuItem(' + JSON.stringify(it.id) + ',-1)"' + (i === 0 ? ' disabled' : '') + '>↑</button> ' +
+        '<button class="btn ghost" onclick="moveMenuItem(' + JSON.stringify(it.id) + ',1)"' + (i === sorted.length - 1 ? ' disabled' : '') + '>↓</button> ' +
+        '<button class="btn ghost" onclick="editMenuItem(' + JSON.stringify(it.id) + ')">Sửa</button> ' +
+        '<button class="btn danger" onclick="deleteMenuItem(' + JSON.stringify(it.id) + ')">Xóa</button></td></tr>';
+    });
+    box.innerHTML = h + '</table>';
+  }
+  window.editMenuItem = function (id) {
+    var it = null;
+    menuCache.forEach(function (m) { if (m.id === id) it = m; });
+    if (!it) return;
+    menuEditingId = id;
+    document.getElementById('menu-id').value = it.id;
+    document.getElementById('menu-label-vi').value = it.label_vi || '';
+    document.getElementById('menu-label-en').value = it.label_en || '';
+    document.getElementById('menu-href').value = it.href || '';
+    document.getElementById('menu-sort').value = it.sort_order != null ? it.sort_order : 0;
+    document.getElementById('menu-visible').checked = !!it.visible;
+    document.getElementById('menu-editing').style.display = '';
+    document.getElementById('menu-editing-id').textContent = id;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+  window.clearMenuForm = function () {
+    menuEditingId = null;
+    ['menu-id', 'menu-label-vi', 'menu-label-en', 'menu-href'].forEach(function (x) { document.getElementById(x).value = ''; });
+    document.getElementById('menu-sort').value = 0;
+    document.getElementById('menu-visible').checked = true;
+    document.getElementById('menu-editing').style.display = 'none';
+  };
+  async function saveWholeMenu(menu) {
+    var r = await api('PUT', '/api/admin/nav-menu', { menu: menu });
+    if (r.data && r.data.success) { showMsg(r.data.message || 'Đã lưu menu.'); loadNavMenu(); }
+    else showMsg(r.data && r.data.message || 'Lưu menu thất bại.', false);
+  }
+  window.saveMenuItem = async function () {
+    var id = document.getElementById('menu-id').value.trim();
+    var labelVi = document.getElementById('menu-label-vi').value.trim();
+    var labelEn = document.getElementById('menu-label-en').value.trim();
+    var href = document.getElementById('menu-href').value.trim();
+    var sort = Number(document.getElementById('menu-sort').value);
+    var visible = document.getElementById('menu-visible').checked;
+    if (!/^[a-z0-9_-]{1,32}$/.test(id)) { showMsg('ID phải là slug [a-z0-9_-], tối đa 32 ký tự.', false); return; }
+    if (!labelVi || labelVi.length > 50) { showMsg('Nhãn VI bắt buộc, tối đa 50 ký tự.', false); return; }
+    if (!href || !(/^\/|^https?:\/\//.test(href))) { showMsg('Href phải bắt đầu bằng / hoặc http(s):// (không cho javascript:).', false); return; }
+    var menu = menuCache.slice();
+    var item = { id: id, label_vi: labelVi, label_en: labelEn || null, href: href, visible: visible, sort_order: sort };
+    var idx = -1;
+    menu.forEach(function (m, i) { if (m.id === (menuEditingId || id)) idx = i; });
+    if (menuEditingId && menuEditingId !== id) { showMsg('Không đổi được ID của mục đang sửa — xóa mục cũ rồi thêm mục mới nếu cần đổi ID.', false); return; }
+    if (idx >= 0) menu[idx] = item;
+    else {
+      if (menu.some(function (m) { return m.id === id; })) { showMsg('ID "' + id + '" đã tồn tại.', false); return; }
+      menu.push(item);
+    }
+    if (menu.length > 12) { showMsg('Tối đa 12 mục menu.', false); return; }
+    await saveWholeMenu(menu);
+    clearMenuForm();
+  };
+  window.deleteMenuItem = async function (id) {
+    if (!await confirmDlg('Xóa mục menu "' + id + '"?')) return;
+    var menu = menuCache.filter(function (m) { return m.id !== id; });
+    await saveWholeMenu(menu);
+  };
+  window.moveMenuItem = async function (id, dir) {
+    var sorted = menuCache.slice().sort(function (a, b) { return (a.sort_order || 0) - (b.sort_order || 0); });
+    var i = -1;
+    sorted.forEach(function (m, k) { if (m.id === id) i = k; });
+    var j = i + dir;
+    if (i < 0 || j < 0 || j >= sorted.length) return;
+    var tmp = sorted[i].sort_order;
+    sorted[i].sort_order = sorted[j].sort_order;
+    sorted[j].sort_order = tmp;
+    await saveWholeMenu(sorted);
+  };
+
+  // ---- Audit ----
+  var AUDIT_EVENTS = ['login', 'login_failed', 'password_changed', 'admin_ban', 'admin_unban', 'admin_grant_admin', 'admin_revoke_admin', 'admin_grant_zen', 'admin_grant_points', 'admin_teleport', 'admin_notice', 'admin_config_change', 'admin_shop_item_upsert', 'admin_shop_item_delete', 'admin_news_create', 'admin_news_update', 'admin_news_delete', 'admin_balance_adjust', 'admin_password_reset', 'admin_item_award', 'admin_block_serial', 'admin_unblock_serial', 'admin_character_update', 'admin_modules_change', 'admin_nav_menu_change', 'admin_shutdown'];
+  var auditOffset = 0, auditTotal = 0;
+  var auditSub = 'audit';
+  var aloginOffset = 0, aloginTotal = 0;
+  (function fillAuditEvents() {
+    var sel = document.getElementById('audit-event');
+    AUDIT_EVENTS.forEach(function (e) {
+      var o = document.createElement('option');
+      o.value = e; o.textContent = e;
+      sel.appendChild(o);
+    });
+  })();
+  window.switchAuditSub = function (sub) {
+    auditSub = sub;
+    document.getElementById('sub-audit').classList.toggle('active', sub === 'audit');
+    document.getElementById('sub-adminlogins').classList.toggle('active', sub === 'adminlogins');
+    document.getElementById('sub-dupe').classList.toggle('active', sub === 'dupe');
+    document.getElementById('audit-main').style.display = sub === 'audit' ? '' : 'none';
+    document.getElementById('audit-adminlogins').style.display = sub === 'adminlogins' ? '' : 'none';
+    document.getElementById('audit-dupe').style.display = sub === 'dupe' ? '' : 'none';
+    if (sub === 'adminlogins') loadAdminLogins();
+    else if (sub === 'dupe') loadDupeLog();
+    else loadAudit();
+  };
+  window.auditResetPage = function () { auditOffset = 0; };
+  window.auditPrev = function () { if (auditOffset >= 50) { auditOffset -= 50; loadAudit(); } };
+  window.auditNext = function () { if (auditOffset + 50 < auditTotal) { auditOffset += 50; loadAudit(); } };
+  async function loadAudit() {
+    var qs = '/api/admin/audit?limit=50&offset=' + auditOffset;
+    var ev = document.getElementById('audit-event').value;
+    var acc = document.getElementById('audit-account').value.trim();
+    var ch = document.getElementById('audit-char').value.trim();
+    var realm = document.getElementById('audit-realm').value;
+    var from = document.getElementById('audit-from').value;
+    var to = document.getElementById('audit-to').value;
+    if (ev) qs += '&event_type=' + encodeURIComponent(ev);
+    if (acc) qs += '&account_id=' + encodeURIComponent(acc);
+    if (ch) qs += '&character_name=' + encodeURIComponent(ch);
+    if (realm) qs += '&realm_code=' + encodeURIComponent(realm);
+    if (from) qs += '&from=' + encodeURIComponent(from);
+    if (to) qs += '&to=' + encodeURIComponent(to);
+    var r = await api('GET', qs);
+    if (!r.data || !r.data.success) { showMsg(r.data && r.data.message || 'Không tải được audit.', false); return; }
+    auditTotal = r.data.total || 0;
+    document.getElementById('audit-list').innerHTML = '<p class="note">Tổng: ' + auditTotal + ' dòng.</p>' + auditTable(r.data.audit || []);
+    document.getElementById('audit-page').textContent = 'Trang ' + (Math.floor(auditOffset / 50) + 1) + ' — đang xem ' + (auditOffset + 1) + '–' + Math.min(auditOffset + 50, auditTotal) + ' / ' + auditTotal;
+    document.getElementById('audit-prev').disabled = auditOffset === 0;
+    document.getElementById('audit-next').disabled = auditOffset + 50 >= auditTotal;
+  }
+  window.aloginResetPage = function () { aloginOffset = 0; };
+  window.aloginPrev = function () { if (aloginOffset >= 50) { aloginOffset -= 50; loadAdminLogins(); } };
+  window.aloginNext = function () { if (aloginOffset + 50 < aloginTotal) { aloginOffset += 50; loadAdminLogins(); } };
+  async function loadAdminLogins() {
+    var qs = '/api/admin/admin-logins?limit=50&offset=' + aloginOffset;
+    var ok = document.getElementById('alogin-success').value;
+    var user = document.getElementById('alogin-user').value.trim();
+    if (ok !== '') qs += '&success=' + encodeURIComponent(ok);
+    if (user) qs += '&username=' + encodeURIComponent(user);
+    var r = await api('GET', qs);
+    var box = document.getElementById('alogin-list');
+    if (!r.data || !r.data.success) { box.innerHTML = '<p class="note">Chưa tải được log đăng nhập admin' + (r.data && r.data.message ? ': ' + esc(r.data.message) : ' (endpoint GET /api/admin/admin-logins chưa có — chờ backend).') + '</p>'; return; }
+    aloginTotal = r.data.total || 0;
+    var rows = r.data.logins || [];
+    if (!rows.length) { box.innerHTML = '<p class="note">Chưa có lần đăng nhập admin nào.</p>'; return; }
+    var h = '<p class="note">Tổng: ' + aloginTotal + ' lần.</p><table><tr><th>Thời gian</th><th>Admin</th><th>Kết quả</th><th>Lý do</th><th>IP</th></tr>';
+    rows.forEach(function (l) {
+      h += '<tr><td>' + fmtDate(l.created_at) + '</td><td>' + esc(l.username || ('#' + l.account_id)) + '</td><td>' +
+        (l.success ? '<span class="ok">Thành công</span>' : '<span class="bad">Thất bại</span>') + '</td><td>' + esc(l.reason || '—') +
+        '</td><td>' + esc(l.ip || '—') + '</td></tr>';
+    });
+    box.innerHTML = h + '</table>';
+    document.getElementById('alogin-page').textContent = 'Trang ' + (Math.floor(aloginOffset / 50) + 1) + ' — đang xem ' + (aloginOffset + 1) + '–' + Math.min(aloginOffset + 50, aloginTotal) + ' / ' + aloginTotal;
+    document.getElementById('alogin-prev').disabled = aloginOffset === 0;
+    document.getElementById('alogin-next').disabled = aloginOffset + 50 >= aloginTotal;
+  }
+
+
+  // ANTI-DUPE (migration 029): nhật ký dupe.
+  var dupeOffset = 0, dupeTotal = 0;
+  window.dupeResetPage = function () { dupeOffset = 0; };
+  window.dupePrev = function () { if (dupeOffset >= 50) { dupeOffset -= 50; loadDupeLog(); } };
+  window.dupeNext = function () { if (dupeOffset + 50 < dupeTotal) { dupeOffset += 50; loadDupeLog(); } };
+  window.runDupeScanManual = async function () {
+    if (!await confirmDlg('Chạy quét dupe toàn bộ blob ngay bây giờ? Nếu phát hiện đồ trùng thật, hệ thống sẽ khóa acc + đổi mật khẩu theo chính sách chống dupe.')) return;
+    var r = await api('GET', '/api/admin/dupe-scan');
+    if (!r.data || !r.data.success) { showMsg(r.data && r.data.message || 'Không chạy được quét dupe.', false); return; }
+    var b = r.data.blob || {};
+    document.getElementById('dupe-scan-info').innerHTML = '<p class="note">Quét lúc ' + esc(r.data.scanned_at) + ': ' + b.accounts + ' acc, ' + b.items + ' đồ trong blob, ' + (b.duplicates ? b.duplicates.length : 0) + ' nhóm trùng, ' + (b.incidents_created || 0) + ' vụ mới, ' + (b.null_serial_count || 0) + ' đồ không serial.</p>';
+    loadDupeLog();
+  };
+  async function loadDupeLog() {
+    var qs = '/api/admin/dupe-log?limit=50&offset=' + dupeOffset;
+    var s = document.getElementById('dupe-serial').value.trim();
+    var a = document.getElementById('dupe-account').value.trim();
+    var f = document.getElementById('dupe-from').value;
+    var t = document.getElementById('dupe-to').value;
+    var st = document.getElementById('dupe-status').value;
+    if (s) qs += '&serial=' + encodeURIComponent(s);
+    if (a) qs += '&account=' + encodeURIComponent(a);
+    if (f) qs += '&from=' + encodeURIComponent(f);
+    if (t) qs += '&to=' + encodeURIComponent(t);
+    if (st) qs += '&status=' + encodeURIComponent(st);
+    var r = await api('GET', qs);
+    if (!r.data || !r.data.success) { showMsg(r.data && r.data.message || 'Không tải được nhật ký dupe.', false); return; }
+    dupeTotal = r.data.total || 0;
+    document.getElementById('dupe-list').innerHTML = '<p class="note">Tổng: ' + dupeTotal + ' vụ.</p>' + dupeTable(r.data.incidents || []);
+    document.getElementById('dupe-page').textContent = 'Trang ' + (Math.floor(dupeOffset / 50) + 1) + ' — đang xem ' + (dupeOffset + 1) + '–' + Math.min(dupeOffset + 50, dupeTotal) + ' / ' + dupeTotal;
+    document.getElementById('dupe-prev').disabled = dupeOffset === 0;
+    document.getElementById('dupe-next').disabled = dupeOffset + 50 >= dupeTotal;
+  }
+  function dupeTable(list) {
+    if (!list.length) return '<p class="note">Chưa có vụ dupe nào.</p>';
+    return '<table class="tbl"><thead><tr><th>#</th><th>Thời gian</th><th>Serial</th><th>Đồ</th><th>Acc / nhân vật (vị trí)</th><th>Hành động</th><th>Trạng thái</th><th></th></tr></thead><tbody>' + list.map(function (r) {
+      var id = r.identity || {};
+      var item = 'type ' + id.type + ' / idx ' + id.index + ' (sec ' + id.section + ') Lv' + id.level +
+        (id.skill ? ' skill' : '') + (id.luck ? ' luck' : '') + ' opt+' + (id.option || 0) +
+        (id.excellent ? ' exl[' + id.excellent + ']' : '');
+      var accs = (r.accounts || []).map(function (a) {
+        var pw = a.new_password ? ' — <b>MK mới: ' + esc(a.new_password) + '</b>' : (a.password_cleared ? ' — MK đã giao' : '');
+        var why = a.admin_skipped ? ' (admin, KHÔNG khóa)' : (a.already_banned ? ' (đã khóa từ trước)' : ' (đã khóa)');
+        return esc(a.username || ('acc#' + a.account_id)) + ' #' + a.account_id +
+          (a.character_name ? ' / ' + esc(a.character_name) : '') +
+          ' [' + esc(a.location || '') + ' slot ' + a.slot + ']' + why + pw;
+      }).join('<br>');
+      var acts = (r.actions || []).map(function (x) { return esc(String(x)); }).join(', ');
+      var btns = '';
+      if (r.status === 'open') btns += '<button class="btn ghost" onclick="dupeReview(' + r.id + ',\'reviewed\')">Đã xem</button> ';
+      if (r.status !== 'resolved') btns += '<button class="btn ghost" onclick="dupeReview(' + r.id + ',\'resolved\')">Đã xử lý</button> ';
+      if ((r.accounts || []).some(function (a) { return a.new_password; })) btns += '<button class="btn ghost" onclick="dupeReview(' + r.id + ',\'clear_passwords\')">Đã giao MK</button>';
+      return '<tr><td>' + r.id + '</td><td>' + esc(fmtDate(r.created_at)) + '</td><td>' + esc(String(r.serial)) + '</td><td>' + esc(item) + '</td><td>' + accs + '</td><td>' + acts + '</td><td>' + esc(r.status) + '</td><td>' + btns + '</td></tr>';
+    }).join('') + '</tbody></table>';
+  }
+  window.dupeReview = async function (id, action) {
+    var label = action === 'clear_passwords' ? 'Xóa mật khẩu mới khỏi bản ghi (chỉ bấm SAU KHI đã đưa MK cho chủ sở hữu)?' : (action === 'resolved' ? 'Đánh dấu vụ này đã xử lý?' : 'Đánh dấu đã xem?');
+    if (!await confirmDlg(label)) return;
+    var r = await api('POST', '/api/admin/dupe-log/' + id + '/review', { action: action });
+    if (!r.data || !r.data.success) { showMsg(r.data && r.data.message || 'Không cập nhật được.', false); return; }
+    showMsg(r.data.message || 'Đã cập nhật.', true);
+    loadDupeLog();
+  };
+
+  // ---- Auth check + first load ----
+  (async function init() {
+    var me = await api('GET', '/api/admin/me');
+    if (!me.data || !me.data.success) {
+      document.body.innerHTML = '<main><div class="card"><h2>Không có quyền quản trị</h2>' +
+        '<p>Tài khoản <b>' + esc(token.slice(0, 8)) + '…</b> không phải admin, hoặc phiên đăng nhập đã hết hạn.</p>' +
+        '<p><a href="/?login=1&next=%2Fadmin.html">← Đăng nhập bằng tài khoản admin</a></p></div></main>';
+      return;
+    }
+    document.getElementById('who').textContent = 'Đăng nhập: ' + me.data.username + ' (admin)';
+    loadOverview();
+  })();
+})();
+</script>
+<div id="item-tip"></div>
+</body>
+</html>
