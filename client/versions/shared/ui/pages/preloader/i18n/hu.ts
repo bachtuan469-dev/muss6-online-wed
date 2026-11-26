@@ -83,7 +83,6 @@ export default {
   'download.group.core': 'Alapjáték',
   'download.group.monsters': 'Szörnyek',
   'download.group.audio': 'Zene és hangok',
-  'download.group.icons': 'Tárgyikonok',
   'download.total': 'Összesen',
   'download.withPack': 'csomag',
   'download.start': 'Letöltés',

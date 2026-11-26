@@ -50,6 +50,8 @@ export default {
   'cmd.addvit': 'Erabili maila-igoerako puntuak bizindarrean',
   'cmd.addene': 'Erabili maila-igoerako puntuak energian',
   'cmd.addcmd': 'Erabili maila-igoerako puntuak agintean',
+  'cmd.reset': 'Berrezarri pertsonaia',
+  'cmd.resetinfo': 'Erakutsi berrezartze informazioa',
   'cmd.move': 'Teleportatu mapa batera',
   'cmd.war': 'Eskatu gremio-gerra bat',
   'cmd.battlesoccer': 'Eskatu Battle Soccer partida bat',

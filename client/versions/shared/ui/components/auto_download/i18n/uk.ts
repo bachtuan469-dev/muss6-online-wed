@@ -8,7 +8,6 @@ export default {
   'autoDownload.cancel': 'Скасувати',
   'autoDownload.hide': 'Сховати (завантаження триває)',
   'autoDownload.phase.map': 'Завантаження мапи: {name}',
-  'autoDownload.phase.icons': 'Завантаження предметів',
   'autoDownload.phase.audio': 'Завантаження музики та звуків',
   'autoDownload.phase.monsters': 'Завантаження персонажів та істот',
   'autoDownload.phase.core': 'Завантаження інтерфейсу та ефектів',

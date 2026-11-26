@@ -304,42 +304,33 @@ const SOCKET_RATE = 5;
 type ColorOut = { r: number; g: number; b: number };
 
 /**
- * Emissive colour of a tier at `t` seconds. `out` is written in place (a
- * Babylon Color4 works - only r/g/b/a are touched).
+ * Excellent / ancient / socket tints, shared by the world emissive, the halo
+ * and the icon picture so the three never drift apart. `gain` scales the
+ * excellent and ancient parts (the halo takes them at half); the sockets
+ * always ride at full gain.
  */
-export function itemEmissiveAt<T extends ColorOut & { a?: number }>(
+function addSpecials(
   tier: ItemVisualTier,
   t: number,
-  out: T
-): T {
-  let r = 0;
-  let g = 0;
-  let b = 0;
-
-  if (tier.intensity > 0) {
-    const breath = 1 - tier.pulse * (0.5 - 0.5 * Math.sin(t * tier.pulseRate));
-    const k = tier.intensity * breath;
-
-    r += tier.emissive[0] * k;
-    g += tier.emissive[1] * k;
-    b += tier.emissive[2] * k;
-  }
-
+  rgb: { r: number; g: number; b: number },
+  gain: number,
+): void {
   const specials = legacyRenderLevel() > 0;
 
   if (tier.isExcellent && specials) {
-    r += EXC_VIOLET[0] * EXC_GAIN;
-    g += EXC_VIOLET[1] * EXC_GAIN;
-    b += EXC_VIOLET[2] * EXC_GAIN;
+    const e = EXC_GAIN * gain;
+    rgb.r += EXC_VIOLET[0] * e;
+    rgb.g += EXC_VIOLET[1] * e;
+    rgb.b += EXC_VIOLET[2] * e;
   }
 
   if (tier.isAncient && specials) {
     const k =
-      ANCIENT_BASE + ANCIENT_PULSE * (0.5 + 0.5 * Math.sin(t * ANCIENT_RATE));
-
-    r += tier.ancientTint[0] * k;
-    g += tier.ancientTint[1] * k;
-    b += tier.ancientTint[2] * k;
+      (ANCIENT_BASE + ANCIENT_PULSE * (0.5 + 0.5 * Math.sin(t * ANCIENT_RATE))) *
+      gain;
+    rgb.r += tier.ancientTint[0] * k;
+    rgb.g += tier.ancientTint[1] * k;
+    rgb.b += tier.ancientTint[2] * k;
   }
 
   if (tier.sockets > 0) {
@@ -347,18 +338,40 @@ export function itemEmissiveAt<T extends ColorOut & { a?: number }>(
     const k =
       SOCKET_GAIN *
       (0.5 + 0.5 * Math.sin(t * SOCKET_RATE * (1 + tier.sockets * 0.15)));
-
-    r += SOCKET[0] * k;
-    g += SOCKET[1] * k;
-    b += SOCKET[2] * k;
+    rgb.r += SOCKET[0] * k;
+    rgb.g += SOCKET[1] * k;
+    rgb.b += SOCKET[2] * k;
   }
+}
+
+/**
+ * Emissive colour of a tier at `t` seconds. `out` is written in place (a
+ * Babylon Color4 works - only r/g/b/a are touched).
+ */
+export function itemEmissiveAt<T extends ColorOut & { a?: number }>(
+  tier: ItemVisualTier,
+  t: number,
+  out: T,
+): T {
+  const rgb = { r: 0, g: 0, b: 0 };
+
+  if (tier.intensity > 0) {
+    const breath = 1 - tier.pulse * (0.5 - 0.5 * Math.sin(t * tier.pulseRate));
+    const k = tier.intensity * breath;
+
+    rgb.r += tier.emissive[0] * k;
+    rgb.g += tier.emissive[1] * k;
+    rgb.b += tier.emissive[2] * k;
+  }
+
+  addSpecials(tier, t, rgb, 1);
 
   // With the legacy wash underneath, the halo in the same colour doubles up.
   const k = legacyItemEffectsOn() ? BOTH_SCALE : 1;
 
-  out.r = r * k;
-  out.g = g * k;
-  out.b = b * k;
+  out.r = rgb.r * k;
+  out.g = rgb.g * k;
+  out.b = rgb.b * k;
   out.a = 1;
 
   return out;
@@ -377,54 +390,24 @@ export function itemHaloAt<T extends ColorOut & { a?: number }>(
   t: number,
   out: T
 ): T {
-  let r = 0;
-  let g = 0;
-  let b = 0;
+  const rgb = { r: 0, g: 0, b: 0 };
 
   if (tier.halo > 0) {
     const breath = 1 - tier.pulse * (0.5 - 0.5 * Math.sin(t * tier.pulseRate));
     const k = tier.halo * breath;
 
-    r += tier.emissive[0] * k;
-    g += tier.emissive[1] * k;
-    b += tier.emissive[2] * k;
+    rgb.r += tier.emissive[0] * k;
+    rgb.g += tier.emissive[1] * k;
+    rgb.b += tier.emissive[2] * k;
   }
 
-  const specials = legacyRenderLevel() > 0;
-
-  if (tier.isExcellent && specials) {
-    const e = EXC_GAIN * 0.5;
-
-    r += EXC_VIOLET[0] * e;
-    g += EXC_VIOLET[1] * e;
-    b += EXC_VIOLET[2] * e;
-  }
-
-  if (tier.isAncient && specials) {
-    const k =
-      (ANCIENT_BASE + ANCIENT_PULSE * (0.5 + 0.5 * Math.sin(t * ANCIENT_RATE))) *
-      0.5;
-
-    r += tier.ancientTint[0] * k;
-    g += tier.ancientTint[1] * k;
-    b += tier.ancientTint[2] * k;
-  }
-
-  if (tier.sockets > 0) {
-    const k =
-      SOCKET_GAIN *
-      (0.5 + 0.5 * Math.sin(t * SOCKET_RATE * (1 + tier.sockets * 0.15)));
-
-    r += SOCKET[0] * k;
-    g += SOCKET[1] * k;
-    b += SOCKET[2] * k;
-  }
+  addSpecials(tier, t, rgb, 0.5);
 
   const k = legacyItemEffectsOn() ? BOTH_SCALE : 1;
 
-  out.r = r * k;
-  out.g = g * k;
-  out.b = b * k;
+  out.r = rgb.r * k;
+  out.g = rgb.g * k;
+  out.b = rgb.b * k;
   out.a = 1;
 
   return out;

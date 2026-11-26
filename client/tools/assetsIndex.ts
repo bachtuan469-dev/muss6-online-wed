@@ -52,7 +52,7 @@ type Entry = { name: string; bytes: number; gz: number | null };
 export type Group = {
   id: string;
   /** `core` is never optional; the rest the player chooses. */
-  kind: 'core' | 'monsters' | 'audio' | 'icons' | 'map';
+  kind: 'core' | 'monsters' | 'audio' | 'map';
   name: string;
   /** Asset-folder number, for map groups. */
   world?: number;
@@ -69,8 +69,8 @@ export type Group = {
   bundle?: { url: string; bytes: number };
 };
 
-/** A served tree under the build root: converted assets, an original `Data/`, or the item icons. */
-type Tree = { url: string; kind: 'assets' | 'data' | 'items'; reads: (rel: string) => string };
+/** A served tree under the build root: converted assets or an original `Data/`. */
+type Tree = { url: string; kind: 'assets' | 'data'; reads: (rel: string) => string };
 
 /** The folder under the build root a tree url names (`./game-assets/`), or null for another origin. */
 function folderOf(url: string): string | null {
@@ -128,8 +128,6 @@ const CORE_FOLDERS = new Set(['Player', 'Item', 'NPC', 'Effect', 'Skill', 'Instr
 
 /** Which group a tree-relative path belongs to. */
 function groupOf(tree: Tree, rel: string): { id: string; kind: Group['kind']; world?: number } {
-  if (tree.kind === 'items') return { id: 'icons', kind: 'icons' };
-
   const folder = rel.split('/')[0];
   if (tree.kind === 'assets') {
     if (folder === 'Music' || folder === 'Sound') return { id: 'audio', kind: 'audio' };
@@ -152,7 +150,7 @@ function nameFor(kind: Group['kind'], world?: number): string {
     const names = worldNames.get(world!) ?? [];
     return names.length ? names.map(pretty).join(' / ') : `World ${world}`;
   }
-  return { core: 'Core', monsters: 'Monsters', audio: 'Music and sounds', icons: 'Item icons' }[kind]!;
+  return { core: 'Core', monsters: 'Monsters', audio: 'Music and sounds' }[kind]!;
 }
 
 const soundFile = (file: string) => file.replace(/^[./]+/, '').toLowerCase();
@@ -175,7 +173,6 @@ function treesOf(data: VersionData): Tree[] {
     if (url) trees.push({ url, kind: 'assets', reads: rel => (replaced.has(rel.toLowerCase()) ? '' : assetUrl(data, rel)) });
   }
   // packs/ is offered through the pack picker, which already has its sizes.
-  trees.push({ url: './items/', kind: 'items', reads: rel => `./items/${rel}` });
   for (const url of [data.folder, data.borrows?.folder]) {
     if (url) trees.push({ url, kind: 'data', reads: rel => dataUrl(data, rel) });
   }
@@ -247,7 +244,7 @@ export function buildAssetsIndex(root: string, data: VersionData, { lite = false
   }
 
   const ordered = [...groups.values()].sort((a, b) => {
-    const rank = (g: Group) => ['core', 'monsters', 'audio', 'icons', 'map'].indexOf(g.kind);
+    const rank = (g: Group) => ['core', 'monsters', 'audio', 'map'].indexOf(g.kind);
     return rank(a) - rank(b) || (a.world ?? 0) - (b.world ?? 0);
   });
   for (const g of ordered) {

@@ -8,7 +8,6 @@ export default {
   'autoDownload.cancel': 'Отмена',
   'autoDownload.hide': 'Скрыть (загрузка продолжится)',
   'autoDownload.phase.map': 'Загрузка карты: {name}',
-  'autoDownload.phase.icons': 'Загрузка предметов',
   'autoDownload.phase.audio': 'Загрузка музыки и звуков',
   'autoDownload.phase.monsters': 'Загрузка персонажей и существ',
   'autoDownload.phase.core': 'Загрузка интерфейса и эффектов',

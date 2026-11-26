@@ -50,6 +50,8 @@ export default {
   'cmd.addvit': 'Pakai Poin Level Up untuk Vitalitas',
   'cmd.addene': 'Pakai Poin Level Up untuk Energi',
   'cmd.addcmd': 'Pakai Poin Level Up untuk Komando',
+  'cmd.reset': 'Reset karakter',
+  'cmd.resetinfo': 'Tampilkan info reset',
   'cmd.move': 'Pindah ke peta',
   'cmd.war': 'Ajukan Perang Guild',
   'cmd.battlesoccer': 'Ajukan pertandingan Battle Soccer',

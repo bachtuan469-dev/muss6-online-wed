@@ -8,7 +8,6 @@ export default {
   'autoDownload.cancel': 'ยกเลิก',
   'autoDownload.hide': 'ซ่อน (ยังดาวน์โหลดต่อ)',
   'autoDownload.phase.map': 'กำลังโหลดแผนที่: {name}',
-  'autoDownload.phase.icons': 'กำลังโหลดไอเท็ม',
   'autoDownload.phase.audio': 'กำลังโหลดเพลงและเสียง',
   'autoDownload.phase.monsters': 'กำลังโหลดตัวละครและมอนสเตอร์',
   'autoDownload.phase.core': 'กำลังโหลดอินเทอร์เฟซและเอฟเฟกต์',

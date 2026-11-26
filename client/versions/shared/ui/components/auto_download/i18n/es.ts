@@ -8,7 +8,6 @@ export default {
   'autoDownload.cancel': 'Cancelar',
   'autoDownload.hide': 'Ocultar (sigue descargando)',
   'autoDownload.phase.map': 'Cargando mapa: {name}',
-  'autoDownload.phase.icons': 'Cargando objetos',
   'autoDownload.phase.audio': 'Cargando música y sonidos',
   'autoDownload.phase.monsters': 'Cargando personajes y criaturas',
   'autoDownload.phase.core': 'Cargando interfaz y efectos',

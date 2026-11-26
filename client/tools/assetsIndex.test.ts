@@ -54,11 +54,9 @@ const TREE: Record<string, number> = {
   'Data-v097d/gate.bmd': 4,
   'Data-v097d/Interface/Cursor.OZT': 17,
   'Data-v097d/World3/leaf01.OZJ': 18,
-  'items/item_0_0_0.png': 7,
   // Lighter copies (`tools/liteAssets.ts`): listed only with `lite`, beside their originals.
   'game-assets/World1/TileGrass02.OZT.webp': 8,
   'Data/World1/mini_map.OZT.webp': 6,
-  'items/item_0_0_0.webp': 3,
 };
 
 let root: string;
@@ -98,7 +96,6 @@ describe('assetsIndex', () => {
       './Data/Interface/newui_menu01.OZJ': 12,
       './Data/Local/Eng/Item.bmd': 14,
       './Data/World1/mini_map.OZT': 15,
-      './items/item_0_0_0.png': 7,
     });
   });
 
@@ -114,7 +111,6 @@ describe('assetsIndex', () => {
       './Data-v097d/World3/leaf01.OZJ': 18,
       './Data/Interface/newui_menu01.OZJ': 12,
       './Data/World1/mini_map.OZT': 15,
-      './items/item_0_0_0.png': 7,
     });
   });
 
@@ -122,7 +118,7 @@ describe('assetsIndex', () => {
     const groups = buildAssetsIndex(root, period).groups;
     const byId = Object.fromEntries(groups.map(g => [g.id, g]));
 
-    expect(groups.map(g => g.id)).toEqual(['core', 'audio', 'icons', 'map:1', 'map:3']);
+    expect(groups.map(g => g.id)).toEqual(['core', 'audio', 'map:1', 'map:3']);
     expect(byId['map:1']).toMatchObject({ name: 'Lorencia', files: 3, bytes: 61 + 50 + 15 });
     // The borrowed sword travels gzipped, as it does for Season 6.
     expect(byId.core).toMatchObject({ files: 5, bytes: 100 + 111 + 4 + 17 + 12, transfer: 40 + 111 + 4 + 17 + 12 });
@@ -141,7 +137,6 @@ describe('assetsIndex', () => {
       ['./game-assets/World1/', [['TileGrass02.OZT.webp', 8]]],
     ]);
     expect(byId['map:1'].liteTransfer).toBe(byId['map:1'].transfer - 15 - 30 + 6 + 8);
-    expect(byId.icons).toMatchObject({ lite: [['./items/', [['item_0_0_0.webp', 3]]]], liteTransfer: 3 });
     expect(byId.core.lite).toBeUndefined();
 
     // 0.97d lacks Season 6's TileGrass02 and reads the minimap from its lender: no copy of the one, the other's at the lender.

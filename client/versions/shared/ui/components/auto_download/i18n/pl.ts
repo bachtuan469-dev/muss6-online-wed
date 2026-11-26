@@ -8,7 +8,6 @@ export default {
   'autoDownload.cancel': 'Anuluj',
   'autoDownload.hide': 'Ukryj (pobieranie trwa dalej)',
   'autoDownload.phase.map': 'Wczytywanie mapy: {name}',
-  'autoDownload.phase.icons': 'Wczytywanie przedmiotów',
   'autoDownload.phase.audio': 'Wczytywanie muzyki i dźwięków',
   'autoDownload.phase.monsters': 'Wczytywanie postaci i potworów',
   'autoDownload.phase.core': 'Wczytywanie interfejsu i efektów',

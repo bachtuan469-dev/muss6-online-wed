@@ -8,7 +8,6 @@ export default {
   'autoDownload.cancel': 'Cancel·la',
   'autoDownload.hide': 'Amaga (continua baixant)',
   'autoDownload.phase.map': 'Carregant el mapa: {name}',
-  'autoDownload.phase.icons': 'Carregant els objectes',
   'autoDownload.phase.audio': 'Carregant la música i els sons',
   'autoDownload.phase.monsters': 'Carregant personatges i criatures',
   'autoDownload.phase.core': 'Carregant la interfície i els efectes',

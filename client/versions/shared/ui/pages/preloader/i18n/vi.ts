@@ -85,7 +85,6 @@ export default {
   'download.group.core': 'Game cơ bản',
   'download.group.monsters': 'Quái vật',
   'download.group.audio': 'Nhạc và âm thanh',
-  'download.group.icons': 'Biểu tượng vật phẩm',
   'download.total': 'Tổng',
   'download.withPack': 'gói',
   'download.start': 'Tải về',

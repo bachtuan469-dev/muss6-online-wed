@@ -86,7 +86,6 @@ export default {
   'download.group.core': 'Βασικό παιχνίδι',
   'download.group.monsters': 'Τέρατα',
   'download.group.audio': 'Μουσική και ήχοι',
-  'download.group.icons': 'Εικονίδια αντικειμένων',
   'download.total': 'Σύνολο',
   'download.withPack': 'πακέτο',
   'download.start': 'Λήψη',

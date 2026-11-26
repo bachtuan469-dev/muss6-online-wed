@@ -93,7 +93,6 @@ const en = {
   'download.group.core': 'Base game',
   'download.group.monsters': 'Monsters',
   'download.group.audio': 'Music and sounds',
-  'download.group.icons': 'Item icons',
   'download.total': 'Total',
   'download.withPack': 'pack',
   'download.start': 'Download',

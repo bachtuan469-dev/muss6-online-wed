@@ -276,7 +276,7 @@ export const NpcShop = observer(() => {
               height: entry.h * SQUARE,
             }}
           >
-            <ItemIcon item={entry.item} />
+            <ItemIcon item={entry.item} spin={hoveredEntry === entry} />
             <StackNumber item={entry.item} width={entry.w * SQUARE} />
           </div>
         ))}

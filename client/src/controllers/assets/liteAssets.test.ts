@@ -18,7 +18,9 @@ describe('liteUrl', () => {
     setLiteAssetsGate(() => true);
     expect(liteUrl(TILE)).toBe('./Data/World1/TileGrass01.OZJ.webp');
     expect(liteUrl(MUSIC)).toBe('./game-assets/Music/Devias.opus.ogg');
-    expect(liteUrl('/items/item_0_0_0.png')).toBe('/items/item_0_0_0.webp');
+    // Item icons have no lighter copy: the pack is gone, so even a listed
+    // one is never read.
+    expect(liteUrl('/items/item_0_0_0.png')).toBeNull();
     // Not listed: the build left it out (not smaller), so the original.
     expect(liteUrl('./Data/World1/TileGrass02.OZJ')).toBeNull();
     expect(liteUrl('./game-assets/Item/Axe01.glb')).toBeNull();

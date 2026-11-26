@@ -46,7 +46,8 @@ export function prettifyMapName(name: string): string {
     .replace(/(\d)([A-Z])/g, '$1 $2');
 }
 
-function parse(bytes: Uint8Array): MoveReqEntry[] {
+/** Decodes one `MoveReq_<lang>.bmd` buffer. Exported for tests. */
+export function parse(bytes: Uint8Array): MoveReqEntry[] {
   const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
   const count = view.getInt32(0, true);
   const entries: MoveReqEntry[] = [];

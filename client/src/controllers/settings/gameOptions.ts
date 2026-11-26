@@ -13,7 +13,7 @@ const OPTIONS_KEY = 'mu_options';
 // Literals rather than the owners' constants: camera, render and hero all import this
 // controller, so naming theirs here would close an import cycle. limits.test.ts pins them.
 /** `CAMERA_FOV_DEG` / `_MIN_DEG` / `_MAX_DEG` (controllers/camera/recipes.ts). */
-const CAMERA_FOV = { deg: 30, min: 20, max: 60 } as const;
+const CAMERA_FOV = { deg: 35, min: 20, max: 60 } as const;
 /** `RENDER_DISTANCE_MAX` (controllers/render/renderDistance.ts). */
 const RENDER_DISTANCE_TOP = 9;
 /** `RENDER_SCALE_STEP_MAX` (controllers/render/renderScale.ts). */
@@ -313,14 +313,14 @@ export type GameOptions = {
   slideHelp: boolean;
   /**
    * The original client's camera: Ctrl+wheel zoom levels, Insert/Delete
-   * rotate, 30-degree frustum, per-map overrides (`src/controllers/camera/`). Off is
-   * today's fixed framing.
+   * rotate, 40-degree frustum (the original's was 30), per-map overrides
+   * (`src/controllers/camera/`). Off is today's fixed framing.
    */
   cameraControl: boolean;
   /**
-   * Vertical field of view in degrees, `CAMERA_FOV_DEG` being the original
-   * client's 30. First person rides on top of it (`FIRST_PERSON_WIDEN_DEG`).
-   * Nothing reads it while `cameraControl` is off.
+   * Vertical field of view in degrees, defaulting to `CAMERA_FOV_DEG` (35;
+   * the original client's was 30). First person rides on top of it
+   * (`FIRST_PERSON_WIDEN_DEG`). Nothing reads it while `cameraControl` is off.
    */
   cameraFov: number;
   /**

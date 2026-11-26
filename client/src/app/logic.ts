@@ -12,7 +12,6 @@ import '@versions/shared/items/itemsDatabase';
 import '../controllers/item_rules';
 import '../controllers/actors/itemAngle';
 import '../modules/drops/dropObject';
-import '../controllers/assets/itemIconPack';
 import '../controllers/actors/mapPlayerNetClassToModelClass';
 import '../controllers/actors/modelFactoryPerId';
 import '@versions/shared/monsters/monstersDatabase';

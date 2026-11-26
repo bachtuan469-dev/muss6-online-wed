@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { defaultGameOption, optionsFrom } from './gameOptions';
-import { CAMERA_FOV_DEG, CAMERA_FOV_MAX_DEG, CAMERA_FOV_MIN_DEG } from '../camera/recipes';
+import { CAMERA_FOV_DEG, CAMERA_FOV_MAX_DEG, CAMERA_FOV_MIN_DEG, FIRST_PERSON_WIDEN_DEG } from '../camera/recipes';
 import { RENDER_DISTANCE_MAX } from '../render/renderDistance';
 import { RENDER_SCALE_STEP_MAX } from '../render/renderScale';
 import { FPS_LIMIT_MAX } from '../render/fpsLimit';
@@ -21,6 +21,14 @@ describe('settings limits match their owners', () => {
   it('camera field of view', () => {
     expect(defaultGameOption('cameraFov')).toBe(CAMERA_FOV_DEG);
     expect(range('cameraFov')).toEqual([CAMERA_FOV_MIN_DEG, CAMERA_FOV_MAX_DEG]);
+  });
+
+  it('field of view default is the wider frame picked for this server', () => {
+    // The original client's 30; the server owner picked 40 on 2026-11-25,
+    // then 35 on 2026-11-26.
+    expect(CAMERA_FOV_DEG).toBe(35);
+    // First person stays 55, so the widen narrows from 25 to 15.
+    expect(FIRST_PERSON_WIDEN_DEG).toBe(20);
   });
 
   it('render distance and render scale', () => {

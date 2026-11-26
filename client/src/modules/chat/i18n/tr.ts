@@ -50,6 +50,8 @@ export default {
   'cmd.addvit': 'Seviye puanlarını canlılığa harca',
   'cmd.addene': 'Seviye puanlarını enerjiye harca',
   'cmd.addcmd': 'Seviye puanlarını komutaya harca',
+  'cmd.reset': 'Karakteri sıfırla',
+  'cmd.resetinfo': 'Sıfırlama bilgisini göster',
   'cmd.move': 'Bir haritaya ışınlan',
   'cmd.war': 'Lonca savaşı iste',
   'cmd.battlesoccer': 'Battle Soccer maçı iste',

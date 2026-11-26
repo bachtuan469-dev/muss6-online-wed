@@ -8,7 +8,6 @@ export default {
   'autoDownload.cancel': 'منسوخ کریں',
   'autoDownload.hide': 'چھپائیں (ڈاؤن لوڈ جاری رہے گا)',
   'autoDownload.phase.map': 'نقشہ لوڈ ہو رہا ہے: {name}',
-  'autoDownload.phase.icons': 'آئٹمز لوڈ ہو رہے ہیں',
   'autoDownload.phase.audio': 'موسیقی اور آوازیں لوڈ ہو رہی ہیں',
   'autoDownload.phase.monsters': 'کردار اور مخلوقات لوڈ ہو رہے ہیں',
   'autoDownload.phase.core': 'انٹرفیس اور اثرات لوڈ ہو رہے ہیں',

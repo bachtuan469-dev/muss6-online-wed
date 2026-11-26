@@ -82,7 +82,6 @@ export default {
   'download.group.core': 'Joc base',
   'download.group.monsters': 'Monstres',
   'download.group.audio': 'Música i sons',
-  'download.group.icons': 'Icones dels objectes',
   'download.total': 'Total',
   'download.withPack': 'paquet',
   'download.start': 'Baixa',

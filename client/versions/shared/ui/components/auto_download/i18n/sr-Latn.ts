@@ -8,7 +8,6 @@ export default {
   'autoDownload.cancel': 'Otkaži',
   'autoDownload.hide': 'Sakrij (preuzimanje se nastavlja)',
   'autoDownload.phase.map': 'Učitavanje mape: {name}',
-  'autoDownload.phase.icons': 'Učitavanje predmeta',
   'autoDownload.phase.audio': 'Učitavanje muzike i zvukova',
   'autoDownload.phase.monsters': 'Učitavanje likova i stvorenja',
   'autoDownload.phase.core': 'Učitavanje interfejsa i efekata',

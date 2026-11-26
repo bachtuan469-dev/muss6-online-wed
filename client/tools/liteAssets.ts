@@ -1,6 +1,5 @@
 // Writes the lighter copies of a build BESIDE the originals, never over them: each OZJ / OZT as
-// `<file>.webp` (the same header, a WebP behind it), each item icon `items/<name>.png` as
-// `<name>.webp`, each track `Music/<name>.ogg` as `<name>.opus.ogg` (Ogg Opus at 48 kbps). The
+// `<file>.webp` (the same header, a WebP behind it), each track `Music/<name>.ogg` as `<name>.opus.ogg` (Ogg Opus at 48 kbps). The
 // names are the client's (`liteVariantOf`). The assets index lists them and the client reads them
 // only where the world sets `liteAssets` (assets/readme.md).
 //
@@ -18,7 +17,7 @@ import sharp from 'sharp';
 import { liteSourceOf, liteVariantOf } from '../src/controllers/assets/liteAssets';
 import { decodeTGA } from '../src/controllers/assets/mu/tga';
 
-/** The trees whose textures get copies (the item icons and the music are found by folder). */
+/** The trees whose textures get copies (the music is found by folder). */
 const TREES = ['Data', 'Data-v097d', 'game-assets', 'game-assets-v097d'];
 
 /** `music(source, out)`: writes the Opus copy, true when it did. */
@@ -74,11 +73,6 @@ async function textureCopy(path: string): Promise<Uint8Array | null> {
   return out;
 }
 
-async function iconCopy(path: string): Promise<Uint8Array | null> {
-  const webp = await sharp(path).webp({ quality: 90, alphaQuality: 100, effort: 6 }).toBuffer();
-  return webp.length < statSync(path).size ? new Uint8Array(webp) : null;
-}
-
 /** `ffmpeg` with libopus, or null when there is none. */
 function ffmpegOpus(bitrate: string): Options['music'] | undefined {
   try {
@@ -98,11 +92,10 @@ function ffmpegOpus(bitrate: string): Options['music'] | undefined {
 }
 
 /** Every original under `root` that may have a copy, by kind. */
-function originals(root: string): { textures: string[]; icons: string[]; music: string[] } {
+function originals(root: string): { textures: string[]; music: string[] } {
   const textures = TREES.flatMap(tree => walk(join(root, tree))).filter(p => /\.oz[jt]$/i.test(p));
-  const icons = walk(join(root, 'items')).filter(p => /\.png$/i.test(p));
   const music = TREES.flatMap(tree => walk(join(root, tree, 'Music'))).filter(p => /\.ogg$/i.test(p) && !/\.opus\.ogg$/i.test(p));
-  return { textures, icons, music };
+  return { textures, music };
 }
 
 /**
@@ -111,10 +104,10 @@ function originals(root: string): { textures: string[]; icons: string[]; music: 
  */
 export async function writeLiteAssets(root: string, options: Options = {}): Promise<Stats> {
   const stats: Stats = { written: 0, kept: 0, before: 0, after: 0 };
-  const { textures, icons, music } = originals(root);
+  const { textures, music } = originals(root);
 
   // A copy left from an earlier build whose original was dropped.
-  for (const path of [...TREES.flatMap(tree => walk(join(root, tree))), ...walk(join(root, 'items'))]) {
+  for (const path of TREES.flatMap(tree => walk(join(root, tree)))) {
     const source = liteSourceOf(path.split('\\').join('/'));
     if (source && !existsSync(source)) rmSync(path);
   }
@@ -141,7 +134,6 @@ export async function writeLiteAssets(root: string, options: Options = {}): Prom
   };
 
   for (const path of textures) add(path, bytes(textureCopy));
-  for (const path of icons) add(path, bytes(iconCopy));
   if (options.music) for (const path of music) add(path, options.music);
 
   let next = 0;

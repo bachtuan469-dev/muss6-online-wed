@@ -1,7 +1,7 @@
 // Ported from RenderObjectScreen (ZzzInventory.cpp:7653-9026) and RenderItem3D (:9707-10118).
 // A branch that can never match an item is left out: one an earlier branch already covers, one that
-// names a model that is no item (`MODEL_ARMORINVEN_*`, the `MODEL_EVENT` swaps of items the pack
-// draws), and RenderItem3D's five `Type == MODEL_...` tests (:9892-9916), which compare an item type
+// names a model that is no item (`MODEL_ARMORINVEN_*`, the `MODEL_EVENT` swaps of items drawn from
+// another model), and RenderItem3D's five `Type == MODEL_...` tests (:9892-9916), which compare an item type
 // with a model number. See interface/readme.md.
 
 /** An item type as the original numbers it: `group * 512 + index` (`Type - MODEL_ITEM`). */
@@ -329,7 +329,7 @@ const ANCHORS: readonly AnchorRow[] = [
 ];
 
 /**
- * The model the bag draws for some levels of an item the pack has no file for: RenderItem3D hands
+ * The model the bag swaps in for some levels of an item: RenderItem3D hands
  * Rena +1 / +2 to RenderObjectScreen as `MODEL_EVENT + 11` (:10101-10118), and RenderPartObject draws
  * the Heart +0 / +2 as `MODEL_EVENT` / `+ 1` (ZzzObject.cpp:10531-10543, ZzzOpenData.cpp:987-1000).
  * `screen` is the type the pose is worked out for; `scale` what the scale chain gives the drawn model.

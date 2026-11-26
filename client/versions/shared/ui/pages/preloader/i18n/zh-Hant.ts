@@ -83,7 +83,6 @@ export default {
   'download.group.core': '基本遊戲',
   'download.group.monsters': '怪物',
   'download.group.audio': '音樂與音效',
-  'download.group.icons': '物品圖示',
   'download.total': '總計',
   'download.withPack': '材質包',
   'download.start': '下載',

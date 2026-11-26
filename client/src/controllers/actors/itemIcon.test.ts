@@ -38,6 +38,7 @@ vi.mock('../assets/modelLoader', async orig => ({
 }));
 
 import { itemIconJob, ITEM_ICON_UNITS_PER_PIXEL, liveItemIconSource } from './itemIcon';
+import { setItemGlowClock } from '../item_fx/itemVisualTier';
 
 const engine = new NullEngine();
 const scene = new Scene(engine);
@@ -184,6 +185,57 @@ describe('an item icon shot', () => {
 
   it('has no shot for an item with no model (Gladiator\'s Glory, 13/95)', () => {
     expect(itemIconJob(scene, { group: 13, num: 95, lvl: 0 })).toBeNull();
+  });
+
+  // The still bakes the item's halo colour into the picture (FIX33-GLOW2):
+  // the user reads a glowing icon by its aura, and the aura must be the
+  // item's own tier colour, not a generic white.
+  it('carries the halo colour of a glowing item, in its tier colour', () => {
+    const wasLevel = GameOptions.effectLevel;
+    const wasEffects = GameOptions.itemEffects;
+    GameOptions.effectLevel = 4;
+    GameOptions.itemEffects = 2;
+    try {
+      // Great Dragon armour +15: the halo ladder at the shared clock (0),
+      // orange like the set, not white. Slice 2 of the glow-097 fix: the
+      // icon bakes its own halo at twice the world ladder (ICON_HALO_GAIN),
+      // so it reads at icon size without touching the world halo.
+      const dragon = itemIconJob(scene, { group: 8, num: 21, lvl: 15 })?.halo;
+      expect(dragon).toBeDefined();
+      expect(dragon!.r).toBeCloseTo(0.81, 1);
+      expect(dragon!.g).toBeCloseTo(0.4, 1);
+      expect(dragon!.b).toBeCloseTo(0, 1);
+      // Grand Soul pink +15 at the same clock: doubled, still under 1.
+      const soul = itemIconJob(scene, { group: 8, num: 18, lvl: 15 })?.halo;
+      expect(soul).toBeDefined();
+      expect(soul!.r).toBeCloseTo(0.81, 1);
+      expect(soul!.g).toBeCloseTo(0.33, 1);
+      expect(soul!.b).toBeCloseTo(0.57, 1);
+      // At the pulse top the doubled red channel clamps at 1, never past
+      // it, and the pink hue survives (green and blue in proportion).
+      setItemGlowClock(Math.PI / 8);
+      try {
+        const top = itemIconJob(scene, { group: 8, num: 18, lvl: 15 })?.halo;
+        expect(top).toBeDefined();
+        expect(top!.r).toBe(1);
+        expect(top!.g).toBeCloseTo(0.42, 1);
+        expect(top!.b).toBeCloseTo(0.72, 1);
+      } finally {
+        setItemGlowClock(0);
+      }
+      // An excellent item glows violet even at +0.
+      const exc = itemIconJob(scene, { group: 12, num: 26, lvl: 0, isExcellent: true })?.halo;
+      expect(exc).toBeDefined();
+      expect(exc!.b).toBeGreaterThan(exc!.r);
+      expect(exc!.r).toBeGreaterThan(0);
+    } finally {
+      GameOptions.effectLevel = wasLevel;
+      GameOptions.itemEffects = wasEffects;
+    }
+  });
+
+  it('carries no halo for a plain item with nothing to glow', () => {
+    expect(itemIconJob(scene, { group: 12, num: 26, lvl: 0 })?.halo).toBeUndefined();
   });
 });
 

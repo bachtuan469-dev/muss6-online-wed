@@ -8,7 +8,6 @@ export default {
   'autoDownload.cancel': 'Отказ',
   'autoDownload.hide': 'Скрий (изтеглянето продължава)',
   'autoDownload.phase.map': 'Зареждане на карта: {name}',
-  'autoDownload.phase.icons': 'Зареждане на предмети',
   'autoDownload.phase.audio': 'Зареждане на музика и звуци',
   'autoDownload.phase.monsters': 'Зареждане на герои и същества',
   'autoDownload.phase.core': 'Зареждане на интерфейс и ефекти',

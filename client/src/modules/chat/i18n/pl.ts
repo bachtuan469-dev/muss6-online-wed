@@ -51,6 +51,8 @@ export default {
   'cmd.addvit': 'Rozdaj punkty poziomu na witalność',
   'cmd.addene': 'Rozdaj punkty poziomu na energię',
   'cmd.addcmd': 'Rozdaj punkty poziomu na dowodzenie',
+  'cmd.reset': 'Zresetuj postać',
+  'cmd.resetinfo': 'Pokaż informacje o resecie',
   'cmd.move': 'Przenieś się na mapę',
   'cmd.war': 'Wyzwij na wojnę gildii',
   'cmd.battlesoccer': 'Wyzwij na mecz Battle Soccer',

@@ -6,10 +6,9 @@ const group = (id: string, kind: AssetGroup['kind'], bytes = 10, bundle?: number
   ({ id, kind, name: id, files: 1, bytes, transfer: bytes, dirs: [], ...(bundle ? { bundle: { url: '', bytes: bundle } } : {}) }) as AssetGroup;
 
 describe('the first-run plan', () => {
-  it('waits for the interface, creatures, icons and the main towns, not the music or far maps', () => {
+  it('waits for the interface, creatures and the main towns, not the music or far maps', () => {
     expect(isEssential(group('core', 'core'))).toBe(true);
     expect(isEssential(group('monsters', 'monsters'))).toBe(true);
-    expect(isEssential(group('icons', 'icons'))).toBe(true);
     expect(isEssential(group('map:1', 'map'))).toBe(true);
     expect(isEssential(group('audio', 'audio'))).toBe(false);
     expect(isEssential(group('map:38', 'map'))).toBe(false);

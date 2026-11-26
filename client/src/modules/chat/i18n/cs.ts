@@ -50,6 +50,8 @@ export default {
   'cmd.addvit': 'Přidat body atributů do vitality',
   'cmd.addene': 'Přidat body atributů do energie',
   'cmd.addcmd': 'Přidat body atributů do velení',
+  'cmd.reset': 'Resetovat postavu',
+  'cmd.resetinfo': 'Zobrazit informace o resetu',
   'cmd.move': 'Přesunout se na mapu',
   'cmd.war': 'Vyzvat k válce cechů',
   'cmd.battlesoccer': 'Vyzvat k zápasu Battle Soccer',

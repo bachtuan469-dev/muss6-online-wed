@@ -82,7 +82,6 @@ export default {
   'download.group.core': 'मूल गेम',
   'download.group.monsters': 'मॉन्स्टर',
   'download.group.audio': 'संगीत और आवाज़ें',
-  'download.group.icons': 'आइटम आइकन',
   'download.total': 'कुल',
   'download.withPack': 'पैक',
   'download.start': 'डाउनलोड करें',

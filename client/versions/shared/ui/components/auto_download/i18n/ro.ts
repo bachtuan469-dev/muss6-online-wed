@@ -8,7 +8,6 @@ export default {
   'autoDownload.cancel': 'Anulează',
   'autoDownload.hide': 'Ascunde (descărcarea continuă)',
   'autoDownload.phase.map': 'Se încarcă harta: {name}',
-  'autoDownload.phase.icons': 'Se încarcă obiectele',
   'autoDownload.phase.audio': 'Se încarcă muzica și sunetele',
   'autoDownload.phase.monsters': 'Se încarcă personajele și creaturile',
   'autoDownload.phase.core': 'Se încarcă interfața și efectele',

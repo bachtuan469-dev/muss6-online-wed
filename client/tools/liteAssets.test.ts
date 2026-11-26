@@ -53,7 +53,6 @@ beforeEach(async () => {
   const image = await jpeg();
   put('Data/World1/TileGrass01.OZJ', join2(OZJ_HEADER, image));
   put('game-assets/World1/TileGrass02.OZT', join2(OZT_HEADER, tga(32)));
-  put('items/item_0_0_0.png', new Uint8Array(await sharp(image).png().toBuffer()));
   put('game-assets/Music/Devias.ogg', new Uint8Array(500).fill(1));
   put('game-assets/Item/Axe01.glb', new Uint8Array(10));
 });
@@ -65,7 +64,6 @@ describe('liteVariantOf', () => {
     const pairs: [string, string][] = [
       ['./Data/World1/TileGrass01.OZJ', './Data/World1/TileGrass01.OZJ.webp'],
       ['./game-assets/World1/TileGrass02.OZT', './game-assets/World1/TileGrass02.OZT.webp'],
-      ['/items/item_0_0_0.png', '/items/item_0_0_0.webp'],
       ['./game-assets/Music/Devias.ogg', './game-assets/Music/Devias.opus.ogg'],
     ];
     for (const [original, copy] of pairs) {
@@ -102,11 +100,10 @@ describe('writeLiteAssets', () => {
         ...Object.keys(before),
         'Data/World1/TileGrass01.OZJ.webp',
         'game-assets/World1/TileGrass02.OZT.webp',
-        'items/item_0_0_0.webp',
         'game-assets/Music/Devias.opus.ogg',
       ].sort()
     );
-    expect(stats.written).toBe(4);
+    expect(stats.written).toBe(3);
 
     // The header stays, a WebP behind it.
     const ozj = readFileSync(join(root, 'Data/World1/TileGrass01.OZJ.webp'));

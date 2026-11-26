@@ -6,7 +6,6 @@ const en = {
   'autoDownload.cancel': 'Cancel',
   'autoDownload.hide': 'Hide (keeps downloading)',
   'autoDownload.phase.map': 'Loading map: {name}',
-  'autoDownload.phase.icons': 'Loading items',
   'autoDownload.phase.audio': 'Loading music and sounds',
   'autoDownload.phase.monsters': 'Loading characters and creatures',
   'autoDownload.phase.core': 'Loading interface and effects',

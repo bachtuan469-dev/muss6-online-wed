@@ -338,6 +338,46 @@ export function repairAllCost(items: (Item | null)[], selfRepair: boolean): numb
   return total;
 }
 
+/**
+ * The divisor this server applies to NPC shop prices (FIX34): the merchants
+ * sell for a fiftieth of the automatic prices. The server charges
+ * `ItemPriceCalculator.NpcShopPriceDivisor` (50), so the shop has to show the
+ * same divided prices or the buy gate refuses what the player can afford.
+ * The classic `itemValue` above stays untouched: the chaos mix still uses it
+ * as its crafting reference price, and the personal shop sets its own prices.
+ */
+export const NPC_SHOP_PRICE_DIVISOR = 50;
+
+/** An NPC shop price of an already rounded automatic price: divide, then round again, the way the server's `CalculateNpcBuyingPrice` does it. */
+function npcShopPrice(roundedGold: number): number {
+  return roundGold(idiv(roundedGold, NPC_SHOP_PRICE_DIVISOR));
+}
+
+/** The NPC shop buying price: `ItemValue(ip, 0)` divided by 50. */
+export function npcBuyPrice(item: Item): number {
+  return npcShopPrice(itemValue(item, 0));
+}
+
+/** The NPC shop selling price: `ItemValue(ip, 1)` divided by 50. */
+export function npcSellPrice(item: Item): number {
+  return npcShopPrice(itemValue(item, 1));
+}
+
+/** The NPC shop repair price: `CalcRepairCost` divided by 50, the way the server's `CalculateNpcRepairPrice` does it. */
+export function npcRepairCost(item: Item, selfRepair: boolean): number {
+  return npcShopPrice(repairCost(item, selfRepair));
+}
+
+/** `RepairAllGold` at NPC shop prices: each item is divided on its own, the way the server charges a full repair. */
+export function npcRepairAllCost(items: (Item | null)[], selfRepair: boolean): number {
+  let total = 0;
+  for (const item of items) {
+    if (!item || !needsRepair(item)) continue;
+    total += npcRepairCost(item, selfRepair);
+  }
+  return total;
+}
+
 /** `ConvertTaxGold`: the shop's price with the merchant's tax on top. */
 export function withTax(gold: number, taxRate: number): number {
   return gold + idiv(gold * taxRate, 100);

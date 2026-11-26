@@ -13,7 +13,7 @@ const { Merchant } = await import('./state');
 const { Session } = await import('../session');
 const { Hero } = await import('../hero');
 const { MsgBox, MsgWinCode } = await import('@/controllers/interface/msgWin');
-const { itemValue, withTax } = await import('@/controllers/item_rules/itemValue');
+const { npcBuyPrice, withTax } = await import('@/controllers/item_rules/itemValue');
 
 /**
  * FIX25 Viec 5: buying from an NPC shop without enough Zen showed nothing.
@@ -23,16 +23,17 @@ const { itemValue, withTax } = await import('@/controllers/item_rules/itemValue'
  * standard message box, where the player can see it.
  */
 describe('Merchant.buyItemFromNpc', () => {
-  // Group 14, index 0: a healing potion with a real shop price.
-  const potion = { group: 14, num: 0, lvl: 0, durability: 10 } as unknown as Item;
+  // Group 14, index 13: a Jewel of Bless with a real shop price (180,000 after the
+  // FIX34 divisor), big enough that the castle tax shows up in the checked price.
+  const jewel = { group: 14, num: 13, lvl: 0, durability: 1 } as unknown as Item;
   const sent = vi.spyOn(Session, 'sendToGS').mockImplementation(() => {});
 
   const openShop = () => {
     Merchant.openNpcShop();
-    Merchant.setNpcShopItems([{ slot: 0, item: potion }]);
+    Merchant.setNpcShopItems([{ slot: 0, item: jewel }]);
   };
 
-  const price = () => withTax(itemValue(potion, 0), Merchant.npcShop?.taxRate ?? 0);
+  const price = () => withTax(npcBuyPrice(jewel), Merchant.npcShop?.taxRate ?? 0);
 
   afterEach(() => {
     Merchant.finishShopBuy();
@@ -62,7 +63,7 @@ describe('Merchant.buyItemFromNpc', () => {
   it('counts the castle tax in the price it checks', () => {
     openShop();
     Merchant.setStoreTaxRate(10);
-    const base = itemValue(potion, 0);
+    const base = npcBuyPrice(jewel);
     expect(price()).toBeGreaterThan(base);
     runInAction(() => {
       Hero.money = base;

@@ -8,7 +8,6 @@ export default {
   'autoDownload.cancel': 'Zrušit',
   'autoDownload.hide': 'Skrýt (stahování pokračuje)',
   'autoDownload.phase.map': 'Načítání mapy: {name}',
-  'autoDownload.phase.icons': 'Načítání předmětů',
   'autoDownload.phase.audio': 'Načítání hudby a zvuků',
   'autoDownload.phase.monsters': 'Načítání postav a tvorů',
   'autoDownload.phase.core': 'Načítání rozhraní a efektů',

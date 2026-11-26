@@ -26,6 +26,12 @@ the interface controller's (`AppState`, `controllers/interface/uiState.ts`).
   hero is in the world, 3 s later, the terrain files of the towns and first hunting grounds the version
   ships (`WARM_MAPS`) download in the background, so a `/move` there finds them in memory
   (`controllers/assets/prefetchWorld.ts` keeps them until that map loads).
+- `shopStockWarmup.ts` (ours, no visible change): boot installs it on `warpCompleted` next to
+  `townPrefetch`; the first time the hero is in the world, Leo's shop stock (62 model files,
+  `modules/npc_shop/shopStock.ts`, a snapshot of the live server DB) starts drawing at once, so
+  opening his shop later finds the pictures already in. Leo only: all 27 shops are 452 model
+  pairs, minutes of traffic at world entry. The icons go first (tiny files, shop opened within
+  seconds) and the towns' terrain keeps its 3 s delay behind them.
 - `bench.ts` (ours, dev build only, `?offline&bench`): `playOffline` loads it when asked. The hero walks a
   fixed loop, `players=N` and `monsters=M` are spawned around him (seeded), then `seconds=S` (30) of
   frames are timed and printed (a panel, the console `[bench]` line, `window.__bench`). `&preset=0..3`
@@ -108,6 +114,8 @@ or `src/ecs` (`Ecs.world`). The codemod that rewrote `Store.x` is in git history
   never twice for one build; only the preloader and the server list have no session.
 - `townPrefetch.test.ts`: the warm maps are fetched once, after the first map in the world, never on the
   character screen.
+- `shopStockWarmup.test.ts`: Leo's stock is warmed once, the first time the hero is in the world,
+  never on the character screen.
 - `bench.test.ts`: the bench crowd is the same every run.
 - `backgroundTick.test.ts`: the tick runs a logic step only once the browser stopped giving frames.
 - `lifecycle.test.ts`: the map-change resets run in order (the buff looks redrawn right after the

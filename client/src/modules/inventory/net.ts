@@ -10,7 +10,7 @@ import { Hero } from '@/modules/hero';
 import { addNotification } from '@/modules/chat';
 import { pickupSound } from '@/controllers/sound/combatSounds';
 import { playUiSound } from '@/controllers/sound/sfx';
-import { prefetchItemIcons } from '@/controllers/assets/itemIconPack';
+import { prefetchLiveItemIcons } from '@/controllers/interface/item_icons';
 import { runInAction } from 'mobx';
 import { t } from '@/i18n';
 
@@ -66,7 +66,7 @@ export function installNet(): void {
 
     Hero.syncPlayerAppearance();
     // Inventory icons start loading now, before the window is ever opened.
-    prefetchItemIcons(entries.map(entry => entry.item));
+    prefetchLiveItemIcons(entries.map(entry => entry.item));
   });
 
   /**

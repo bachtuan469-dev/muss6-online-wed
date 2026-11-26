@@ -81,7 +81,6 @@ export default {
   'download.group.core': 'اللعبة الأساسية',
   'download.group.monsters': 'الوحوش',
   'download.group.audio': 'الموسيقى والأصوات',
-  'download.group.icons': 'أيقونات الأغراض',
   'download.total': 'المجموع',
   'download.withPack': 'حزمة',
   'download.start': 'تنزيل',

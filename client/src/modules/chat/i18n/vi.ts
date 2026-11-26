@@ -51,6 +51,8 @@ export default {
   'cmd.addvit': 'Dùng điểm tăng cấp vào thể lực',
   'cmd.addene': 'Dùng điểm tăng cấp vào năng lượng',
   'cmd.addcmd': 'Dùng điểm tăng cấp vào mệnh lệnh',
+  'cmd.reset': 'Reset nhân vật',
+  'cmd.resetinfo': 'Xem thông tin reset',
   'cmd.move': 'Dịch chuyển tới bản đồ',
   'cmd.war': 'Yêu cầu bang chiến',
   'cmd.battlesoccer': 'Yêu cầu trận Battle Soccer',

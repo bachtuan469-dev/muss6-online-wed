@@ -51,6 +51,8 @@ export default {
   'cmd.addvit': '把升级点数加到体力',
   'cmd.addene': '把升级点数加到能量',
   'cmd.addcmd': '把升级点数加到统率',
+  'cmd.reset': '重置角色',
+  'cmd.resetinfo': '显示重置信息',
   'cmd.move': '传送到某张地图',
   'cmd.war': '申请公会战',
   'cmd.battlesoccer': '申请公会足球赛',

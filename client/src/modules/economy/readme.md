@@ -44,7 +44,7 @@ vault, chaos machine, trade and personal shop. The packet handlers that feed it 
 
 ## Depends on / used by
 - uses: `session`, `hero`, `inventory` (`Bag`), `Social` (system and error lines), `chat/notices.ts`, `inventory/itemStorage.ts`,
-  `controllers/sound/sfx.ts`, `controllers/assets` (`itemIconPack.ts`, `mixRecipes`), `controllers/interface/msgWin.ts`,
+  `controllers/sound/sfx.ts`, `controllers/assets` (`mixRecipes`), `controllers/interface/item_icons` (`prefetchLiveItemIcons`), `controllers/interface/msgWin.ts`,
   `chaos_mix/mixRecipes.ts`, `src/i18n`.
 - used by: the nets of `vault`, `chaos_mix`, `trade`, `npc_shop`, `personal_shop`, `inventory`, `scope`, `hero`
   (`reset`), `warp`; `inventory` (`Bag.grids`), `chat/commands.ts`, `session/sessionExit.ts`, `src/app/boot.tsx`,

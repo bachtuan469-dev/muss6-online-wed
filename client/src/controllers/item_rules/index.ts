@@ -11,7 +11,7 @@ export { itemLevelLook, itemLevelName } from './itemLevelLook';
 export { ItemSerializer } from './itemSerializer';
 export { ItemGroup, calcMaxDurability, classCanUse, classOf, classUnrestricted, isArmorPart, isCapeOfFighter, isCapeOfLord, isDivineArchangelWeapon, isFirstWing, isJewel, isPendant, isRing, isScepter, isSecondWing, isShield, isStaff, isSummonerBook, isThirdWing, isWeapon, isWeaponOfArchangel, isWing, itemDef, itemStats, skillMana } from './itemStats';
 export type { HeroStats, ItemDef, ItemStats } from './itemStats';
-export { isRepairBanned, isSellingBanned, itemValue, needsRepair, repairAllCost, repairCost, withTax } from './itemValue';
+export { NPC_SHOP_PRICE_DIVISOR, isRepairBanned, isSellingBanned, itemValue, needsRepair, npcBuyPrice, npcRepairAllCost, npcRepairCost, npcSellPrice, repairAllCost, repairCost, withTax } from './itemValue';
 export { learnableSkill } from './skillItems';
 export { archangelWeapon, dropModelProxy } from './dropModelProxy';
 export { activeSetOptions, ancientSetOf, setOptionLines, withWornStats, wornSetPieces, wornStatBonus } from './ancientSets';

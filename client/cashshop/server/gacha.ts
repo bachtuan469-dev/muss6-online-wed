@@ -1,5 +1,4 @@
 import { items as itemFiles } from '../../versions/shared/items/all';
-import { hasItemIconFile } from '../../src/controllers/assets/itemIconFiles';
 
 /**
  * The gacha roll: a random armour piece, +0 to +12, usually plain and now and
@@ -29,6 +28,7 @@ interface ItemRow {
   ItemName: string;
   X: number;
   Y: number;
+  szModelName: string;
 }
 
 /** Helm, armour, pants, gloves, boots. */
@@ -52,22 +52,19 @@ interface PoolEntry {
 }
 
 /**
- * Every armour piece the icon pack can draw both plain and excellent, at every
- * tint. Both filters stay because a roll can land either way: a plain roll
- * needs the plain icon, an excellent roll the excellent one.
- *
- * Filtered rather than listed: the pack is uneven, and a rolled item with no
- * icon would be a blank square at the one moment the page is trying to be
- * exciting. The game's own configuration is the other list an item has to be
- * on, and placement checks each roll against it before committing the seed
- * (`Orders.grantableRoll`), rolling again on a miss - so a paid roll is never
- * one the game cannot hand over.
+ * Every armour piece the live draw can draw, at every level and either way
+ * (plain or excellent): the reveal draws the live icon, so the pool is the
+ * pieces with a model. Filtered rather than listed, because a rolled item
+ * with no model would be a blank square at the one moment the page is trying
+ * to be exciting. The game's own configuration is the other list an item has
+ * to be on, and placement checks each roll against it before committing the
+ * seed (`Orders.grantableRoll`), rolling again on a miss - so a paid roll is
+ * never one the game cannot hand over.
  */
 export const GACHA_POOL: PoolEntry[] = (itemFiles.all() as unknown as ItemRow[])
   .filter(row => ARMOUR_GROUPS.includes(row.Group))
   .filter(row => typeof row.ItemName === 'string' && row.ItemName.length > 0)
-  .filter(row => hasItemIconFile(row.Group, row.Index, 15, '_e'))
-  .filter(row => hasItemIconFile(row.Group, row.Index, 0, ''))
+  .filter(row => row.szModelName.endsWith('.glb'))
   .map(row => ({
     group: row.Group,
     num: row.Index,

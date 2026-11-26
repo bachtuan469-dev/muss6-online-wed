@@ -52,6 +52,8 @@ export default {
   'cmd.addvit': 'Gastar puntos de nivel en vitalidad',
   'cmd.addene': 'Gastar puntos de nivel en energía',
   'cmd.addcmd': 'Gastar puntos de nivel en mando',
+  'cmd.reset': 'Reiniciar personaje',
+  'cmd.resetinfo': 'Mostrar información del reinicio',
   'cmd.move': 'Viajar a un mapa',
   'cmd.war': 'Pedir una guerra de guilds',
   'cmd.battlesoccer': 'Pedir un partido de Battle Soccer',

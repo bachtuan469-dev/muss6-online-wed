@@ -20,9 +20,10 @@ import { t } from '@/i18n';
 import {
   isRepairBanned,
   isSellingBanned,
-  itemValue,
   needsRepair,
-  repairCost,
+  npcBuyPrice,
+  npcRepairCost,
+  npcSellPrice,
   withTax,
 } from '@/controllers/item_rules';
 import { placePair } from './placement';
@@ -96,7 +97,7 @@ function priceLines(
   }
 
   if (context === 'shop' && shop) {
-    const price = itemValue(item, 0);
+    const price = npcBuyPrice(item);
     const taxed = withTax(price, shop.taxRate);
     lines.push({
       text:
@@ -108,14 +109,14 @@ function priceLines(
     });
   } else if (context === 'inventory' && shop && !isSellingBanned(item)) {
     lines.push({
-      text: t('shop.sellPrice', { amount: zen(itemValue(item, 1)) }),
+      text: t('shop.sellPrice', { amount: zen(npcSellPrice(item)) }),
       color,
       bold: false,
     });
   }
 
   if (context === 'inventory' && Merchant.repairMode && !isRepairBanned(item)) {
-    const cost = needsRepair(item) ? repairCost(item, Merchant.isSelfRepair) : 0;
+    const cost = needsRepair(item) ? npcRepairCost(item, Merchant.isSelfRepair) : 0;
     lines.push({ text: t('shop.repairCost', { amount: zen(cost) }), color, bold: true });
   }
 

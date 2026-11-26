@@ -8,7 +8,6 @@ export default {
   'autoDownload.cancel': 'Abbrechen',
   'autoDownload.hide': 'Ausblenden (lädt weiter)',
   'autoDownload.phase.map': 'Lade Karte: {name}',
-  'autoDownload.phase.icons': 'Lade Gegenstände',
   'autoDownload.phase.audio': 'Lade Musik und Klänge',
   'autoDownload.phase.monsters': 'Lade Figuren und Kreaturen',
   'autoDownload.phase.core': 'Lade Oberfläche und Effekte',

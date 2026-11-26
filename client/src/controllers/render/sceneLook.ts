@@ -34,7 +34,7 @@ import type { AreaLookName, AreaRect } from '../lighting/profiles';
  * writes a light or the pipeline.
  */
 
-/** The item glow layer's strength while it is live (see itemGlowIntensity). */
+/** The item glow layer's strength while it is live (see itemGlowIntensity). Back to 0.45, restored 2026-11-26: at 0.9 the worn-gear aura peaked at 0.46 at +15 and flooded the armor into white (white area in the hero box 1.2% at 0.45, 8.68% at 0.9). */
 const GLOW_MAX_INTENSITY = 0.45;
 
 export type SceneLook = {

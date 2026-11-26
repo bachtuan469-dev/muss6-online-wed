@@ -82,7 +82,6 @@ export default {
   'download.group.core': 'Game dasar',
   'download.group.monsters': 'Monster',
   'download.group.audio': 'Musik dan suara',
-  'download.group.icons': 'Ikon item',
   'download.total': 'Total',
   'download.withPack': 'paket',
   'download.start': 'Unduh',

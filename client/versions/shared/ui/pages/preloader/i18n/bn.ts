@@ -83,7 +83,6 @@ export default {
   'download.group.core': 'মূল গেম',
   'download.group.monsters': 'দানব',
   'download.group.audio': 'সংগীত ও শব্দ',
-  'download.group.icons': 'আইটেমের আইকন',
   'download.total': 'মোট',
   'download.withPack': 'প্যাক',
   'download.start': 'ডাউনলোড',

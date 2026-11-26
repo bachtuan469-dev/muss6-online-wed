@@ -51,6 +51,8 @@ export default {
   'cmd.addvit': '將升級點數加到體力',
   'cmd.addene': '將升級點數加到智力',
   'cmd.addcmd': '將升級點數加到統率',
+  'cmd.reset': '重置角色',
+  'cmd.resetinfo': '顯示重置資訊',
   'cmd.move': '傳送到地圖',
   'cmd.war': '申請戰盟戰',
   'cmd.battlesoccer': '申請戰盟足球賽',

@@ -46,6 +46,31 @@ describe('the legacy item passes', () => {
   it('redraw it by BodyLight alone when flat lit, as a bag item with LightEnable off (ZzzInventory.cpp:9682)', () => {
     expect(passes(true)).toContain('vec3 lit = muBodyLight.rgb;');
   });
+
+  it('gives a still a sheen floor on dark texels, gated by its own fx bit, in both variants', () => {
+    // Slice 2 of the glow-097 fix: a bag icon still has no GlowLayer and no
+    // motion, so its sheen needs a floor to read on dark armour at icon size.
+    // The floor rides the still's own fx bit (set only by iconShot's prepare),
+    // so the world's flat-lit chrome passes keep the trim-only term.
+    for (const flatLit of [false, true]) {
+      const fragment = passes(flatLit);
+      expect(fragment).toContain('float stillFloor = (fx & 32768) != 0 ? 0.100 : 0.0;');
+      expect(fragment).toContain('vec3 sheenAdd = min(itemGlow * (0.3 * texLum * texLum + 0.35 * rim + stillFloor), vec3(1.0));');
+    }
+  });
+
+  it('clamps the improved sheen to the headroom left, so it never pushes a channel past 1.0', () => {
+    // FIX33-GLOW2 clamp, restored 2026-11-26 (slice 1 of the glow-097 fix):
+    // the sheen only fills what is left to 1.0 and keeps the hue, so a bright
+    // trim texel (base 0.9, +15 sheen 0.53 raw) lands at 0.95 instead of
+    // clipping to white. The plain add drowned the trim into white.
+    for (const flatLit of [false, true]) {
+      const fragment = passes(flatLit);
+      expect(fragment).toContain('vec3 sheenAdd = min(itemGlow * (0.3 * texLum * texLum + 0.35 * rim + stillFloor), vec3(1.0));');
+      expect(fragment).toContain('color.rgb += sheenAdd * (vec3(1.0) - clamp(color.rgb, vec3(0.0), vec3(1.0)));');
+      expect(fragment).not.toContain('color.rgb += itemGlow * (0.3 * texLum * texLum + 0.35 * rim);');
+    }
+  });
 });
 
 describe('the scroll materials\' look-ups', () => {

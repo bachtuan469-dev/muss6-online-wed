@@ -81,7 +81,6 @@ export default {
   'download.group.core': 'Osnovna igra',
   'download.group.monsters': 'Čudovišta',
   'download.group.audio': 'Muzika i zvuci',
-  'download.group.icons': 'Ikone predmeta',
   'download.total': 'Ukupno',
   'download.withPack': 'paket',
   'download.start': 'Preuzmi',

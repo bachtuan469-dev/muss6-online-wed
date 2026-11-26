@@ -8,7 +8,6 @@ export default {
   'autoDownload.cancel': 'لغو',
   'autoDownload.hide': 'پنهان کردن (دانلود ادامه دارد)',
   'autoDownload.phase.map': 'در حال بارگذاری نقشه: {name}',
-  'autoDownload.phase.icons': 'در حال بارگذاری آیتم‌ها',
   'autoDownload.phase.audio': 'در حال بارگذاری موسیقی و صداها',
   'autoDownload.phase.monsters': 'در حال بارگذاری شخصیت‌ها و موجودات',
   'autoDownload.phase.core': 'در حال بارگذاری رابط کاربری و جلوه‌ها',

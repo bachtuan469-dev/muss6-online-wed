@@ -569,19 +569,20 @@
     var pages = Math.max(1, Math.ceil(total / ACC_PAGE_SIZE));
     if (accPage > pages - 1) { accPage = pages - 1; return loadAccounts(); }
     accCache = {};
-    var h = '<p class="note">Tổng: ' + total + ' tài khoản.</p><table><tr><th>ID</th><th>Tài khoản</th><th>Khóa</th><th>Tạo lúc</th><th>Hành động</th></tr>';
+    var h = '<p class="note">Tổng: ' + total + ' tài khoản.</p><table><tr><th>ID</th><th>Tài khoản</th><th>Online</th><th>Khóa</th><th>Tạo lúc</th><th>Hành động</th></tr>';
     (r.data.accounts || []).forEach(function (a) {
       accCache[a.id] = a;
       var accNameHtml = esc(a.username);
       if (a.is_admin) accNameHtml = '<span class="acc-admin-name">' + accNameHtml + '</span>';
       if (a.email) accNameHtml += '<br><span class="note">' + esc(a.email) + '</span>';
+      var onlineHtml = a.online ? '<span class="pill acc-on"><span class="dot"></span>Online</span>' : '<span class="pill acc-dim">Offline</span>';
       h += '<tr><td title="' + esc(a.id) + '">' + esc(String(a.id).slice(0, 8)) + '</td><td>' + accNameHtml +
-        '</td><td>' + (a.banned ? '<span class="bad">Đã khóa</span>' : '—') + '</td><td>' + fmtDate(a.created_at) + '</td><td class="acc-act">' +
+        '</td><td>' + onlineHtml + '</td><td>' + (a.banned ? '<span class="bad">Đã khóa</span>' : '—') + '</td><td>' + fmtDate(a.created_at) + '</td><td class="acc-act">' +
         '<button class="btn ghost" onclick="showAccountChars(\'' + a.id + '\')">Nhân vật</button> ' +
         '<button class="btn gold" onclick="showResetPwForm(\'' + a.id + '\')">Đặt lại MK</button>' +
         '</td></tr>';
     });
-    if (!(r.data.accounts || []).length) h += '<tr><td colspan="5" class="note">Không có tài khoản nào khớp bộ lọc.</td></tr>';
+    if (!(r.data.accounts || []).length) h += '<tr><td colspan="6" class="note">Không có tài khoản nào khớp bộ lọc.</td></tr>';
     h += '</table>' +
       '<div class="row"><button class="btn ghost" ' + (accPage <= 0 ? 'disabled' : '') + ' onclick="loadAccounts(' + (accPage - 1) + ')">← Trước</button>' +
       '<span class="note">Trang ' + (accPage + 1) + ' / ' + pages + '</span>' +
@@ -722,6 +723,14 @@
         stat(Number(c.exp || 0).toLocaleString('vi-VN'), 'EXP', true) +
         stat(Number(c.zen || 0).toLocaleString('vi-VN'), 'Zen', true) +
         stat(c.points, 'Point') +
+      '</div></div>' +
+      '<div class="card"><div class="grant-head" onclick="toggleGrants()"><h2>Tặng thưởng</h2><span class="grant-chev" id="grant-chev">' + (grantsOpen ? '▾ Thu gọn' : '▸ Mở') + '</span></div>' +
+      '<div id="grant-body" style="display:' + (grantsOpen ? '' : 'none') + '">' +
+      '<div class="row" style="flex-wrap:wrap">' +
+      '<div class="grant-item"><label>Level</label><input type="number" id="grant-level" min="1" placeholder="+ Level"><button class="btn gold" onclick="grantLevel(\'' + c.id + '\')"' + (c.online ? ' disabled title="Nhân vật đang online — không tặng level được"' : '') + '>Tặng</button></div>' +
+      '<div class="grant-item"><label>Zen</label><input type="number" id="grant-zen" min="1" placeholder="+ Zen"><button class="btn gold" onclick="grantZen(\'' + c.id + '\')"' + (c.online ? ' disabled title="Nhân vật đang online — không tặng được"' : '') + '>Tặng</button></div>' +
+      '<div class="grant-item"><label>Point</label><input type="number" id="grant-points" min="1" placeholder="+ Point"><button class="btn gold" onclick="grantPoints(\'' + c.id + '\')"' + (c.online ? ' disabled title="Nhân vật đang online — không tặng được"' : '') + '>Tặng</button></div>' +
+      '</div><p class="note">Cộng trực tiếp vào số hiện tại. Level tối đa 400, Zen tối đa 2.147.483.647. Chỉ tặng khi nhân vật offline.</p>' +
       '</div></div>' +
       '<div class="card"><h2>Vị trí & hoạt động</h2><div class="acc-meta acc-meta-flat">' +
         meta('Map', c.map ? esc(c.map) : '—') +

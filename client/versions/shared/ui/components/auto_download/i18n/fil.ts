@@ -8,7 +8,6 @@ export default {
   'autoDownload.cancel': 'Kanselahin',
   'autoDownload.hide': 'Itago (tuloy ang pag-download)',
   'autoDownload.phase.map': 'Nilo-load ang mapa: {name}',
-  'autoDownload.phase.icons': 'Nilo-load ang mga item',
   'autoDownload.phase.audio': 'Nilo-load ang musika at mga tunog',
   'autoDownload.phase.monsters': 'Nilo-load ang mga karakter at nilalang',
   'autoDownload.phase.core': 'Nilo-load ang interface at mga effect',

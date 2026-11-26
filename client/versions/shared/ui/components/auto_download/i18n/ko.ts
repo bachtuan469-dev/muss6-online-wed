@@ -8,7 +8,6 @@ export default {
   'autoDownload.cancel': '취소',
   'autoDownload.hide': '숨기기 (다운로드는 계속됨)',
   'autoDownload.phase.map': '맵 불러오는 중: {name}',
-  'autoDownload.phase.icons': '아이템 불러오는 중',
   'autoDownload.phase.audio': '음악과 효과음 불러오는 중',
   'autoDownload.phase.monsters': '캐릭터와 몬스터 불러오는 중',
   'autoDownload.phase.core': '인터페이스와 효과 불러오는 중',

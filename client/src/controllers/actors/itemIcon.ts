@@ -5,7 +5,7 @@ import { angleMatrixQuaternion } from '../render/renderAngles';
 import { iconShots, type IconShotJob } from '../render/iconShot';
 import { loadItemModel } from './itemModel';
 import { isTwoHanded } from './weaponClass';
-import { itemVisualTier } from '../item_fx/itemVisualTier';
+import { itemGlowClock, itemHaloAt, itemVisualTier } from '../item_fx/itemVisualTier';
 import { itemEffectSignature } from '../item_fx/itemEffectMode';
 import {
   forgetLiveItemIcons,
@@ -38,6 +38,14 @@ const M = 1 / 100;
 /** `if (1 == Select) ObjectSelect.Angle[1] = WorldTime * 0.45f` (ZzzInventory.cpp:8856-8859): degrees a millisecond. */
 const HOVER_SPIN = 0.45;
 
+/**
+ * Gain on the halo baked into a still, over the world halo ladder: the still
+ * has no GlowLayer, so its aura needs to be stronger to read at icon size.
+ * 2 keeps every set colour under 1 per channel at the pulse top except a
+ * hair of Grand Soul red (1.01, clamped), so no hue clips to white or orange.
+ */
+export const ICON_HALO_GAIN = 2;
+
 /** The shot of `item`'s icon, or null when it has no model (Gladiator's Glory, 13/95). */
 export function itemIconJob(scene: Scene, item: Item): IconShotJob | null {
   const def = ItemsDatabase.getItem(item.group, item.num);
@@ -53,8 +61,28 @@ export function itemIconJob(scene: Scene, item: Item): IconShotJob | null {
   let turned: Quaternion | null = null;
   let model: { updateMeshPasses(ms: number): void } | null = null;
 
+  // Drawn at its level and options, as worn (RenderPartObject, ZzzInventory.cpp:9699).
+  const tier = itemVisualTier(item);
+  // The still bakes the item's halo colour into the picture (FIX33-GLOW2):
+  // the aura in the tier's own colour, under the model, so the icon reads as
+  // glowing without the surface emissive that flooded it into one bright shape.
+  // Slice 2 of the glow-097 fix: the icon's halo is its own ladder, twice the
+  // world's (ICON_HALO_GAIN), clamped per channel. The world halo stays
+  // capped (GLOW_MAX_INTENSITY 0.45) and BOTH_SCALE untouched; only the still
+  // gets the stronger aura, and it never touches the model's own pixels.
+  const haloAt = itemHaloAt(tier, itemGlowClock(), { r: 0, g: 0, b: 0 });
+  const scaled = {
+    r: Math.min(1, haloAt.r * ICON_HALO_GAIN),
+    g: Math.min(1, haloAt.g * ICON_HALO_GAIN),
+    b: Math.min(1, haloAt.b * ICON_HALO_GAIN),
+  };
+  const halo =
+    scaled.r + scaled.g + scaled.b > 0.01 ? scaled : undefined;
+
   return {
     key: `${key}_${item.lvl ?? 0}${item.isExcellent ? '_e' : ''}${item.isAncient ? '_a' : ''}`,
+    halo,
+    files: [file],
     view: {
       width: (def.X || 1) * PX_PER_SQUARE,
       height: (def.Y || 1) * PX_PER_SQUARE,
@@ -73,8 +101,6 @@ export function itemIconJob(scene: Scene, item: Item): IconShotJob | null {
       turned = node.rotationQuaternion;
       model = object;
       node.scaling.setAll(scale);
-      // Drawn at its level and options, as worn (RenderPartObject, ZzzInventory.cpp:9699).
-      const tier = itemVisualTier(item);
       for (const mesh of object.getMeshes(true)) {
         mesh.metadata ??= {};
         mesh.metadata.itemTier = tier.active ? tier : null;

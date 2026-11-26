@@ -9,7 +9,7 @@ import { MsgBox } from '../../controllers/interface';
 import { Economy } from '../economy/economy';
 import { GameOptions } from '@/controllers/settings';
 import { StorageKind } from './itemStorage';
-import { itemValue } from '@/controllers/item_rules';
+import { npcBuyPrice } from '@/controllers/item_rules';
 import { itemDisplayName } from '../../controllers/interface/itemTooltip';
 import { MsgWinCode } from '../../controllers/interface/msgWin';
 import {
@@ -175,7 +175,7 @@ export const QuickItemActions = new (class _QuickItemActions {
       bought: run.bought,
       wanted: run.wanted,
       item,
-      price: item ? itemValue(item, 0) : 0,
+      price: item ? npcBuyPrice(item) : 0,
       money: Hero.money,
       freeSquare: item ? Bag.findFreeSquare(StorageKind.Inventory, item) : -1,
       refused: Merchant.shopBuyRefused,

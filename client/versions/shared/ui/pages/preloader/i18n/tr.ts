@@ -83,7 +83,6 @@ export default {
   'download.group.core': 'Temel oyun',
   'download.group.monsters': 'Canavarlar',
   'download.group.audio': 'Müzik ve sesler',
-  'download.group.icons': 'Eşya simgeleri',
   'download.total': 'Toplam',
   'download.withPack': 'paket',
   'download.start': 'İndir',

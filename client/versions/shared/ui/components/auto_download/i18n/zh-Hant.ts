@@ -8,7 +8,6 @@ export default {
   'autoDownload.cancel': '取消',
   'autoDownload.hide': '隱藏（繼續下載）',
   'autoDownload.phase.map': '正在讀取地圖：{name}',
-  'autoDownload.phase.icons': '正在讀取物品',
   'autoDownload.phase.audio': '正在讀取音樂與音效',
   'autoDownload.phase.monsters': '正在讀取角色與生物',
   'autoDownload.phase.core': '正在讀取介面與特效',

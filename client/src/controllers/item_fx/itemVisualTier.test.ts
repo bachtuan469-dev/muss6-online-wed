@@ -57,7 +57,7 @@ describe('the +13 glow rung', () => {
     const tier = sword13();
     const out = itemHaloAt(tier, Math.PI / 8, { r: 0, g: 0, b: 0 });
     // Halo 0.62 at the breath peak, times the Both scale 0.65; the layer
-    // multiplies by its own 0.45, so the +13 halo peaks near 0.18.
+    // multiplies by its own 0.9, so the +13 halo peaks near 0.36.
     expect(Math.max(out.r, out.g, out.b)).toBeCloseTo(0.62 * 0.65, 3);
   });
 
@@ -143,6 +143,87 @@ describe('excellent static violet', () => {
     expect(diffs[0].b / diffs[0].r).toBeCloseTo(211 / 148, 3);
   });
 });
+
+describe('the icon picture (shop and bag)', () => {
+  let savedLevel: number;
+  let savedEffects: number;
+
+  beforeEach(() => {
+    savedLevel = GameOptions.effectLevel;
+    savedEffects = GameOptions.itemEffects;
+    GameOptions.effectLevel = 4;
+    GameOptions.itemEffects = 2;
+  });
+
+  afterEach(() => {
+    GameOptions.effectLevel = savedLevel;
+    GameOptions.itemEffects = savedEffects;
+  });
+
+  // The picture uses the world ladder again: the capped icon ladder
+  // (FIX33-FOLLOWUP) is gone, reverted 2026-11-26 on the user's order, so a
+  // +15 picture reads at the full world intensity and may flood into an
+  // orange blob again, as it did before the followup.
+  const peak = (t: number) => Math.PI / 8 + (t * Math.PI) / 2;
+
+  it('+15 in the picture uses the world intensity', () => {
+    const tier = itemVisualTier({ group: 0, num: 16, lvl: 15 } as never);
+    const icon = itemEmissiveAt(tier, peak(0), { r: 0, g: 0, b: 0 });
+    const world = itemEmissiveAt(tier, peak(0), { r: 0, g: 0, b: 0 });
+    expect(Math.max(icon.r, icon.g, icon.b)).toBeCloseTo(Math.max(world.r, world.g, world.b), 6);
+    expect(Math.max(icon.r, icon.g, icon.b)).toBeGreaterThan(1);
+  });
+
+  it('the level still reads: +15 is brighter than +11 in the picture', () => {
+    const plus15 = itemVisualTier({ group: 0, num: 16, lvl: 15 } as never);
+    const plus11 = itemVisualTier({ group: 0, num: 16, lvl: 11 } as never);
+    const a = itemEmissiveAt(plus15, peak(0), { r: 0, g: 0, b: 0 });
+    const b = itemEmissiveAt(plus11, peak(0), { r: 0, g: 0, b: 0 });
+    expect(Math.max(a.r, a.g, a.b)).toBeGreaterThan(Math.max(b.r, b.g, b.b));
+  });
+
+  it('+0 has no level glow in the picture either', () => {
+    const tier = itemVisualTier({ group: 0, num: 16, lvl: 0 } as never);
+    const out = itemEmissiveAt(tier, 0.3, { r: 0, g: 0, b: 0 });
+    expect(out.r).toBeCloseTo(0, 6);
+    expect(out.g).toBeCloseTo(0, 6);
+    expect(out.b).toBeCloseTo(0, 6);
+  });
+
+  it('the excellent violet rides at full strength in the picture', () => {
+    const exc = itemVisualTier({ group: 0, num: 16, lvl: 0, isExcellent: true } as never);
+    const plain = itemVisualTier({ group: 0, num: 16, lvl: 0 } as never);
+    const iconDiff = diffAt(itemEmissiveAt, exc, plain, 0.3);
+    const worldDiff = diffAt(itemEmissiveAt, exc, plain, 0.3);
+    expect(iconDiff.g).toBeCloseTo(0, 6);
+    expect(iconDiff.r).toBeCloseTo(worldDiff.r, 6);
+    expect(iconDiff.b).toBeCloseTo(worldDiff.b, 6);
+    expect(iconDiff.r).toBeCloseTo((148 / 255) * 0.4 * 0.65, 3);
+    expect(iconDiff.b).toBeCloseTo((211 / 255) * 0.4 * 0.65, 3);
+  });
+
+  it('a true Ancient Grand Soul pulses pink in the picture, not green', () => {
+    const ancient = itemVisualTier({ group: 8, num: 18, lvl: 0, isAncient: true } as never);
+    const plain = itemVisualTier({ group: 8, num: 18, lvl: 0 } as never);
+    for (const t of [0, 0.6, 1.3]) {
+      const d = diffAt(itemEmissiveAt, ancient, plain, t);
+      expect(d.g / d.r).toBeCloseTo(0.412, 2);
+      expect(d.b / d.r).toBeCloseTo(0.706, 2);
+    }
+  });
+});
+
+/** `fn(ancient, t) - fn(plain, t)`: the tint one flag adds. */
+function diffAt(
+  fn: (tier: ReturnType<typeof itemVisualTier>, t: number, out: { r: number; g: number; b: number }) => { r: number; g: number; b: number },
+  a: ReturnType<typeof itemVisualTier>,
+  b: ReturnType<typeof itemVisualTier>,
+  t: number,
+) {
+  const x = fn(a, t, { r: 0, g: 0, b: 0 });
+  const y = fn(b, t, { r: 0, g: 0, b: 0 });
+  return { r: x.r - y.r, g: x.g - y.g, b: x.b - y.b };
+}
 
 describe('the three 0.97 set colours', () => {
   let savedLevel: number;

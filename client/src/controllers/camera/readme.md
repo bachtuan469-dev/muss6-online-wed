@@ -23,10 +23,12 @@ per-map overrides and this client's extra zoom steps, drag and first-person mous
 - On, in the World state, `index.ts` is the only writer of alpha, beta, radius, fov and the
   target's Y lift.
 - Ctrl+wheel steps the distance ladder (`DISTANCE_BY_LEVEL`, `SetViewPortLevel`
-  SceneCommon.cpp:237-253); Insert / Delete rotate the heading; pitch 40, vertical FOV 30 unless
-  the FOV slider says otherwise. (The original's pitch is 48.5; it read too steep on a phone, so
-  this server's owner picked the flatter 40 degree frame on 2026-11-22 - `CAMERA_PITCH_DEG` in
-  `recipes.ts`.) Distance eases by a third per 25 fps frame. Home belongs to the MU
+  SceneCommon.cpp:237-253); Insert / Delete rotate the heading; pitch 40, vertical FOV 40 unless
+  the FOV slider says otherwise. (The original's pitch is 48.5 and its FOV
+  30; they read too steep and tight on a phone, so this server's owner picked
+  the flatter 40 degree frame on 2026-11-22 and the wider 40 degree FOV on
+  2026-11-25 - `CAMERA_PITCH_DEG` and `CAMERA_FOV_DEG` in `recipes.ts`.)
+  Distance eases by a third per 25 fps frame. Home belongs to the MU
   Helper, so the frame resets on warp instead (WSclient.cpp:600).
 - `cameraKeepsView` (an Enhanced improvement, `versions/shared/improvements/`): a warp keeps the
   level, heading and tilt, except onto a map that pins its distance (`layers.ts`). `cameraView.moved`

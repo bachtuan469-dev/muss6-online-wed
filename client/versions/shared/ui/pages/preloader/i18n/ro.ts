@@ -86,7 +86,6 @@ export default {
   'download.group.core': 'Joc de bază',
   'download.group.monsters': 'Monștri',
   'download.group.audio': 'Muzică și sunete',
-  'download.group.icons': 'Iconițe obiecte',
   'download.total': 'Total',
   'download.withPack': 'pachet',
   'download.start': 'Descarcă',

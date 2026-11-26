@@ -85,7 +85,6 @@ export default {
   'download.group.core': 'Oinarrizko jokoa',
   'download.group.monsters': 'Munstroak',
   'download.group.audio': 'Musika eta soinuak',
-  'download.group.icons': 'Objektuen ikonoak',
   'download.total': 'Guztira',
   'download.withPack': 'paketea',
   'download.start': 'Deskargatu',

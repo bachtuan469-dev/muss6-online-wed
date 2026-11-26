@@ -8,7 +8,6 @@ export default {
   'autoDownload.cancel': 'বাতিল',
   'autoDownload.hide': 'লুকান (ডাউনলোড চলতে থাকবে)',
   'autoDownload.phase.map': 'ম্যাপ লোড হচ্ছে: {name}',
-  'autoDownload.phase.icons': 'আইটেম লোড হচ্ছে',
   'autoDownload.phase.audio': 'সংগীত ও শব্দ লোড হচ্ছে',
   'autoDownload.phase.monsters': 'চরিত্র ও প্রাণী লোড হচ্ছে',
   'autoDownload.phase.core': 'ইন্টারফেস ও ইফেক্ট লোড হচ্ছে',

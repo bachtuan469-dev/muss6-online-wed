@@ -8,7 +8,6 @@ export default {
   'autoDownload.cancel': 'İptal',
   'autoDownload.hide': 'Gizle (indirme sürer)',
   'autoDownload.phase.map': 'Harita yükleniyor: {name}',
-  'autoDownload.phase.icons': 'Eşyalar yükleniyor',
   'autoDownload.phase.audio': 'Müzik ve sesler yükleniyor',
   'autoDownload.phase.monsters': 'Karakterler ve yaratıklar yükleniyor',
   'autoDownload.phase.core': 'Arayüz ve efektler yükleniyor',

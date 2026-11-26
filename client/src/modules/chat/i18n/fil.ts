@@ -51,6 +51,8 @@ export default {
   'cmd.addvit': 'Gamitin ang puntos sa pag-level up sa sigla',
   'cmd.addene': 'Gamitin ang puntos sa pag-level up sa enerhiya',
   'cmd.addcmd': 'Gamitin ang puntos sa pag-level up sa pamumuno',
+  'cmd.reset': 'I-reset ang character',
+  'cmd.resetinfo': 'Ipakita ang impormasyon ng reset',
   'cmd.move': 'Lumipat sa isang mapa',
   'cmd.war': 'Humiling ng digmaan ng guild',
   'cmd.battlesoccer': 'Humiling ng laban sa battle soccer',

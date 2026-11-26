@@ -8,7 +8,6 @@ export default {
   'autoDownload.cancel': 'Ακύρωση',
   'autoDownload.hide': 'Απόκρυψη (η λήψη συνεχίζεται)',
   'autoDownload.phase.map': 'Φόρτωση χάρτη: {name}',
-  'autoDownload.phase.icons': 'Φόρτωση αντικειμένων',
   'autoDownload.phase.audio': 'Φόρτωση μουσικής και ήχων',
   'autoDownload.phase.monsters': 'Φόρτωση χαρακτήρων και πλασμάτων',
   'autoDownload.phase.core': 'Φόρτωση διεπαφής και εφέ',

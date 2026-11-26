@@ -8,7 +8,6 @@ export default {
   'autoDownload.cancel': 'Hủy',
   'autoDownload.hide': 'Ẩn (vẫn tiếp tục tải)',
   'autoDownload.phase.map': 'Đang tải bản đồ: {name}',
-  'autoDownload.phase.icons': 'Đang tải vật phẩm',
   'autoDownload.phase.audio': 'Đang tải nhạc và âm thanh',
   'autoDownload.phase.monsters': 'Đang tải nhân vật và quái vật',
   'autoDownload.phase.core': 'Đang tải giao diện và hiệu ứng',

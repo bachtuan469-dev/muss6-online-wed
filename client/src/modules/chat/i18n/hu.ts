@@ -50,6 +50,8 @@ export default {
   'cmd.addvit': 'Szintlépési pontok kiosztása Vitalitásra',
   'cmd.addene': 'Szintlépési pontok kiosztása Energiára',
   'cmd.addcmd': 'Szintlépési pontok kiosztása Vezetésre',
+  'cmd.reset': 'Karakter visszaállítása',
+  'cmd.resetinfo': 'Resetinformáció megjelenítése',
   'cmd.move': 'Teleportálás egy térképre',
   'cmd.war': 'Céhháború kezdeményezése',
   'cmd.battlesoccer': 'Battle Soccer mérkőzés kezdeményezése',

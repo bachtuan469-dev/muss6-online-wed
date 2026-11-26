@@ -86,7 +86,6 @@ export default {
   'download.group.core': '基本データ',
   'download.group.monsters': 'モンスター',
   'download.group.audio': '音楽とサウンド',
-  'download.group.icons': 'アイテムアイコン',
   'download.total': '合計',
   'download.withPack': 'パック',
   'download.start': 'ダウンロード',

@@ -3,8 +3,8 @@ import type { Item } from '@/ecs/world';
 
 /**
  * The bag icon drawn from the item's model, as the original draws every icon (`RenderItem3D`,
- * ZzzInventory.cpp:9707), for the items the pre-rendered pack has no file for. The interface does
- * not reach the scene: the app fills this slot at boot with what draws it.
+ * ZzzInventory.cpp:9707). The interface does not reach the scene: the app fills this slot at boot
+ * with what draws it.
  */
 export type LiveItemIconSource = (item: Item) => Promise<string | null>;
 
@@ -48,6 +48,23 @@ export function forgetLiveItemIcons(): void {
   runInAction(() => urls.clear());
 }
 
+/**
+ * Start the draw for these items now, ahead of the grid that shows them:
+ * with no static picture to show meanwhile, the earlier a shot starts, the
+ * shorter its cell stays empty. Nulls are skipped.
+ */
+export function prefetchLiveItemIcons(items: Iterable<Item | null | undefined>): void {
+  for (const item of items) {
+    if (!item) continue;
+    // A picture that landed missing gets another try on the next warm-up (the
+    // render path never retries, so this is the only retry): the first open
+    // timed out on a cold cache, the next finds the model warm.
+    const key = liveItemIconKey(item);
+    if (urls.has(key) && urls.get(key) === null) asked.delete(key);
+    liveItemIcon(item);
+  }
+}
+
 /** The item's live icon once drawn, else null; the first read asks for it. Observable. */
 export function liveItemIcon(item: Item): string | null {
   const key = liveItemIconKey(item);
@@ -60,3 +77,15 @@ export function liveItemIcon(item: Item): string | null {
   }
   return urls.get(key) ?? null;
 }
+
+export type LiveItemIconState = 'pending' | 'ready' | 'missing';
+
+/** The draw's state: the icon shows the live picture once drawn, an empty cell while it draws or when the item has no model. */
+export function liveItemIconState(item: Item): LiveItemIconState {
+  if (!source) return 'missing';
+  const key = liveItemIconKey(item);
+  if (urls.has(key)) return urls.get(key) ? 'ready' : 'missing';
+  liveItemIcon(item);
+  return 'pending';
+}
+

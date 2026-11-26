@@ -58,6 +58,10 @@ original client's item passes, the item glow tiers and the weapon swing trails.
   sheet (`BlurMapping`) and colour. `ecs/systems/weaponTrailSystem.ts` asks once per clip start
   and spawns `effects.spawn('blur', ...)` (`fx/blur.ts`). `RenderBlurs`
   (ZzzEffectBlurSpark.cpp:173) draws a levelled owner's trail subtractive, a level-0 one additive.
+  FIX33-GLOW2, 2026-11-26: every mapping but 0 was white, so the world flare read white; a
+  glowing weapon now tints its additive trail by its own halo colour (normalised), while a plain
+  weapon stays white, mapping 0 keeps the level colours, the red trails stay red and a murderer's
+  dark smear stays white.
 
 ### Notes
 - Improved ladder (`itemVisualTier.ts`), all in the item's legacy chrome colour: +0-6 none, +7-8
@@ -71,6 +75,22 @@ original client's item passes, the item glow tiers and the weapon swing trails.
   original, and a bag item's vertex light is its BodyLight (`LightEnable` off), so `lit` is BodyLight
   there instead of the scene's lambert sum. The texel itself is drawn at BodyLight too (`FLAT_LIT_OVERRIDE`):
   `RenderMesh` colours an unlit mesh by it (ZzzBMD.cpp:1740-1745); before, the flat pass ignored it.
+  A shop / bag picture uses the world emissive ladder again (`itemEmissiveAt`): the capped icon
+  ladder (`itemIconEmissiveAt`, FIX33-FOLLOWUP) is gone, reverted 2026-11-26 on the user's order
+  ("leave the emissive as it was"). A +15 icon may read as an orange blob again at the world
+  intensity, as it did before the followup (headless shots fix33fu4/fu5). The still still bakes
+  the item's halo colour into the picture itself (`iconShot.ts` `iconHaloLayer`: the silhouette's
+  blurred alpha in the tier colour, under the model), which cannot flood the surface the way
+  raising the emissive did. Slice 2 of the glow-097 fix (2026-11-26): the icon's halo is its own
+  ladder, twice the world's (`itemIcon.ts` `ICON_HALO_GAIN`, clamped per channel), the blur is
+  wider (spread 1/8 of the short side), and a still's sheen gets a 0.10 floor on dark texels
+  (`FX_ICON_STILL`, set only by `iconShot.ts` prepare), still inside the headroom clamp, so the
+  glow reads at icon size without touching the world halo or the flat-lit chrome passes.
+- The improved sheen in the legacy passes is clamped to the headroom left to 1.0 (FIX33-GLOW2
+  clamp, restored 2026-11-26 in the glow-097 slice 1): `sheenAdd` only fills what is left and
+  keeps the hue, so no channel passes 1.0 because of the sheen. The world glow layer's maximum is
+  0.45 again (`render/sceneLook.ts` `GLOW_MAX_INTENSITY`), back from 0.9, which flooded the armor
+  into white.
 - Half-lambert (`MU_WRAP`): the original shades `dot*0.8 + 0.4`, clamped >= 0.2. It is added to
   the light sum as `sun x (wrap(dot) - max(dot, 0)) x shadow`, constants divided by 1.2 so a
   sun-facing face is unchanged. The sun's shadow factor is recovered from Babylon's aggregate as

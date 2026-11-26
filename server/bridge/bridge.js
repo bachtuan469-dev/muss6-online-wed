@@ -233,7 +233,31 @@ function createBridge(opts = {}) {
   const csHost = opts.csHost ?? OPENMU_HOST;
   const csPort = opts.csPort ?? OPENMU_CS_PORT;
 
+  // Presence: connId -> loginName (lowercase) của các kết nối đã gửi gói
+  // login đã giải mã qua cầu nối. Dùng để trả lời GET /presence (chỉ
+  // loopback) cho portal admin — xem httpServer bên dưới và nhánh login
+  // trong translatePlain. Entry bị xóa trong finish() khi kết nối đóng
+  // (mọi đường đóng đều qua finish).
+  const presenceLogins = new Map();
+
   const httpServer = http.createServer((req, res) => {
+    // GET /presence — danh sách login đang online (chỉ loopback).
+    // Các request khác vẫn 426 như trước (WebSocket only).
+    let pathname = '';
+    try { pathname = new URL(req.url || '/', 'http://bridge').pathname; } catch { /* giữ '' */ }
+    if (req.method === 'GET' && pathname === '/presence') {
+      const remote = String(req.socket.remoteAddress || '').replace(/^::ffff:/, '');
+      const isLoopback = remote === '127.0.0.1' || remote === '::1' || remote.startsWith('127.');
+      if (!isLoopback) {
+        res.writeHead(403, { 'Content-Type': 'application/json; charset=utf-8' });
+        res.end(JSON.stringify({ error: 'forbidden' }));
+        return;
+      }
+      const logins = [...new Set(presenceLogins.values())].sort();
+      res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
+      res.end(JSON.stringify({ logins }));
+      return;
+    }
     res.writeHead(426, { 'Content-Type': 'text/plain; charset=utf-8' });
     res.end('MU bridge2a (OpenMU): WebSocket only, connect ws://<host>:' + port + '/mu\n');
   });
@@ -244,6 +268,7 @@ function createBridge(opts = {}) {
     const startedAt = Date.now();
     let closed = false;
     let leg = 'cs'; // 'cs' | 'gs'
+    let loginName = null; // login (lowercase) của kết nối này — ghi khi gói login đã giải mã đi qua, xóa trong finish()
     let upstream = null; // net.Socket hiện tại
     let upstreamReady = false;
     let pendingC2S = []; // gói C->S (object đã bóc khung) chờ trong lúc chuyển chân/chưa nối xong
@@ -278,6 +303,7 @@ function createBridge(opts = {}) {
     function finish(reason) {
       if (closed) return;
       closed = true;
+      presenceLogins.delete(connId); // presence: kết nối này không còn online
       L(`CLOSE leg=${leg} reason=${reason} pkts c->s=${pktsC2S} s->c=${pktsS2C} ` +
         `bytes c->s=${bytesC2S} s->c=${bytesS2C} translated=${translateCount} duration_ms=${Date.now() - startedAt}`);
       try { if (upstream) upstream.destroy(); } catch { /* đã đóng */ }
@@ -565,8 +591,12 @@ function createBridge(opts = {}) {
         translateCount += 1;
         events.push(`TRANSLATE F3 0D -> F3 00 (đổi 1 byte subcode, giữ payload 0x${(out[hlen + 2] ?? 0).toString(16).padStart(2, '0')})`);
       }
-      // Login C3 F1 01: chẩn đoán dạng trường + công tắc XOR3.
-      if (head === 0xc3 && opcode === 0xf1 && subcode === 0x01) {
+      // Login F1 01: chẩn đoán dạng trường + công tắc XOR3.
+      // Cả 2 biến thể đều qua đây: C3 F1 01 (60B LoginLongPassword, qua
+      // SimpleModulus) và C1 F1 01 (login ngắn, managed-raw — xem
+      // recoverPlainC1C2). Trường username đều ở [4..14), password
+      // [14..34) (bản ngắn chỉ tới byte 24 — subarray đã cắt theo độ dài).
+      if ((head === 0xc3 || head === 0xc1) && opcode === 0xf1 && subcode === 0x01) {
         const userField = out.subarray(4, 14);
         const passField = out.subarray(14, Math.min(34, out.length));
         const userPlain = isPrintableField(userField);
@@ -577,6 +607,20 @@ function createBridge(opts = {}) {
         L(`LOGIN diag: len=${out.length} userField plain=${userPlain} xor3=${userXor3}` +
           `${userXor3 ? ` (xor3 giải ra account="${userDecoded}")` : ''} passField plain=${passPlain} xor3=${passXor3} ` +
           `— công tắc BRIDGE_LOGIN_XOR3=${LOGIN_XOR3_ON ? 'ON' : 'OFF'} (CHƯA CHỐT dạng thật của client — xem BRIDGE-2A-REPORT)`);
+        // PRESENCE (cột Online trang admin): ghi loginName của kết nối
+        // này khi gói login đã giải mã đi qua — ưu tiên dạng plain, nếu
+        // không thì dạng XOR3 (xem diag trên). KHÔNG log mật khẩu.
+        // Entry bị xóa trong finish() khi kết nối đóng. LƯU Ý: login sai
+        // mật khẩu vẫn hiện online tới lúc client ngắt (OpenMU trả lỗi
+        // rồi client tự đóng) — xem báo cáo.
+        const rawName = userPlain
+          ? userField.toString('latin1').replace(/\0.*$/s, '')
+          : userDecoded;
+        if (rawName) {
+          loginName = rawName.toLowerCase();
+          presenceLogins.set(connId, loginName);
+          L(`PRESENCE loginName="${loginName}" (connId=${connId})`);
+        }
         if (LOGIN_XOR3_ON) {
           if (out.length === 60) {
             out = Buffer.from(out);

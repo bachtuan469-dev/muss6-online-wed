@@ -8,7 +8,6 @@ export default {
   'autoDownload.cancel': 'キャンセル',
   'autoDownload.hide': '隠す（ダウンロードは続きます）',
   'autoDownload.phase.map': 'マップを読み込み中: {name}',
-  'autoDownload.phase.icons': 'アイテムを読み込み中',
   'autoDownload.phase.audio': '音楽と効果音を読み込み中',
   'autoDownload.phase.monsters': 'キャラクターとモンスターを読み込み中',
   'autoDownload.phase.core': 'インターフェースとエフェクトを読み込み中',

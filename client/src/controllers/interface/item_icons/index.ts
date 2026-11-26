@@ -4,10 +4,13 @@ export {
   forgetLiveItemIcons,
   liveItemIcon,
   liveItemIconKey,
+  liveItemIconState,
+  prefetchLiveItemIcons,
   setLiveItemIcons,
   setLiveItemSpin,
   spinLiveItemIcon,
   type LiveItemIconSource,
+  type LiveItemIconState,
   type LiveItemSpinSource,
 } from './liveItemIcon';
 export { itemIconPose, type ItemIconPose } from './itemIconPose';

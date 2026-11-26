@@ -55,6 +55,8 @@ export default {
   'cmd.addvit': 'Levelpunkte auf Vitalität vergeben',
   'cmd.addene': 'Levelpunkte auf Energie vergeben',
   'cmd.addcmd': 'Levelpunkte auf Führung vergeben',
+  'cmd.reset': 'Charakter zurücksetzen',
+  'cmd.resetinfo': 'Reset-Info anzeigen',
   'cmd.move': 'Auf eine Karte reisen',
   'cmd.war': 'Einen Gildenkrieg anfragen',
   'cmd.battlesoccer': 'Ein Battle-Soccer-Spiel anfragen',

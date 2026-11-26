@@ -50,6 +50,8 @@ export default {
   'cmd.addvit': 'Rasporedi poene nivoa na vitalnost',
   'cmd.addene': 'Rasporedi poene nivoa na energiju',
   'cmd.addcmd': 'Rasporedi poene nivoa na vođstvo',
+  'cmd.reset': 'Resetuj lika',
+  'cmd.resetinfo': 'Prikaži informacije o resetu',
   'cmd.move': 'Teleport na mapu',
   'cmd.war': 'Izazovi na rat gilda',
   'cmd.battlesoccer': 'Izazovi na meč Battle Soccer',

@@ -84,7 +84,6 @@ export default {
   'download.group.core': 'بازی پایه',
   'download.group.monsters': 'هیولاها',
   'download.group.audio': 'موسیقی و صداها',
-  'download.group.icons': 'نماد آیتم‌ها',
   'download.total': 'مجموع',
   'download.withPack': 'بسته',
   'download.start': 'دانلود',

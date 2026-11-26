@@ -90,7 +90,16 @@ There is no `index.ts` facade; other folders import the modules directly.
   shadow flags (the original's `Light = 1,1,1`, `LightEnable` off, ZzzInventory.cpp:9682-9699), then an
   orthographic camera and a target of their own draw them once after the frame (`onAfterRender`,
   only while a job waits), at most one per frame. The target is read back, encoded as a PNG object
-  URL, cached by the job's key and everything is freed. A spin keeps its root, camera and target
+  URL, cached by the job's key and everything is freed. A job may carry a `halo` (the item's halo
+  colour, `actors/itemIcon.ts`): the still bakes it in as a blurred aura from the silhouette's own
+  alpha, under the model (FIX33-GLOW2), so the icon reads as glowing without raising the surface
+  emissive. A job may carry `files` (the model files its build loads): they are warmed in parallel
+  when the shot is queued, so the serial draw does not wait on each cold fetch in turn. A build is
+  bounded (30 s): a hung fetch answers null and the queue moves on, and a null picture is not
+  cached, so the next shoot draws it again. A drawn picture is also kept across sessions
+  (`iconStillCache.ts`, Cache Storage, one cache per build id): the next visit reads it back
+  instead of drawing it again, and `forget()` drops the kept pictures too, so a changed
+  item-effects option never reads a picture drawn with the old options. A spin keeps its root, camera and target
   until stopped and, every frame after the render, turns the model (`job.turn`), draws it, reads it
   synchronously into a kept buffer and hands `paint` one kept straight-alpha array: no allocation per
   frame. One spin at a time: a new one stops the last.
@@ -127,11 +136,24 @@ There is no `index.ts` facade; other folders import the modules directly.
 - `iconShot.test.ts`: at most one shot per frame and no observer once idle; one build per key, again
   after `forget`; the
   subject, root, camera and target freed; the main camera never sees the subject; flat lit, no fog,
-  no caster flag, but a mesh lit by its own shine keeps its light; a failed build answers null; the bounded wait for readiness; `iconPixels` (row flip,
+  no caster flag, but a mesh lit by its own shine keeps its light; a failed build answers null; the bounded wait for readiness; the bounded queue: a hung
+  build times out and the next shot still draws, queued files are warmed ahead of the draw, a null
+  picture is not cached, and a full shop of shots lands within a bounded number of frames; `iconPixels` (row flip,
   straight alpha over the clear, the display curve on a linear buffer, a kept buffer rewritten whole);
   the spin draws one turned picture a frame into one kept buffer, one item at a time, and frees all of
-  it when stopped, before its model is in too. NullEngine draws no pixels, so what a picture looks
+  it when stopped, before its model is in too. The stills kept across sessions: a kept still answers
+  without building or drawing, a drawn picture is kept and read back by a new queue, `forget()` drops
+  the kept pictures too, no picture is kept for a look that cannot be drawn, and a failing store
+  still draws as before. The baked halo (`iconHaloLayer`, `compositeOver`):
+  the aura spills outside the silhouette and fades with distance, nothing for a colourless item, the
+  item drawn over it untouched, and the still and the spin both carry it; the aura is wider than the
+  world's (spread 1/8 of the short side, about 10 px out on a 40 px square) and the shot flags its
+  meshes as a still (`metadata.iconStill`) for the still-only sheen floor. NullEngine draws no pixels, so what a picture looks
   like is checked in a browser.
+- `iconStillCache.test.ts`: one cache per build, never under the asset worker's prefix; a drawn
+  picture round-trips through the store; a miss and no Cache Storage answer null; a quota error
+  fails open; `clear()` drops the cache and a save in flight does not come back; other builds'
+  still caches are pruned and the rest left alone.
 - `meshAnimation.test.ts`: `meshAnimationFor` reads the map row per world.
 - `meshPasses.test.ts`: an additive copy whose gain and UVs follow WorldTime, the meshes a branch skips or
   a pass replaces, a pass's own light, a `RenderBody` pass on every drawn mesh, the option putting the

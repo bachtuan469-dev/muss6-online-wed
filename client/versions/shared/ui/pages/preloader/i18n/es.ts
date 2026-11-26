@@ -86,7 +86,6 @@ export default {
   'download.group.core': 'Juego base',
   'download.group.monsters': 'Monstruos',
   'download.group.audio': 'Música y sonidos',
-  'download.group.icons': 'Iconos de objetos',
   'download.total': 'Total',
   'download.withPack': 'paquete',
   'download.start': 'Descargar',

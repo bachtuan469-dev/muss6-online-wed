@@ -50,6 +50,8 @@ export default {
   'cmd.addvit': 'Gasta punts d\'atribut en vitalitat',
   'cmd.addene': 'Gasta punts d\'atribut en energia',
   'cmd.addcmd': 'Gasta punts d\'atribut en comandament',
+  'cmd.reset': 'Reinicia el personatge',
+  'cmd.resetinfo': 'Mostra la informació del reinici',
   'cmd.move': 'Teletransporta\'t a un mapa',
   'cmd.war': 'Sol·licita una guerra de gremis',
   'cmd.battlesoccer': 'Sol·licita un partit de Battle Soccer',

@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { itemLevelName } from './itemLevelLook';
-import { itemIconUrl } from '../assets/itemIconPack';
+import { liveItemIconKey } from '../interface/item_icons/liveItemIcon';
+import { itemIconPose } from '../interface/item_icons/itemIconPose';
 
 const POTION = 14;
 const BOX_OF_LUCK = 11;
 
 const name = (lvl: number) => itemLevelName(POTION, BOX_OF_LUCK, lvl, 'Box of Luck');
-const icon = (lvl: number) => itemIconUrl({ group: POTION, num: BOX_OF_LUCK, lvl });
 
 describe('Box of Luck by level', () => {
   it('names each level as the item it is', () => {
@@ -26,10 +26,14 @@ describe('Box of Luck by level', () => {
     expect(name(4)).toBe('Box of Luck +4');
   });
 
-  it('draws each level with its own icon, not the pack tint', () => {
-    expect(icon(0)).toBe('/items/item_14_11_0.png');
-    for (const lvl of [1, 2, 4, 8, 10, 12, 14]) {
-      expect(icon(lvl)).toBe(`/items/item_14_11_${lvl}.png`);
-    }
+  it('draws each level with its own live picture, not one shared tint', () => {
+    // The live key carries the level, so no two levels share one picture.
+    const keys = [0, 1, 2, 4, 8, 10, 12, 14].map(lvl => liveItemIconKey({ group: POTION, num: BOX_OF_LUCK, lvl }));
+    expect(new Set(keys).size).toBe(keys.length);
+    // And the bag swaps the model per level (RenderItem3D, ZzzInventory.cpp:6817-6848).
+    expect(itemIconPose(POTION, BOX_OF_LUCK, 1, false).model?.file).toBe('Item/MagicBox02.glb');
+    expect(itemIconPose(POTION, BOX_OF_LUCK, 2, false).model?.file).toBe('Item/MagicBox03.glb');
+    expect(itemIconPose(POTION, BOX_OF_LUCK, 5, false).model?.file).toBe('Item/MagicBox06.glb');
+    expect(itemIconPose(POTION, BOX_OF_LUCK, 8, false).model?.file).toBe('Item/MagicBox08.glb');
   });
 });

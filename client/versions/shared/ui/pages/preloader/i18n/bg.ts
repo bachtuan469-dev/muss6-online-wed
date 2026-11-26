@@ -86,7 +86,6 @@ export default {
   'download.group.core': 'Основна игра',
   'download.group.monsters': 'Чудовища',
   'download.group.audio': 'Музика и звуци',
-  'download.group.icons': 'Икони на предмети',
   'download.total': 'Общо',
   'download.withPack': 'пакет',
   'download.start': 'Изтегли',

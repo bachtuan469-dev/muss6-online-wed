@@ -8,7 +8,6 @@ export default {
   'autoDownload.cancel': 'إلغاء',
   'autoDownload.hide': 'إخفاء (يستمر التنزيل)',
   'autoDownload.phase.map': 'جار تحميل الخريطة: {name}',
-  'autoDownload.phase.icons': 'جار تحميل العناصر',
   'autoDownload.phase.audio': 'جار تحميل الموسيقى والأصوات',
   'autoDownload.phase.monsters': 'جار تحميل الشخصيات والمخلوقات',
   'autoDownload.phase.core': 'جار تحميل الواجهة والمؤثرات',

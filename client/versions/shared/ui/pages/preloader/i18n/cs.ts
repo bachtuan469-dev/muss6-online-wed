@@ -81,7 +81,6 @@ export default {
   'download.group.core': 'Základní hra',
   'download.group.monsters': 'Příšery',
   'download.group.audio': 'Hudba a zvuky',
-  'download.group.icons': 'Ikony předmětů',
   'download.total': 'Celkem',
   'download.withPack': 'balíček',
   'download.start': 'Stáhnout',

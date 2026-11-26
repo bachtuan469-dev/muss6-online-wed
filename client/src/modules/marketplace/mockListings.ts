@@ -3,7 +3,6 @@ import type { ListingState } from './api';
 import { ItemsDatabase } from '@versions/shared/items/itemsDatabase';
 
 const items = ItemsDatabase.all();
-import { itemIconUrl } from '../../controllers/assets/itemIconPack';
 import { categoryOf, type CategoryId } from './categories';
 
 /**
@@ -85,15 +84,14 @@ const LISTING_COUNT = 180;
 
 export function buildMockListings(seed = 20260908): Listing[] {
   const r = rng(seed);
-  // Items worth putting on a market: not Zen itself, not the "Sword / Spear /
-  // Blade / Axe" style group placeholders, and nothing the icon pack has no
-  // picture for - a card with an empty box tells us nothing about the layout.
+  // Items worth putting on a market: not Zen itself, and not the "Sword / Spear /
+  // Blade / Axe" style group placeholders. An item with no model shows an
+  // empty cell in the live-only grid, which still tells us about the layout.
   const sellable = items.filter(
     def =>
       def.ItemName &&
       !def.ItemName.includes('/') &&
-      !(def.Group === 14 && def.Index === 15) &&
-      itemIconUrl({ group: def.Group, num: def.Index }) !== null
+      !(def.Group === 14 && def.Index === 15)
   );
 
   // Drawn from a limited pool rather than the whole database, so the same item

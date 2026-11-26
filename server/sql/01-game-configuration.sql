@@ -1,10 +1,11 @@
--- Export tu database OpenMU live (muss20web), ngay 2026-11-25.
+-- Export tu database OpenMU live (muss20web), ngay 2026-11-26.
 -- Chi chua du lieu CAU HINH (khong co tai khoan, nhan vat, mat khau, hash).
 -- Ap tren database OpenMU da khoi tao (schema config.* do OpenMU tu tao).
 -- 01-game-configuration.sql
--- EXP hien tai: ExperienceRate = 100, MasterExperienceRate = 100
--- (user lenh tang tu 10 len 100 ngay 2026-11-25). Level toi da 400,
--- master toi da 200. UPDATE 1 dong GameConfiguration hien co.
+-- Dot refresh wave 3 (2026-11-26): gia tri KHONG doi so voi wave 2.
+-- EXP hien tai: ExperienceRate = 100, MasterExperienceRate = 100.
+-- Level toi da 400, master toi da 200. UPDATE 1 dong
+-- GameConfiguration hien co.
 -- Ap: psql -d <db> -v ON_ERROR_STOP=1 -f 01-game-configuration.sql
 
 UPDATE config."GameConfiguration" SET

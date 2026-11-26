@@ -13,16 +13,17 @@ import {
 import { MuWindows } from '@/controllers/interface';
 import { MsgBox, MsgWinCode } from '@/controllers/interface/msgWin';
 import { playUiSound } from '@/controllers/sound';
-import { prefetchItemIcons } from '@/controllers/assets';
+import { prefetchLiveItemIcons } from '@/controllers/interface/item_icons';
 import {
   calcMaxDurability,
   isRepairBanned,
   isSellingBanned,
   itemDef,
-  itemValue,
   needsRepair,
-  repairAllCost,
-  repairCost,
+  npcBuyPrice,
+  npcRepairAllCost,
+  npcRepairCost,
+  npcSellPrice,
   withTax,
 } from '@/controllers/item_rules';
 import { addNotification } from '../chat';
@@ -264,8 +265,8 @@ export const Merchant = new (class {
       }
       shop.items = items;
     });
-    // The icons start loading now, at high priority, not when the grid mounts.
-    prefetchItemIcons(shop.items);
+    // The live draw starts now, not when the grid mounts.
+    prefetchLiveItemIcons(shop.items);
   }
 
   /** `ClosingProcess`: tell the server, drop the stock, leave repair mode. */
@@ -298,7 +299,7 @@ export const Merchant = new (class {
     // FIX26 Viec 1: the box alone is not enough - the line also goes to
     // the log and the toast, so the refusal is seen even if the box is
     // missed or dismissed.
-    if (Hero.money < withTax(itemValue(item, 0), shop.taxRate)) {
+    if (Hero.money < withTax(npcBuyPrice(item), shop.taxRate)) {
       addNotification(t('common.notEnoughZen'), 'error');
       MsgBox.popUpMsgWin(MsgWinCode.NotEnoughZen);
       return;
@@ -361,7 +362,7 @@ export const Merchant = new (class {
     // `SendSellItemToNpcRequest` only knows inventory slots.
     if (picked.fromStorage !== StorageKind.Inventory) return;
 
-    const price = itemValue(picked.item, 1);
+    const price = npcSellPrice(picked.item);
 
     if (Hero.money + price > 2000000000) {
       addNotification(t('notify.zenCap'), 'error');
@@ -462,11 +463,11 @@ export const Merchant = new (class {
 
   /** The price of a full repair, as the repair bar of the shop shows it. */
   get repairAllPrice(): number {
-    return repairAllCost(Hero.items, this.isSelfRepair);
+    return npcRepairAllCost(Hero.items, this.isSelfRepair);
   }
 
   private buyOffline(item: Item): void {
-    const price = itemValue(item, 0);
+    const price = npcBuyPrice(item);
     if (Hero.money < price) {
       addNotification(t('common.notEnoughZen'), 'error');
       return;
@@ -496,7 +497,7 @@ export const Merchant = new (class {
     for (const i of slots) {
       const item = Hero.items[i];
       if (!item || !needsRepair(item)) continue;
-      cost += repairCost(item, selfRepair);
+      cost += npcRepairCost(item, selfRepair);
       repaired.push(item);
     }
 

@@ -516,6 +516,7 @@ const FX_BODY_SHINE_CHROME = 0x800; // ...or Chrome01 alone (a Fenrir's one mesh
 const FX_AURA = 0x1000; // Ultra's outlaw: black body, itemGlow on the edge and brightest art only
 const FX_AURA_WING = 0x2000; // ...a wing: the membrane's own pattern is the vein
 const FX_AURA_BONE = 0x4000; // ...a wing's bone frame: lit red from its art
+const FX_ICON_STILL = 0x8000; // a bag icon still (iconShot.ts sets metadata.iconStill)
 
 /** Tint of the body shine passes, per mesh (`ModelObject.BodyShine`). */
 const BODY_SHINE_UNIFORM = 'muBodyShine';
@@ -533,6 +534,15 @@ const COVERAGE_UNIFORM = 'muCoverage';
  * and exposed, so the passes are eased a little to land on the same look.
  */
 const LEGACY_GAIN = '0.65';
+
+/**
+ * Sheen floor on a still only (slice 2 of the glow-097 fix): the sheen term
+ * `0.3 * texLum^2` is near zero on dark armour, so a still's glow only landed
+ * on bright trim. A still has no GlowLayer and no motion to carry the glow,
+ * so it gets this much sheen on every texel. World meshes keep the trim-only
+ * term. Still inside the headroom clamp below, never a flat add back.
+ */
+const STILL_SHEEN_FLOOR = 0.1;
 
 /**
  * A blend mesh is the texel times `BodyLight * BlendMeshLight` (`RenderMesh`, ZzzBMD.cpp:1580-1596),
@@ -648,7 +658,13 @@ const legacyPasses = ({ color, texel, bodyLight, flat }: ShaderVars) => `
       float rim = 1.0 - clamp(dot(normalize(viewDirectionW), normalW), 0.0, 1.0);
       rim = rim * rim * rim;
       float texLum = dot(${texel}.rgb, vec3(0.299, 0.587, 0.114));
-      ${color}.rgb += itemGlow * (0.3 * texLum * texLum + 0.35 * rim);
+      // Headroom clamp (FIX33-GLOW2, restored 2026-11-26): the sheen only
+      // fills what is left to 1.0 and keeps the hue, so a bright trim texel
+      // never clips to white because of the sheen. A still adds its floor
+      // here, inside the same clamp (STILL_SHEEN_FLOOR above).
+      float stillFloor = (fx & ${FX_ICON_STILL}) != 0 ? ${f(STILL_SHEEN_FLOOR)} : 0.0;
+      vec3 sheenAdd = min(itemGlow * (0.3 * texLum * texLum + 0.35 * rim + stillFloor), vec3(1.0));
+      ${color}.rgb += sheenAdd * (vec3(1.0) - clamp(${color}.rgb, vec3(0.0), vec3(1.0)));
     }
 
     // Golden monsters (modelObject.ts BodyShine): the original redraws the
@@ -903,6 +919,11 @@ function bindItemEffect(
     if (mesh.metadata?.auraWing) fx |= FX_AURA_WING;
     if (mesh.metadata?.auraBone) fx |= FX_AURA_BONE;
   }
+
+  // A bag icon still (iconShot.ts sets this in prepare): its sheen gets the
+  // floor on dark texels. World meshes, including the flat-lit chrome passes
+  // of item looks, never carry this flag.
+  if (mesh.metadata?.iconStill) fx |= FX_ICON_STILL;
 
   effect.setFloat(ITEM_FX_UNIFORM, fx);
 

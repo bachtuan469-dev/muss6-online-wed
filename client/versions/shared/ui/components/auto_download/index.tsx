@@ -22,7 +22,6 @@ const PHASES: Record<AssetGroup['kind'], TextKey> = {
   core: 'autoDownload.phase.core',
   monsters: 'autoDownload.phase.monsters',
   audio: 'autoDownload.phase.audio',
-  icons: 'autoDownload.phase.icons',
   map: 'autoDownload.phase.map',
 };
 

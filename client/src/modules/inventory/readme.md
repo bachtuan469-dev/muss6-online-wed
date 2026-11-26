@@ -65,7 +65,7 @@ items themselves are the hero's (`Hero.items`, `Hero.money`).
 - uses: `session` (sending), `hero` (the items), `skills` (`HeroSkills`, learning from a scroll),
   `controllers/item_rules` (`ItemSerializer`, `itemDef`, `dropTier`), `economy` (`Economy`, which reads
   `Bag` back), `controllers/settings`, `servers/serverManifest.ts` (`autoManaPotion`),
-  `controllers/sound`, `controllers/net/roundTrip`, `controllers/assets/itemIconPack`, `src/i18n`.
+  `controllers/sound`, `controllers/net/roundTrip`, `controllers/interface/item_icons` (`prefetchLiveItemIcons`), `src/i18n`.
 - used by: `src/app/logic.ts` (net), `npc_shop`, `economy`, `personal_shop`, `controllers/item_rules/itemCompare.ts`, `hero`, `mu_helper`,
   `warp`, `scope`, `marketplace`, `cashshop/server/fulfilment.ts`, ecs systems (attack, pickup, keyboard).
 - windows: `inventory`, `vault`, `trade`, `chaos_machine`, `personal_shop`, `npc_shop`, `economy_prompts`,

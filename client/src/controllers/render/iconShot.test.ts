@@ -9,7 +9,8 @@ import type { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import type { Camera } from '@babylonjs/core/Cameras/camera';
 import { BlendState } from '@versions/shared/objects/enum';
 import { getMaterial } from '../assets/modelLoader';
-import { ICON_LAYER, createIconShots, iconPixels, type IconShotJob } from './iconShot';
+import { ICON_LAYER, compositeOver, createIconShots, iconHaloLayer, iconPixels, type IconHalo, type IconShotJob, type IconShotsOptions } from './iconShot';
+import type { IconStillStore } from './iconStillCache';
 
 vi.hoisted(() => {
   const g = globalThis as Record<string, unknown>;
@@ -37,8 +38,8 @@ async function shot<T>(done: Promise<T>): Promise<T> {
   let settled = false;
   const settle = () => void (settled = true);
   void done.then(settle, settle);
-  // Past READY_FRAMES, the shot draws even if the shaders never got ready.
-  for (let i = 0; i < 200 && !settled; i++) await frames(1);
+  // Past READY_FRAMES times READY_ATTEMPTS, the shot draws even if the shaders never got ready.
+  for (let i = 0; i < 400 && !settled; i++) await frames(1);
   return done;
 }
 
@@ -59,11 +60,23 @@ function boxJob(key: string, log: { built: string[]; disposed: string[] }): Icon
   };
 }
 
-function shots() {
+function shots(options: IconShotsOptions = {}) {
   const read = vi.fn(async (_rtt: RenderTargetTexture, view: typeof VIEW) => new Uint8Array(view.width * view.height * 4));
   const encode = vi.fn(async (_pixels: Uint8ClampedArray, w: number, h: number) => `blob:${w}x${h}`);
   const readNow = vi.fn((_rtt: RenderTargetTexture, _view: typeof VIEW, out: Uint8Array) => void out.fill(255));
-  return { shots: createIconShots(scene, { read, encode, readNow }), read, encode, readNow };
+  return { shots: createIconShots(scene, { read, encode, readNow }, options), read, encode, readNow };
+}
+
+/** A still store held in memory: what the shot queue keeps across sessions. */
+function memoryStillStore() {
+  const saved = new Map<string, string>();
+  let cleared = 0;
+  const store: IconStillStore = {
+    load: async key => saved.get(key) ?? null,
+    save: async (key, url) => { saved.set(key, url); },
+    clear: () => { cleared++; saved.clear(); },
+  };
+  return { store, saved, cleared: () => cleared };
 }
 
 describe('the one-shot icon render', () => {
@@ -102,6 +115,22 @@ describe('the one-shot icon render', () => {
     expect(s.shoot(boxJob('same', log))).toBe(first);
     expect(log.built).toEqual(['same']);
     expect(read).toHaveBeenCalledTimes(1);
+  });
+
+  // Slice 2 of the glow-097 fix: a still's meshes are flagged so the item
+  // material gives their sheen a floor on dark texels (FX_ICON_STILL); the
+  // flag is set here, in the shot's prepare, and nowhere else.
+  it('flags the shot meshes as a still, for the still-only sheen floor', async () => {
+    const seen: unknown[] = [];
+    const render = vi.spyOn(RenderTargetTexture.prototype, 'render').mockImplementation(function (this: RenderTargetTexture) {
+      seen.push((this.renderList ?? [])[0].metadata.iconStill);
+    });
+    const log = { built: [] as string[], disposed: [] as string[] };
+    const { shots: s } = shots();
+    const done = s.shoot(boxJob('still-flag', log));
+    await shot(done);
+    render.mockRestore();
+    expect(seen).toEqual([true]);
   });
 
   it('draws a key again once its pictures are forgotten (a changed item-effects option)', async () => {
@@ -232,11 +261,105 @@ describe('the one-shot icon render', () => {
     const done = s.shoot(boxJob('slow', log));
     await frames(10);
     expect(draws).not.toHaveBeenCalled();
+    // One round of READY_FRAMES is not enough to draw it colourless: the
+    // shot waits again for the textures instead of caching a blank picture.
     await frames(150);
+    expect(draws).not.toHaveBeenCalled();
+    // Once the subject is ready the shot draws, so a slow texture cannot
+    // stall the queue for good.
+    ready.mockReturnValue(true);
+    await frames(5);
     expect(await done).toBe('blob:4x2');
     expect(draws).toHaveBeenCalledTimes(1);
     ready.mockRestore();
     draws.mockRestore();
+  }, 30000);
+
+  it('does not draw a colourless picture while a texture is still arriving', async () => {
+    const draws = vi.spyOn(RenderTargetTexture.prototype, 'render');
+    const { shots: s } = shots();
+    let textureReady = false;
+    const done = s.shoot({
+      key: 'textured',
+      view: VIEW,
+      build: async root => {
+        const box = CreateBox('textured', { size: 0.1 }, scene);
+        box.metadata = { diffuseTexture: { isReady: () => textureReady } };
+        box.parent = root;
+        return { dispose: () => box.dispose() };
+      },
+    });
+    await frames(10);
+    expect(draws).not.toHaveBeenCalled();
+    // Past one round of READY_FRAMES the texture still has not arrived: the
+    // shot waits again instead of caching a colourless picture.
+    await frames(150);
+    expect(draws).not.toHaveBeenCalled();
+    // The texture arrives: the next frame draws it, coloured.
+    textureReady = true;
+    await frames(5);
+    expect(await done).toBe('blob:4x2');
+    expect(draws).toHaveBeenCalledTimes(1);
+    draws.mockRestore();
+  }, 30000);
+});
+
+// Slice 3 of the glow-097 fix: a drawn still is kept across sessions, so opening a shop after a
+// reload reads its pictures back instead of drawing them again.
+describe('the stills kept across sessions', () => {
+  it('reads a kept still back without building or drawing', async () => {
+    const { store, saved } = memoryStillStore();
+    saved.set('kept', 'blob:kept');
+    const log = { built: [] as string[], disposed: [] as string[] };
+    const { shots: s } = shots({ persistent: store });
+    expect(await s.shoot(boxJob('kept', log))).toBe('blob:kept');
+    expect(log.built).toEqual([]);
+  });
+
+  it('keeps a drawn picture, and a new queue reads it without building', async () => {
+    const { store, saved } = memoryStillStore();
+    const log = { built: [] as string[], disposed: [] as string[] };
+    const { shots: s } = shots({ persistent: store });
+    expect(await shot(s.shoot(boxJob('drawn', log)))).toBe('blob:4x2');
+    expect(saved.get('drawn')).toBe('blob:4x2');
+    const next = { built: [] as string[], disposed: [] as string[] };
+    const { shots: s2 } = shots({ persistent: store });
+    expect(await s2.shoot(boxJob('drawn', next))).toBe('blob:4x2');
+    expect(next.built).toEqual([]);
+  });
+
+  it('drops the kept pictures on forget, and draws them again after', async () => {
+    const { store, saved, cleared } = memoryStillStore();
+    saved.set('kept', 'blob:kept');
+    const log = { built: [] as string[], disposed: [] as string[] };
+    const { shots: s } = shots({ persistent: store });
+    expect(await s.shoot(boxJob('kept', log))).toBe('blob:kept');
+    s.forget();
+    expect(cleared()).toBe(1);
+    expect(saved.size).toBe(0);
+    expect(await shot(s.shoot(boxJob('kept', log)))).toBe('blob:4x2');
+    expect(log.built).toEqual(['kept']);
+    expect(saved.get('kept')).toBe('blob:4x2');
+  });
+
+  it('keeps no picture for a look that cannot be drawn', async () => {
+    const { store, saved } = memoryStillStore();
+    const { shots: s } = shots({ persistent: store });
+    const done = s.shoot({ key: 'none', view: VIEW, build: async () => null });
+    expect(await shot(done)).toBeNull();
+    expect(saved.has('none')).toBe(false);
+  });
+
+  it('draws as before when the kept store fails', async () => {
+    const log = { built: [] as string[], disposed: [] as string[] };
+    const broken: IconStillStore = {
+      load: async () => { throw new Error('no cache'); },
+      save: async () => { throw new Error('no cache'); },
+      clear: () => { throw new Error('no cache'); },
+    };
+    const { shots: s } = shots({ persistent: broken });
+    expect(await shot(s.shoot(boxJob('drawn', log)))).toBe('blob:4x2');
+    expect(log.built).toEqual(['drawn']);
   });
 });
 
@@ -343,5 +466,226 @@ describe('iconPixels', () => {
     // (55 / 255) ^ (1 / 2.2) = 0.497
     expect(out[4]).toBe(127);
     expect(out[7]).toBe(255);
+  });
+});
+
+// The live still reads flat next to the pack picture (user photo 2026-11-26): the pack's glow is
+// its bright surface, and the live surface at the capped halo ladder cannot be raised without the
+// burnt blob coming back. So the still bakes the item's halo colour into the picture itself: a
+// blurred aura from the silhouette's own alpha, under the item, in the tier's colour.
+describe('the baked icon halo', () => {
+  const ORANGE: IconHalo = { r: 1, g: 0.5, b: 0 };
+
+  /** A straight-alpha picture, `w` x `h`, with one opaque block; the rest clear. */
+  function picture(w: number, h: number, x0: number, y0: number, x1: number, y1: number): Uint8ClampedArray {
+    const px = new Uint8ClampedArray(w * h * 4);
+    for (let y = y0; y < y1; y++) {
+      for (let x = x0; x < x1; x++) {
+        const o = (y * w + x) * 4;
+        px[o] = 200;
+        px[o + 1] = 100;
+        px[o + 2] = 0;
+        px[o + 3] = 255;
+      }
+    }
+    return px;
+  }
+
+  it('spills the halo colour outside the silhouette and fades with distance', () => {
+    const layer = iconHaloLayer(picture(12, 12, 5, 5, 7, 7), 12, 12, ORANGE);
+    const at = (x: number, y: number): [number, number, number, number] => {
+      const o = (y * 12 + x) * 4;
+      return [layer[o], layer[o + 1], layer[o + 2], layer[o + 3]];
+    };
+    // Just outside the block: the aura is there, in the halo colour.
+    const near = at(7, 6);
+    expect(near[3]).toBeGreaterThan(0);
+    expect(near[0]).toBeGreaterThan(near[1]);
+    expect(near[1]).toBeGreaterThan(near[2]);
+    // A corner far from the block: nothing spills that far.
+    expect(at(0, 0)).toEqual([0, 0, 0, 0]);
+    // The falloff is smooth: nearer is stronger than further.
+    expect(at(7, 6)[3]).toBeGreaterThan(at(9, 6)[3]);
+  });
+
+  it('is nothing when the item has no glow colour', () => {
+    const layer = iconHaloLayer(picture(12, 12, 5, 5, 7, 7), 12, 12, { r: 0, g: 0, b: 0 });
+    expect([...layer].every(v => v === 0)).toBe(true);
+  });
+
+  // Slice 2 of the glow-097 fix: the baked aura is wider than the world's
+  // (spread 1/8 of the short side, not 1/12), so it still reads at icon size.
+  // On a 40 px picture the radius is 5, two passes reach 10 px out: 8 px
+  // from the block edge the aura is there, while the far corner stays clear.
+  it('spreads wider than the world halo: 8 px out on a 40 px picture', () => {
+    const layer = iconHaloLayer(picture(40, 40, 18, 18, 22, 22), 40, 40, ORANGE);
+    const at = (x: number, y: number): [number, number, number, number] => {
+      const o = (y * 40 + x) * 4;
+      return [layer[o], layer[o + 1], layer[o + 2], layer[o + 3]];
+    };
+    const far = at(29, 20);
+    expect(far[3]).toBeGreaterThan(0);
+    expect(far[0]).toBeGreaterThan(far[1]);
+    expect(at(0, 0)).toEqual([0, 0, 0, 0]);
+  });
+
+  it('draws the item over the aura without touching its opaque pixels', () => {
+    const px = picture(12, 12, 5, 5, 7, 7);
+    const layer = iconHaloLayer(px, 12, 12, ORANGE);
+    const out = compositeOver(px, layer);
+    expect(out).toBe(px);
+    const at = (x: number, y: number): [number, number, number, number] => {
+      const o = (y * 12 + x) * 4;
+      return [out[o], out[o + 1], out[o + 2], out[o + 3]];
+    };
+    // The block itself is untouched.
+    expect(at(5, 5)).toEqual([200, 100, 0, 255]);
+    // The clear ground beside it now carries the aura.
+    const near = at(7, 6);
+    expect(near[3]).toBeGreaterThan(0);
+    expect(near[0]).toBeGreaterThan(near[1]);
+    // Far away stays clear.
+    expect(at(0, 0)).toEqual([0, 0, 0, 0]);
+  });
+
+  it('blends a half-transparent item pixel over the aura', () => {
+    const top = new Uint8ClampedArray([100, 0, 0, 128]);
+    const bottom = new Uint8ClampedArray([0, 0, 200, 255]);
+    const out = compositeOver(top, bottom);
+    // Over: opaque, the red halved over the blue.
+    expect([...out]).toEqual([50, 0, 100, 255]);
+  });
+
+  it('bakes the halo into a still when the job carries one, and not otherwise', async () => {
+    const log = { built: [] as string[], disposed: [] as string[] };
+    // The read: a 4 x 2 picture, opaque red in the middle, clear at the corners.
+    const read = vi.fn(async () => {
+      const buf = new Uint8Array(4 * 2 * 4);
+      for (let i = 0; i < 8; i++) buf[i * 4 + 3] = 255;
+      buf[0 * 4] = 255;
+      buf[1 * 4] = 255;
+      buf[2 * 4] = 255;
+      buf[3 * 4] = 255;
+      buf[4 * 4 + 3] = 0;
+      buf[5 * 4] = 255;
+      buf[6 * 4] = 255;
+      buf[7 * 4 + 3] = 0;
+      return buf;
+    });
+    const encode = vi.fn(async (pixels: Uint8ClampedArray, w: number, h: number) => `blob:${w}x${h}`);
+    const { shots: s } = { shots: createIconShots(scene, { read, encode, readNow: vi.fn() }) };
+    const withHalo = s.shoot({ ...boxJob('haloed', log), halo: ORANGE });
+    const plain = s.shoot({ ...boxJob('plain', log) });
+    expect(await shot(withHalo)).toBe('blob:4x2');
+    expect(await shot(plain)).toBe('blob:4x2');
+    const haloPixels = encode.mock.calls[0][0] as Uint8ClampedArray;
+    const plainPixels = encode.mock.calls[1][0] as Uint8ClampedArray;
+    // A corner clear in the read now carries the orange aura...
+    expect(haloPixels[3]).toBeGreaterThan(0);
+    expect(haloPixels[0]).toBeGreaterThan(haloPixels[1]);
+    // ...while the same corner stays clear without a halo, and the opaque
+    // middle is the same red in both.
+    expect(plainPixels[3]).toBe(0);
+    expect([haloPixels[4], haloPixels[5], haloPixels[6], haloPixels[7]]).toEqual([255, 0, 0, 255]);
+    expect([plainPixels[4], plainPixels[5], plainPixels[6], plainPixels[7]]).toEqual([255, 0, 0, 255]);
+  }, 30000);
+
+  it('keeps the halo under the turning picture, from the first frame on', async () => {
+    const log = { built: [] as string[], disposed: [] as string[] };
+    const painted: Uint8ClampedArray[] = [];
+    // The read: the middle columns opaque white, the outer columns clear
+    // (all four bytes zero: iconPixels takes alpha as the max of the four).
+    const readNow = vi.fn((_rtt: RenderTargetTexture, _view: typeof VIEW, out: Uint8Array) => {
+      for (let i = 0; i < 8; i++) {
+        const opaque = i % 4 === 1 || i % 4 === 2;
+        out[i * 4] = opaque ? 255 : 0;
+        out[i * 4 + 1] = opaque ? 255 : 0;
+        out[i * 4 + 2] = opaque ? 255 : 0;
+        out[i * 4 + 3] = opaque ? 255 : 0;
+      }
+    });
+    const { shots: s } = { shots: createIconShots(scene, { read: vi.fn(async () => new Uint8Array(32)), encode: vi.fn(async () => 'blob:x'), readNow }) };
+    await new Promise(resolve => setTimeout(resolve, 0));
+    const stop = s.spin({ ...boxJob('spin-halo', log), halo: ORANGE }, pixels => void painted.push(Uint8ClampedArray.from(pixels)));
+    for (let i = 0; i < 8 && painted.length < 2; i++) await frames(1);
+    stop();
+    expect(painted.length).toBeGreaterThan(0);
+    const first = painted[0];
+    // A clear corner now carries the orange aura, the opaque middle stays white.
+    expect(first[3]).toBeGreaterThan(0);
+    expect(first[0]).toBeGreaterThan(first[1]);
+    expect([first[4], first[5], first[6], first[7]]).toEqual([255, 255, 255, 255]);
+    // The aura does not pile up frame on frame: the last frame's corner is
+    // the same as the first's, because the layer is baked once.
+    if (painted.length > 1) expect([...painted.at(-1)!.subarray(0, 4)]).toEqual([...first.subarray(0, 4)]);
+  });
+});
+
+// A shop opens on a cold cache (user photo 2026-11-26: the grid stayed empty
+// until the character was switched and re-entered, when the model caches were
+// warm): one model fetch that never comes back must not stall the whole grid
+// behind it, the models queued behind it are warmed in parallel while the
+// queue draws one by one, and a picture that landed missing is drawn again
+// on the next try instead of staying cached as nothing.
+describe('the bounded queue', () => {
+  it('a hung build times out and the next shot still draws', async () => {
+    const log = { built: [] as string[], disposed: [] as string[] };
+    const s = createIconShots(
+      scene,
+      { read: vi.fn(async () => new Uint8Array(32)), encode: vi.fn(async () => 'blob:x'), readNow: vi.fn(() => {}) },
+      { buildTimeoutMs: 10 },
+    );
+    const hung: IconShotJob = { key: 'hung', view: VIEW, build: async () => new Promise<never>(() => {}) };
+    const hungDone = s.shoot(hung);
+    const nextDone = s.shoot(boxJob('next', log));
+    expect(await shot(hungDone)).toBeNull();
+    expect(await shot(nextDone)).toBe('blob:x');
+  });
+
+  it('warms the models of the queued shots ahead of the draw', async () => {
+    const warm = vi.fn();
+    const log = { built: [] as string[], disposed: [] as string[] };
+    const s = createIconShots(
+      scene,
+      { read: vi.fn(async () => new Uint8Array(32)), encode: vi.fn(async () => 'blob:x'), readNow: vi.fn(() => {}) },
+      { warm },
+    );
+    const first = s.shoot({ ...boxJob('a', log), files: ['Item/Axe01.glb'] });
+    const second = s.shoot({ ...boxJob('b', log), files: ['Item/Sword01.glb'] });
+    expect(warm).toHaveBeenCalledWith(['Item/Axe01.glb']);
+    expect(warm).toHaveBeenCalledWith(['Item/Sword01.glb']);
+    await shot(first);
+    await shot(second);
+  });
+
+  it('a null picture is not cached: a later shoot draws it again', async () => {
+    const log = { built: [] as string[], disposed: [] as string[] };
+    const { shots: s } = shots();
+    let attempts = 0;
+    const flaky: IconShotJob = {
+      key: 'flaky',
+      view: VIEW,
+      build: async root => {
+        attempts++;
+        if (attempts === 1) throw new Error('no model yet');
+        return boxJob('flaky', log).build(root);
+      },
+    };
+    expect(await shot(s.shoot(flaky))).toBeNull();
+    expect(attempts).toBe(1);
+    expect(await shot(s.shoot(flaky))).toBe('blob:4x2');
+    expect(attempts).toBe(2);
+  });
+
+  it('a full shop of shots all land within a bounded number of frames', async () => {
+    const log = { built: [] as string[], disposed: [] as string[] };
+    const { shots: s } = shots();
+    const done = Array.from({ length: 120 }, (_, i) => s.shoot(boxJob(`shop-${i}`, log)));
+    const all = Promise.all(done);
+    let settled = false;
+    void all.then(() => void (settled = true), () => void (settled = true));
+    for (let i = 0; i < 200 && !settled; i++) await frames(1);
+    expect(settled).toBe(true);
+    expect((await all).every(url => url !== null)).toBe(true);
   });
 });

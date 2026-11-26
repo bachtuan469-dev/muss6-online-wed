@@ -52,6 +52,8 @@ export default {
   'cmd.addvit': 'Dépenser des points de niveau en vitalité',
   'cmd.addene': 'Dépenser des points de niveau en énergie',
   'cmd.addcmd': 'Dépenser des points de niveau en commandement',
+  'cmd.reset': 'Réinitialiser le personnage',
+  'cmd.resetinfo': 'Afficher les infos de réinitialisation',
   'cmd.move': 'Se rendre sur une carte',
   'cmd.war': 'Demander une guerre de guildes',
   'cmd.battlesoccer': 'Demander un match de Battle Soccer',

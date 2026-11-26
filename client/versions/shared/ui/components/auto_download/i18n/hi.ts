@@ -8,7 +8,6 @@ export default {
   'autoDownload.cancel': 'रद्द करें',
   'autoDownload.hide': 'छिपाएँ (डाउनलोड जारी रहेगा)',
   'autoDownload.phase.map': 'नक्शा लोड हो रहा है: {name}',
-  'autoDownload.phase.icons': 'आइटम लोड हो रहे हैं',
   'autoDownload.phase.audio': 'संगीत और ध्वनियाँ लोड हो रही हैं',
   'autoDownload.phase.monsters': 'पात्र और जीव लोड हो रहे हैं',
   'autoDownload.phase.core': 'इंटरफ़ेस और इफ़ेक्ट लोड हो रहे हैं',

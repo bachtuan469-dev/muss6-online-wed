@@ -69,19 +69,24 @@ export const REFERENCE_FPS = 25;
  */
 export const CAMERA_PITCH_DEG = 40;
 
-/** `CameraFOV = 30` (`SetCameraFOV`), gluPerspective vertical degrees. */
-export const CAMERA_FOV_DEG = 30;
+/**
+ * Default vertical field of view, gluPerspective degrees. The original's
+ * `CameraFOV = 30` (`SetCameraFOV`); this server opens on a wider 35 degree
+ * frame instead (the server owner's choice: 40 on 2026-11-25, then 35 on
+ * 2026-11-26).
+ */
+export const CAMERA_FOV_DEG = 35;
 
 /**
- * Range the FOV slider offers around the original 30. The eye adds its own
+ * Range the FOV slider offers around the default 35. The eye adds its own
  * widening on top, so the slider carries first person with it: the innermost
- * step runs 45 to 85 as the slider runs 20 to 60.
+ * step runs 40 to 80 as the slider runs 20 to 60.
  */
 export const CAMERA_FOV_MIN_DEG = 20;
 export const CAMERA_FOV_MAX_DEG = 60;
 
 /**
- * First-person frustum at the slider's default, vertical degrees. 30 is a
+ * First-person frustum at the slider's default, vertical degrees. 40 is a
  * telephoto lens on a face, so the innermost step opens up.
  *
  * It opened to 65, the figure the original's own tour camera uses

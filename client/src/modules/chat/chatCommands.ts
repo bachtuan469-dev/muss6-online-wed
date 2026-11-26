@@ -74,6 +74,8 @@ const CHAT_COMMANDS: readonly ChatCommand[] = [
   { name: '/addvit', usage: '<amount>', helpKey: 'cmd.addvit' },
   { name: '/addene', usage: '<amount>', helpKey: 'cmd.addene' },
   { name: '/addcmd', usage: '<amount>', helpKey: 'cmd.addcmd' },
+  { name: '/reset', helpKey: 'cmd.reset' },
+  { name: '/resetinfo', helpKey: 'cmd.resetinfo' },
   { name: '/move', usage: '<map> [x y]', helpKey: 'cmd.move' },
   { name: '/war', usage: '<guild>', helpKey: 'cmd.war' },
   { name: '/battlesoccer', usage: '<guild>', helpKey: 'cmd.battlesoccer' },

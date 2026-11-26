@@ -13,7 +13,7 @@ import { Hero } from '@/modules/hero';
 import { Economy, type EconomyPrompt } from '@/modules/economy/economy';
 import { JEWELS, JewelMix } from '@/modules/chaos_mix/jewelMix';
 import { itemDisplayName } from '@/controllers/interface/itemTooltip';
-import { itemValue } from '@/controllers/item_rules';
+import { npcBuyPrice } from '@/controllers/item_rules';
 import { QuickItemActions } from '@/modules/inventory/quickItemActions';
 import { MAX_BULK_BUY } from '@/modules/inventory/quickItemRules';
 import { MuSpriteFrame } from '@/controllers/interface/components/mu_sprite';
@@ -156,7 +156,7 @@ function specOf(prompt: EconomyPrompt): Spec {
         hint: item
           ? t('prompt.buyHowMany', {
               name: itemDisplayName(item),
-              price: zen(itemValue(item, 0)),
+              price: zen(npcBuyPrice(item)),
             })
           : t('prompt.itemGone'),
         field: 'amount',

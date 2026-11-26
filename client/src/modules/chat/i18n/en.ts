@@ -49,6 +49,8 @@ const en = {
   'cmd.addvit': 'Spend level-up points on vitality',
   'cmd.addene': 'Spend level-up points on energy',
   'cmd.addcmd': 'Spend level-up points on command',
+  'cmd.reset': 'Reset character',
+  'cmd.resetinfo': 'Show reset info',
   'cmd.move': 'Warp to a map',
   'cmd.war': 'Request a guild war',
   'cmd.battlesoccer': 'Request a battle soccer match',

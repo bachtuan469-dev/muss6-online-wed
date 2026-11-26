@@ -51,6 +51,8 @@ export default {
   'cmd.addvit': 'レベルアップポイントを体力に振る',
   'cmd.addene': 'レベルアップポイントをエネルギーに振る',
   'cmd.addcmd': 'レベルアップポイントを統率に振る',
+  'cmd.reset': 'キャラクターをリセット',
+  'cmd.resetinfo': 'リセット情報を表示',
   'cmd.move': 'マップへ移動する',
   'cmd.war': 'ギルド戦を申し込む',
   'cmd.battlesoccer': 'バトルサッカーを申し込む',

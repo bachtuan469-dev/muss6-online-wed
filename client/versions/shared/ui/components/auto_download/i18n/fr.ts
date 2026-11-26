@@ -8,7 +8,6 @@ export default {
   'autoDownload.cancel': 'Annuler',
   'autoDownload.hide': 'Masquer (le téléchargement continue)',
   'autoDownload.phase.map': 'Chargement de la carte : {name}',
-  'autoDownload.phase.icons': 'Chargement des objets',
   'autoDownload.phase.audio': 'Chargement de la musique et des sons',
   'autoDownload.phase.monsters': 'Chargement des personnages et créatures',
   'autoDownload.phase.core': "Chargement de l'interface et des effets",

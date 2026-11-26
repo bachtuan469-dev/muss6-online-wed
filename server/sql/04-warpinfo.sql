@@ -1,0 +1,55 @@
+-- Export tu database OpenMU live (muss20web), ngay 2026-11-26.
+-- Chi chua du lieu CAU HINH (khong co tai khoan, nhan vat, mat khau, hash).
+-- Ap tren database OpenMU da khoi tao (schema config.* do OpenMU tu tao).
+-- 04-warpinfo.sql
+-- MOI o wave 3 (2026-11-26): toan bo WarpInfo hien tai: 41 dong.
+-- Gom WarpInfo index 24 Barracks of Balgass (Lv 220, 100.000 Zen)
+-- va index 26 Crywolf (Lv 190, 10.000 Zen, IsWarpable=true) —
+-- 2 cong them vao nut M ngay 2026-11-26.
+-- DELETE truoc roi COPY lai toan bo (idempotent, ap lai duoc).
+-- Ap: psql -d <db> -v ON_ERROR_STOP=1 -f 04-warpinfo.sql
+
+DELETE FROM config."WarpInfo";
+COPY config."WarpInfo" ("Id", "GateId", "GameConfigurationId", "Index", "Name", "Costs", "LevelRequirement", "IsWarpable") FROM stdin;
+e5f8a101-0000-7052-7e2a-9bb9f820fc6d	e5f8a101-0000-7d1c-a6fd-c38d663ad29c	00000001-0001-0000-0000-000000000000	11	Atlans||zh-CN=亚特兰蒂斯||@src=WarpNames/Atlans||@stamp=1d0463cd	4000	70	t
+e5f8a101-0000-7090-6053-7a8ade4f444a	e5f8a101-0000-74f0-d1ef-95172d3dd469	00000001-0001-0000-0000-000000000000	32	Elveland2||zh-CN=幻术园2||@src=WarpNames/Elveland2||@stamp=acc4ec27	2500	10	t
+e5f8a101-0000-70e1-7083-75a40e96607c	e5f8a101-0000-73dd-313f-e5e079029393	00000001-0001-0000-0000-000000000000	17	LostTower4||zh-CN=失落之塔4||@src=WarpNames/LostTower4||@stamp=9fb04f49	6500	60	t
+e5f8a101-0000-7121-e43b-5a6ed31c5921	e5f8a101-0000-775e-feda-523220fcf454	00000001-0001-0000-0000-000000000000	15	LostTower2||zh-CN=失落之塔2||@src=WarpNames/LostTower2||@stamp=0964b002	5500	50	t
+e5f8a101-0000-713f-8685-eb9b79e159a5	e5f8a101-0000-7bbe-daf8-bec8bd5fcff1	00000001-0001-0000-0000-000000000000	21	Tarkan||zh-CN=死亡沙漠||@src=WarpNames/Tarkan||@stamp=f711c136	8000	140	t
+e5f8a101-0000-7178-119c-49866f56c7b5	e5f8a101-0000-7569-0d88-5cb0b9537672	00000001-0001-0000-0000-000000000000	29	KanturuRuins2||zh-CN=坎特鲁废墟2||@src=WarpNames/KanturuRuins2||@stamp=8fb9aef7	9000	160	t
+e5f8a101-0000-71df-4e38-1cb9c74b5a06	e5f8a101-0000-74b0-113e-b182ba74c9a8	00000001-0001-0000-0000-000000000000	23	Icarus||zh-CN=天空之城||@src=WarpNames/Icarus||@stamp=cb8a3d9a	10000	170	t
+e5f8a101-0000-7277-e41b-4f2e023423f8	e5f8a101-0000-77c8-09af-b759f6ce6991	00000001-0001-0000-0000-000000000000	2	Lorencia||zh-CN=勇者大陆||@src=WarpNames/Lorencia||@stamp=47cb3df4	2000	10	t
+e5f8a101-0000-72db-e1d3-2124424d768a	e5f8a101-0000-7849-1ce7-457b3dc20656	00000001-0001-0000-0000-000000000000	12	Atlans2||zh-CN=亚特兰蒂斯2||@src=WarpNames/Atlans2||@stamp=87448243	4500	80	t
+e5f8a101-0000-732d-a9df-008e08fba4e8	e5f8a101-0000-7bb5-8a4a-84844b631694	00000001-0001-0000-0000-000000000000	33	PeaceSwamp||zh-CN=安宁池||@src=WarpNames/PeaceSwamp||@stamp=b780272d	15000	400	t
+e5f8a101-0000-73e1-287d-25cce36a6480	e5f8a101-0000-7285-6d6a-515e269c72ab	00000001-0001-0000-0000-000000000000	4	Devias||zh-CN=冰风谷||@src=WarpNames/Devias||@stamp=e7f0fa61	2000	20	t
+e5f8a101-0000-7412-5481-2120d23f3038	e5f8a101-0000-7f80-db24-f9127366f867	00000001-0001-0000-0000-000000000000	44	LorenMarket||zh-CN=罗兰市集||@src=WarpNames/LorenMarket||@stamp=2cbdd2f8	18000	200	f
+e5f8a101-0000-751f-d63a-1750f01e21ee	e5f8a101-0000-712b-59f0-5d8872a74a06	00000001-0001-0000-0000-000000000000	16	LostTower3||zh-CN=失落之塔3||@src=WarpNames/LostTower3||@stamp=e11a1c06	6000	50	t
+e5f8a101-0000-753d-2588-c8ccad942aa9	e5f8a101-0000-7dc8-1784-48d1c251f564	00000001-0001-0000-0000-000000000000	8	Dungeon||zh-CN=地下城||@src=WarpNames/Dungeon||@stamp=f6634f0c	3000	30	t
+e5f8a101-0000-7591-a506-51c2854517cd	e5f8a101-0000-77a8-28bf-29919d31f410	00000001-0001-0000-0000-000000000000	20	LostTower7||zh-CN=失落之塔7||@src=WarpNames/LostTower7||@stamp=a724fab4	8000	70	t
+e5f8a101-0000-75cb-427d-1f9c7176a416	e5f8a101-0000-7d95-6d6d-ec0717dedf80	00000001-0001-0000-0000-000000000000	7	Devias4||zh-CN=冰风谷4||@src=WarpNames/Devias4||@stamp=24ab77b2	3500	20	t
+e5f8a101-0000-75e1-a407-e6c5ba26b6ea	e5f8a101-0000-7e90-ffa8-3bbf1f19c531	00000001-0001-0000-0000-000000000000	19	LostTower6||zh-CN=失落之塔6||@src=WarpNames/LostTower6||@stamp=4785cf10	7500	70	t
+e5f8a101-0000-7655-8a1d-568969ae4fc3	e5f8a101-0000-7be4-78ce-541c273b0bc9	00000001-0001-0000-0000-000000000000	28	KanturuRuins1||zh-CN=坎特鲁废墟1||@src=WarpNames/KanturuRuins1||@stamp=dbfcae72	9000	160	t
+e5f8a101-0000-773f-aabc-10db3a5ef83f	e5f8a101-0000-746b-13f5-8b36e7a797ae	00000001-0001-0000-0000-000000000000	34	Raklion||zh-CN=冰霜之城||@src=WarpNames/Raklion||@stamp=e0bea38e	15000	280	t
+e5f8a101-0000-776f-2b24-efb32c82bdd9	e5f8a101-0000-7617-7219-a8497c79d77e	00000001-0001-0000-0000-000000000000	6	Devias3||zh-CN=冰风谷3||@src=WarpNames/Devias3||@stamp=f7ce0a0e	3000	20	t
+e5f8a101-0000-777c-d4ca-223a0d241152	e5f8a101-0000-73eb-0097-7aefffc5c206	00000001-0001-0000-0000-000000000000	18	LostTower5||zh-CN=失落之塔5||@src=WarpNames/LostTower5||@stamp=219157dc	7000	60	t
+e5f8a101-0000-783b-8025-418778c6d4b3	e5f8a101-0000-7e69-c665-4e6675c60a1f	00000001-0001-0000-0000-000000000000	10	Dungeon3||zh-CN=地下城3||@src=WarpNames/Dungeon3||@stamp=0429309e	4000	50	t
+e5f8a101-0000-7962-e37f-e50f4f664108	e5f8a101-0000-7dd1-9f9e-36e42f632e6a	00000001-0001-0000-0000-000000000000	47	Karutan2||zh-CN=卡伦特2||@src=WarpNames/Karutan2||@stamp=0c39261a	14000	170	t
+e5f8a101-0000-7a94-590a-aa72db25fbc1	e5f8a101-0000-7f38-a7c8-fb5f8cca5b6d	00000001-0001-0000-0000-000000000000	14	LostTower||zh-CN=失落之塔||@src=WarpNames/LostTower||@stamp=40417c86	5000	50	t
+e5f8a101-0000-7ae5-3178-2166c90e9f69	e5f8a101-0000-7b77-5582-02f242a81df8	00000001-0001-0000-0000-000000000000	46	Karutan1||zh-CN=卡伦特1||@src=WarpNames/Karutan1||@stamp=179d084b	13000	170	t
+e5f8a101-0000-7bac-a72d-ed6f796f7d4c	e5f8a101-0000-711e-6eb6-6670585f5cf1	00000001-0001-0000-0000-000000000000	9	Dungeon2||zh-CN=地下城2||@src=WarpNames/Dungeon2||@stamp=b810dd98	3500	40	t
+e5f8a101-0000-7bbd-3a09-8d08716abe27	e5f8a101-0000-71f8-f1e7-31472011703a	00000001-0001-0000-0000-000000000000	5	Devias2||zh-CN=冰风谷2||@src=WarpNames/Devias2||@stamp=095528a9	2500	20	t
+e5f8a101-0000-7bc6-6065-6bbc61c3f6c1	e5f8a101-0000-7873-3494-d50611f32082	00000001-0001-0000-0000-000000000000	30	KanturuRelics||zh-CN=坎特鲁遗址||@src=WarpNames/KanturuRelics||@stamp=2d8f3d5e	12000	230	t
+e5f8a101-0000-7c2f-a6fc-9080a6f65b5a	e5f8a101-0000-746b-13f5-8b36e7a797ae	00000001-0001-0000-0000-000000000000	48	LaCleon||zh-CN=冰霜之城||@src=WarpNames/LaCleon||@stamp=7fc0cf6d	15000	280	f
+e5f8a101-0000-7c35-7e34-e4f49e411dde	e5f8a101-0000-7764-4fbf-c673172a72dd	00000001-0001-0000-0000-000000000000	13	Atlans3||zh-CN=亚特兰蒂斯3||@src=WarpNames/Atlans3||@stamp=581e25d7	5000	90	t
+e5f8a101-0000-7c91-9dfa-7e21931fc653	e5f8a101-0000-77ba-b498-563f257504f0	00000001-0001-0000-0000-000000000000	45	KanturuRuins3||zh-CN=坎特鲁废墟3||@src=WarpNames/KanturuRuins3||@stamp=885d82ea	15000	160	t
+e5f8a101-0000-7cb6-9c93-57f87ee97677	e5f8a101-0000-7877-722c-08685b7df2bc	00000001-0001-0000-0000-000000000000	31	Elveland||zh-CN=幻术园||@src=WarpNames/Elveland||@stamp=7d7ab6c1	2000	10	t
+e5f8a101-0000-7d22-8940-f99c94b9c776	e5f8a101-0000-7fab-32a8-f6d92b429a53	00000001-0001-0000-0000-000000000000	42	Vulcanus||zh-CN=囚禁之岛||@src=WarpNames/Vulcanus||@stamp=308f795a	15000	30	t
+e5f8a101-0000-7da5-2bf3-ae9e252ff355	e5f8a101-0000-792c-19e8-4fb059357c82	00000001-0001-0000-0000-000000000000	27	Aida2||zh-CN=幽暗森林2||@src=WarpNames/Aida2||@stamp=a40d6c07	8500	150	t
+e5f8a101-0000-7e2d-402b-edee8c88ee54	e5f8a101-0000-7df2-dfc0-c1c40a9b634e	00000001-0001-0000-0000-000000000000	43	Elveland3||zh-CN=幻术园3||@src=WarpNames/Elveland3||@stamp=bcdefbaa	3000	10	t
+e5f8a101-0000-7f62-d081-3083e1358e91	e5f8a101-0000-77b4-c6cb-a0f6062ded1a	00000001-0001-0000-0000-000000000000	22	Tarkan2||zh-CN=死亡沙漠2||@src=WarpNames/Tarkan2||@stamp=59c5c6a5	8500	140	t
+e5f8a101-0000-7fb0-5e00-f9b359fcdb5d	e5f8a101-0000-789e-8e65-b70c89beb10d	00000001-0001-0000-0000-000000000000	25	Aida1||zh-CN=幽暗森林1||@src=WarpNames/Aida1||@stamp=e4de1d38	8500	150	t
+e5f8a101-0000-7fe5-9d4e-c4f7bb71435c	e5f8a101-0000-7a2e-e037-a80fd42ff3ba	00000001-0001-0000-0000-000000000000	3	Noria||zh-CN=仙踪林||@src=WarpNames/Noria||@stamp=662c8ec4	2000	10	t
+e5f8a101-0000-7887-a796-d552766737c5	e5f8a101-0000-770f-2457-373d2413a296	00000001-0001-0000-0000-000000000000	1	Arena||zh-CN=竞技场||@src=WarpNames/Arena||@stamp=63a6e340	2000	50	t
+9e203e98-49b6-401e-bdb0-38baf0e96e8d	e5f8a101-0000-759f-0273-b9133312e07b	00000001-0001-0000-0000-000000000000	24	Barracks of Balgass	100000	220	t
+e5f8a101-0000-7652-ab88-33863f4f85a8	e5f8a101-0000-7d53-4255-a6732ac3b5ad	00000001-0001-0000-0000-000000000000	26	Crywolf||zh-CN=狼魂要塞||@src=WarpNames/Crywolf||@stamp=23982677	10000	190	t
+\.

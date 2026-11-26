@@ -1,11 +1,15 @@
--- Export tu database OpenMU live (muss20web), ngay 2026-11-25.
+-- Export tu database OpenMU live (muss20web), ngay 2026-11-26.
 -- Chi chua du lieu CAU HINH (khong co tai khoan, nhan vat, mat khau, hash).
 -- Ap tren database OpenMU da khoi tao (schema config.* do OpenMU tu tao).
 -- 03-plugin-configuration.sql
--- Toan bo cau hinh plugin hien tai: 930 dong.
+-- Dot refresh wave 3 (2026-11-26): toan bo cau hinh plugin hien tai:
+-- 931 dong (wave 2: 930 dong; them 1 dong plugin FIX35).
 -- Gom plugin AddStartingZenPlugIn (Guid 803b230f-8412-4484-89dd-
 -- 3506705a33b9, IsActive=true): nhan vat moi khoi tao co
--- 2.000.000.000 Zen (FIX31).
+-- 2.000.000.000 Zen (FIX31); va plugin FIX35 (Guid 6b480901-7636-
+-- 47a2-b704-e1eb153717ea, IsActive=true): nhan vat moi +2B Zen +
+-- 10.000 diem (ca 2 dong deu co CustomConfiguration NULL — muc
+-- Zen/diem la mac dinh cua loai plugin, khong luu trong bang nay).
 -- DELETE truoc roi COPY lai toan bo (idempotent, ap lai duoc).
 -- Ap: psql -d <db> -v ON_ERROR_STOP=1 -f 03-plugin-configuration.sql
 
@@ -941,4 +945,5 @@ ff970be2-df92-4371-9fe0-c16e9dca7ab9	00000001-0001-0000-0000-000000000000	ff970b
 43156a52-03ee-42c0-88bf-ca9665dc8e1e	00000001-0001-0000-0000-000000000000	43156a52-03ee-42c0-88bf-ca9665dc8e1e	t	\N	\N	\N
 efe421fb-be79-4656-af39-d22a105d1455	00000001-0001-0000-0000-000000000000	efe421fb-be79-4656-af39-d22a105d1455	t	\N	\N	\N
 ae11a201-0000-7af3-198b-2518cc16e8bd	00000001-0001-0000-0000-000000000000	803b230f-8412-4484-89dd-3506705a33b9	t	\N	\N	\N
+ac6f229d-4d97-434e-9ea8-6236b3a73d17	00000001-0001-0000-0000-000000000000	6b480901-7636-47a2-b704-e1eb153717ea	t	\N	\N	\N
 \.

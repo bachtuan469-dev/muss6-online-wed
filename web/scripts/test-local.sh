@@ -17,7 +17,7 @@ chk()  { if eval "$2"; then ok "$1"; else bad "$1"; fi; }
 # Reset DB ve seed (1 account test0 + 1 nhan vat test0Dk)
 sudo -u postgres psql -q < scripts/local-test-db.sql
 # Cap quyen cho role test (DB vua reset xong)
-sudo -u postgres psql -q -d muwebtest -c "GRANT USAGE, CREATE ON SCHEMA data, config, web TO muwebtest" -c "GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA data, config, web TO muwebtest" -c "GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA data, config, web TO muwebtest"
+sudo -u postgres psql -q -d muwebtest -c "GRANT USAGE, CREATE ON SCHEMA data, config, web TO muwebtest, muweb" -c "GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA data, config, web TO muwebtest, muweb" -c "GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA data, config, web TO muwebtest, muweb"
 
 pkill -f 'node server.js' 2>/dev/null; sleep 1
 node server/server.js > "$LOG" 2>&1 &
@@ -35,7 +35,7 @@ chk "news 2 tin mac dinh" "[ \"\$(echo '$NEWS' | python3 -c 'import sys,json;pri
 RK=$(curl -s $B/api/ranking)
 chk "ranking co test0Dk Lv 400" "echo '$RK' | grep -q 'test0Dk' && echo '$RK' | grep -q '\"level\":400'"
 ST=$(curl -s $B/api/server-stats)
-chk "server-stats: accounts=1, characters=1, online=null, offline" "echo '$ST' | grep -q '\"accounts\":1' && echo '$ST' | grep -q '\"characters\":1' && echo '$ST' | grep -q '\"online\":null' && echo '$ST' | grep -q '\"status\":\"offline\"'"
+chk "server-stats: accounts=1, characters=1, online=so nguyen >=0, offline" "echo '$ST' | grep -q '\"accounts\":1' && echo '$ST' | grep -q '\"characters\":1' && echo '$ST' | grep -Eq '\"online\":[0-9]+' && echo '$ST' | grep -q '\"status\":\"offline\"'"
 
 # 2. register local1 (dang 0.97: username/email/password) -> auto-login token
 REG=$(curl -s -X POST $B/api/register -H 'Content-Type: application/json' -d '{"username":"local1","email":"local1@x.com","password":"pw12345"}')
@@ -130,6 +130,63 @@ CA=$(DATABASE_URL="$DATABASE_URL" node server/create-admin.js localadmin 2>&1)
 chk "create-admin tao localadmin" "echo '$CA' | grep -q 'ADMIN_LOGIN=localadmin' && echo '$CA' | grep -q 'ADMIN_TEMP_PASSWORD='"
 CA2=$(DATABASE_URL="$DATABASE_URL" node server/create-admin.js localadmin 2>&1; echo "exit=$?")
 chk "create-admin trung -> exit 2, khong in mat khau" "echo '$CA2' | grep -q 'exit=2' && ! echo '$CA2' | grep -q 'ADMIN_TEMP_PASSWORD='"
+
+# 8. tang thuong admin (give-zen / give-points / give-level)
+# Nhan vat tam giftDk Lv 10 tren account test0 (tao bang SQL, sau reset DB).
+sudo -u postgres psql -q -d muwebtest -c "INSERT INTO data.\"ItemStorage\" (\"Id\", \"Money\") VALUES ('bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 0)" \
+  -c "INSERT INTO data.\"Character\" (\"Id\", \"Name\", \"CharacterClassId\", \"AccountId\", \"InventoryId\", \"CharacterSlot\", \"CreateDate\", \"Experience\", \"LevelUpPoints\", \"PositionX\", \"PositionY\", \"CurrentMapId\") VALUES ('cccccccc-cccc-cccc-cccc-cccccccccccc', 'giftDk', '22222222-2222-2222-2222-222222222222', '88888888-8888-8888-8888-888888888888', 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 1, now(), 0, 0, 133, 133, '44444444-4444-4444-4444-444444444444')" \
+  -c "INSERT INTO data.\"StatAttribute\" (\"Id\", \"DefinitionId\", \"CharacterId\", \"Value\", \"AccountId\") VALUES ('dddddddd-dddd-dddd-dddd-dddddddddddd', '11111111-1111-1111-1111-111111111111', 'cccccccc-cccc-cccc-cccc-cccccccccccc', 10, '88888888-8888-8888-8888-888888888888')"
+GID=cccccccc-cccc-cccc-cccc-cccccccccccc
+GP=$(curl -s -X POST "$B/api/admin/characters/$GID/give-points" -H "Authorization: Bearer $TOK0B" -H 'Content-Type: application/json' -d '{"points":50}')
+chk "give-points +50 ok, tra points 50" "echo '$GP' | grep -q '\\\"success\\\":true' && echo '$GP' | grep -q '\\\"points\\\":50'"
+GPDB=$(sudo -u postgres psql -tAc "SELECT \"LevelUpPoints\" FROM data.\"Character\" WHERE \"Id\"='$GID'" muwebtest)
+chk "DB LevelUpPoints giftDk = 50" "[ '$GPDB' = 50 ]"
+GZ=$(curl -s -X POST "$B/api/admin/characters/$GID/give-zen" -H "Authorization: Bearer $TOK0B" -H 'Content-Type: application/json' -d '{"amount":1000000}')
+chk "give-zen +1000000 ok, tra zen 1000000" "echo '$GZ' | grep -q '\\\"success\\\":true' && echo '$GZ' | grep -q '\\\"zen\\\":1000000'"
+GZDB=$(sudo -u postgres psql -tAc "SELECT \"Money\" FROM data.\"ItemStorage\" WHERE \"Id\"='bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb'" muwebtest)
+chk "DB Money giftDk = 1000000" "[ '$GZDB' = 1000000 ]"
+GL=$(curl -s -X PATCH "$B/api/admin/characters/$GID" -H "Authorization: Bearer $TOK0B" -H 'Content-Type: application/json' -d '{"level":25}')
+chk "give-level 25 ok" "echo '$GL' | grep -q '\\\"success\\\":true' && echo '$GL' | grep -q '\\\"level\\\":25'"
+GLDB=$(sudo -u postgres psql -tAc "SELECT \"Value\" FROM data.\"StatAttribute\" WHERE \"CharacterId\"='$GID'" muwebtest)
+chk "DB Level giftDk = 25" "[ '$GLDB' = 25 ]"
+GLC=$(curl -s -X PATCH "$B/api/admin/characters/$GID" -H "Authorization: Bearer $TOK0B" -H 'Content-Type: application/json' -d '{"level":500}')
+chk "give-level 500 kep tran 400" "echo '$GLC' | grep -q '\\\"level\\\":400' && echo '$GLC' | grep -q '\\\"clamped\\\":true'"
+GZC=$(curl -s -X POST "$B/api/admin/characters/$GID/give-zen" -H "Authorization: Bearer $TOK0B" -H 'Content-Type: application/json' -d '{"amount":3000000000}')
+chk "give-zen vuot tran kep 2147483647" "echo '$GZC' | grep -q '\\\"zen\\\":2147483647' && echo '$GZC' | grep -q '\\\"clamped\\\":true'"
+GZCDB=$(sudo -u postgres psql -tAc "SELECT \"Money\" FROM data.\"ItemStorage\" WHERE \"Id\"='bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb'" muwebtest)
+chk "DB Money giftDk = 2147483647 sau kep" "[ '$GZCDB' = 2147483647 ]"
+GP0=$(curl -s -o /dev/null -w "%{http_code}" -X POST "$B/api/admin/characters/$GID/give-points" -H "Authorization: Bearer $TOK0B" -H 'Content-Type: application/json' -d '{"points":0}')
+chk "give-points 0 -> 400" "[ '$GP0' = 400 ]"
+GZN=$(curl -s -o /dev/null -w "%{http_code}" -X POST "$B/api/admin/characters/$GID/give-zen" -H "Authorization: Bearer $TOK0B" -H 'Content-Type: application/json' -d '{"amount":-5}')
+chk "give-zen -5 -> 400" "[ '$GZN' = 400 ]"
+GL0=$(curl -s -o /dev/null -w "%{http_code}" -X PATCH "$B/api/admin/characters/$GID" -H "Authorization: Bearer $TOK0B" -H 'Content-Type: application/json' -d '{"level":0}')
+chk "give-level 0 -> 400" "[ '$GL0' = 400 ]"
+G404=$(curl -s -o /dev/null -w "%{http_code}" -X POST "$B/api/admin/characters/00000000-0000-0000-0000-000000000000/give-zen" -H "Authorization: Bearer $TOK0B" -H 'Content-Type: application/json' -d '{"amount":10}')
+chk "give-zen nhan vat khong ton tai -> 404" "[ '$G404' = 404 ]"
+G403=$(curl -s -o /dev/null -w "%{http_code}" -X POST "$B/api/admin/characters/$GID/give-zen" -H "Authorization: Bearer $FBNOA_TOK" -H 'Content-Type: application/json' -d '{"amount":10}')
+chk "user thuong give-zen -> 403" "[ '$G403' = 403 ]"
+LOGZ=$(sudo -u postgres psql -tAc "SELECT count(*) FROM web.admin_log WHERE \"Action\"='give-zen'" muwebtest)
+chk "admin_log co 2 dong give-zen" "[ '$LOGZ' = 2 ]"
+LOGP=$(sudo -u postgres psql -tAc "SELECT count(*) FROM web.admin_log WHERE \"Action\"='give-points'" muwebtest)
+chk "admin_log co 1 dong give-points" "[ '$LOGP' = 1 ]"
+LOGL=$(sudo -u postgres psql -tAc "SELECT count(*) FROM web.admin_log WHERE \"Action\"='give-level'" muwebtest)
+chk "admin_log co 2 dong give-level" "[ '$LOGL' = 2 ]"
+# Chan online: presence gia tra test0 online, giftDk thuoc test0 -> 403
+node scripts/fake-presence.js > scripts/fake-presence.log 2>&1 &
+FP=$!
+sleep 1
+FPC=$(curl -s http://127.0.0.1:3003/presence)
+chk "fake presence len, tra test0 online" "echo '$FPC' | grep -q 'test0'"
+GON=$(curl -s -o /dev/null -w "%{http_code}" -X POST "$B/api/admin/characters/$GID/give-zen" -H "Authorization: Bearer $TOK0B" -H 'Content-Type: application/json' -d '{"amount":10}')
+chk "give-zen khi online -> 403" "[ '$GON' = 403 ]"
+GONB=$(curl -s -X POST "$B/api/admin/characters/$GID/give-zen" -H "Authorization: Bearer $TOK0B" -H 'Content-Type: application/json' -d '{"amount":10}')
+chk "give-zen khi online tra loi co chu online" "echo '$GONB' | grep -q 'online'"
+CHON=$(curl -s "$B/api/admin/characters?q=giftDk" -H "Authorization: Bearer $TOK0B")
+chk "admin/characters tra online=true khi presence bao online" "echo '$CHON' | grep -q 'giftDk' && echo '$CHON' | grep -q '\\\"online\\\":true'"
+kill $FP 2>/dev/null; sleep 1
+GPOFF=$(curl -s -X POST "$B/api/admin/characters/$GID/give-points" -H "Authorization: Bearer $TOK0B" -H 'Content-Type: application/json' -d '{"points":1}')
+chk "presence tat -> gift lai duoc (fail-open)" "echo '$GPOFF' | grep -q '\\\"success\\\":true'"
+chk "admin.html co muc Tang thuong" "grep -q 'Tặng thưởng' public/admin.html && grep -q 'grant-level' public/admin.html"
 
 kill $SRV 2>/dev/null
 echo "----------------------------------------"

@@ -8,7 +8,6 @@ export default {
   'autoDownload.cancel': 'Utzi',
   'autoDownload.hide': 'Ezkutatu (deskargatzen jarraitzen du)',
   'autoDownload.phase.map': 'Mapa kargatzen: {name}',
-  'autoDownload.phase.icons': 'Objektuak kargatzen',
   'autoDownload.phase.audio': 'Musika eta soinuak kargatzen',
   'autoDownload.phase.monsters': 'Pertsonaiak eta izakiak kargatzen',
   'autoDownload.phase.core': 'Interfazea eta efektuak kargatzen',

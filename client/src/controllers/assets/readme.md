@@ -1,7 +1,7 @@
 # assets
 
 Getting game files into the client: the two data roots, fetching with gzip sidecars, the glTF
-model cache and item materials, texture packs, the pre-game download, the item icon pack, the BMD
+model cache and item materials, texture packs, the pre-game download, the BMD
 reader (`bmd/`) and the readers for the original `Data/` tree (`mu/`). `index.ts` is the door
 for new imports (`loadGLTF`, `evictUnusedContainers`, `localisedNpcName`, `reportLoadFailure`, `settle`); older code still
 imports the modules below directly (baselined in `tools/checks`).
@@ -24,9 +24,9 @@ imports the modules below directly (baselined in `tools/checks`).
 - `compressedAssets.ts`: `fetchAssetBytes`, `prefetchAsset`; `COMPRESSED_EXTENSIONS`,
   `COMPRESSED_SUFFIX` for the build tools.
 - `liteAssets.ts`: `liteVariantOf(path)` and `liteSourceOf(path)`, the names of the lighter copies
-  `tools/liteAssets.ts` writes beside the originals (`<file>.OZJ.webp`, `items/<name>.webp`,
+  `tools/liteAssets.ts` writes beside the originals (`<file>.OZJ.webp`,
   `Music/<name>.opus.ogg`); `liteUrl(url)`, the copy to read instead (or null), asked by
-  `fetchAsset`, `prefetchAsset`, `itemIconPackChain` and `soundUrl`; `setLiteAssetsGate` (filled by
+  `fetchAsset`, `prefetchAsset` and `soundUrl`; `setLiteAssetsGate` (filled by
   the `servers` module), `setLiteVariants` and `setLiteIndexLoader` (filled by `assetDownload.ts`),
   `liteFailed`, `liteWanted`.
 - `modelLoader.ts`: `loadGLTF(path, { scene })` (a `World` passes as it is; a model with no entity,
@@ -47,17 +47,20 @@ imports the modules below directly (baselined in `tools/checks`).
 - `cacheReset.ts`: `clearCacheAndReload()` (ours, the Options button and `app/buildCheck.ts`): Ctrl+F5
   for whoever cannot press it. Drops the worker's cached assets but the music, unregisters the
   worker and reloads with a throwaway `?r=`.
-- `itemIconPack.ts`: `prefetchItemIcons`, `itemIconPackChain`, `itemIconUrl`, `itemIconKey`.
 - `worldAssets.ts`: `assetWorldNum`, `*_WORLDS` lists (readers over `maps`).
 - `ktx2Pixels.ts`: `isKtx2`, `loadTranscoder`, `decodeKtx2`, `TranscoderUrls`.
 - `bmd/`: `BMD`, `BMDReader`, `BMDTextureBone` (used by `tools/bmdToGlb.ts`).
 - `preloadSprites.ts`: `preloadPregameSprites`, `preloadWorldSprites`, `clearWorldSprites`.
   `prefetchWorld.ts`: `prefetchWorldTerrain`, `fetchTerrainFile`, `consumeTerrainFile`,
-  `terrainFilesFor`. `warmWorld.ts`: `warmWorldObjects`. `itemIconManifest.ts`: generated.
+  `terrainFilesFor`. `warmWorld.ts`: `warmWorldObjects`.
 - `mu/` (readers of the original `Data/` files; outside code goes through `mu/index.ts`):
   `loadMuSprite`, `loadInterfaceSprite`, `peekMuSprite`, `peekInterfaceSprite`,
   `clearSpriteCache`, `MuSprite`; `decodeTGA`; `loadGates`, `findEntranceGateAt`;
-  `loadQuestTables` and its types; `loadMoveReqList`;
+  `loadQuestTables` and its types; `loadMoveReqList` (the Move window rows
+  from `Data/Local/Eng/MoveReq_eng.bmd`; the classic file ships 37 rows, and
+  the server owner added Crywolf index 26 and Barracks of Balgass index 24 on
+  2026-11-26 so the window can warp there - the file reserves 50 slots, so the
+  rows sit in the first two empty slots and the size stays 4204 bytes);
   `localisedItemName`, `localisedSkillName`, `localisedBuffName`, `localisedNpcName`,
   `skillDisplayName(number)` (`mu/skillNames.ts`: the pack's name, else `skillsDatabase`'s; on the door),
   `loadNpcNames`, `onNpcNamesChanged`; `decodeLocalText`, `downloadLocalDataFile`.
@@ -142,7 +145,6 @@ imports the modules below directly (baselined in `tools/checks`).
   dropped; `fetchAssetBytes` reads the copy, the original when not wanted, and the original after a
   missing copy (asked once).
 - `preloadAll.test.ts`: no index skips, a full run pauses the game and marks the build, a short one does not.
-- `itemIconPack.test.ts`: the WebP copy before its PNG only when wanted and listed.
 - `cacheReset.test.ts`: the music stays, the rest and the worker go, the page reloads.
 - `cacheWorker.test.ts`: `public/sw.js` run against an in-memory cache: a new build drops what another
   downloaded (the music kept), its own build keeps it, an asset it does not hold is revalidated once;
@@ -212,11 +214,10 @@ walks only the cloned clips, so whatever every clip must get as it comes (the en
 speed) goes through `forEachAnimationGroup`. The original keeps one copy of each action per model
 (`Models[].Actions`) for every object drawing it.
 
-### itemIconPack.ts
-An `<img>` is a low-priority request queued behind the world's fetches, so a shop's icons used to
-trickle in. `prefetchItemIcons` starts them at high priority when the packet lands and keeps up to
-512 `Image` objects (LRU). `itemIconManifest.ts` (from `tools/itemIconManifest.ts`) lists which
-tint and variant files exist, so missing ones are never requested.
+### Live item icons
+Every icon is drawn from the item's model (`interface/item_icons/liveItemIcon.ts`); there is no
+static picture. `prefetchLiveItemIcons` starts the draw when the packet lands, ahead of the grid
+that shows the item - the earlier a shot starts, the shorter its cell stays empty.
 
 ### texturePacks.ts
 `updateURL` replaces the internal texture and its `label`, which `pbrMaps.textureSourceName()` and

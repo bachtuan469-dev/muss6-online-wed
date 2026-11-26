@@ -51,6 +51,8 @@ export default {
   'cmd.addvit': '레벨업 포인트를 체력에 분배',
   'cmd.addene': '레벨업 포인트를 에너지에 분배',
   'cmd.addcmd': '레벨업 포인트를 통솔에 분배',
+  'cmd.reset': '캐릭터 초기화',
+  'cmd.resetinfo': '초기화 정보 보기',
   'cmd.move': '맵으로 이동',
   'cmd.war': '길드 전쟁 신청',
   'cmd.battlesoccer': '배틀 사커 신청',

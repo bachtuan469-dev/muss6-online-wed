@@ -32,7 +32,6 @@ and how to run it.
 - `convertItemTXTtoJson.ts`, `itemFiles.ts`, `syncItemRequirements.ts`, `addRageFighterColumn.ts`,
   `syncItemClasses.ts`: the item files (`versions/shared/items/`).
 - `monsterFiles.ts`, `buildMonsterHealth.ts`: the monster folders (`versions/shared/monsters/`).
-- `itemIconFit.ts`, `itemIconManifest.ts`: the icon tables (`interface/item_icons/`, `assets/`).
 - `configHexTable.ts`: `docs/configuration_hex.md`.
 
 ## Language packs and text

@@ -8,7 +8,6 @@ export default {
   'autoDownload.cancel': 'Batal',
   'autoDownload.hide': 'Sembunyikan (tetap mengunduh)',
   'autoDownload.phase.map': 'Memuat peta: {name}',
-  'autoDownload.phase.icons': 'Memuat item',
   'autoDownload.phase.audio': 'Memuat musik dan suara',
   'autoDownload.phase.monsters': 'Memuat karakter dan makhluk',
   'autoDownload.phase.core': 'Memuat antarmuka dan efek',

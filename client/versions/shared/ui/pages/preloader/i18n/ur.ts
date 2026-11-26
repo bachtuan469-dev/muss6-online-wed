@@ -85,7 +85,6 @@ export default {
   'download.group.core': 'بنیادی گیم',
   'download.group.monsters': 'مونسٹر',
   'download.group.audio': 'موسیقی اور آوازیں',
-  'download.group.icons': 'آئٹم آئیکن',
   'download.total': 'کل',
   'download.withPack': 'پیک',
   'download.start': 'ڈاؤن لوڈ کریں',

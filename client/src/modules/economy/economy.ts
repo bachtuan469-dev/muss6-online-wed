@@ -1,7 +1,7 @@
 import { MuWindows } from '@/controllers/interface/windowManager';
 import { t, type TextKey } from '../../i18n';
 import { makeObservable, observable, action, computed, runInAction } from 'mobx';
-import { prefetchItemIcons } from '../../controllers/assets/itemIconPack';
+import { prefetchLiveItemIcons } from '@/controllers/interface/item_icons';
 import { Bag } from '../inventory';
 import { Hero } from '../hero';
 import { Session } from '../session';
@@ -363,7 +363,7 @@ export const Economy = new (class _Economy {
       }
       this.vaultItems = items;
     });
-    prefetchItemIcons(this.vaultItems);
+    prefetchLiveItemIcons(this.vaultItems);
   }
 
   /** `ProcessToReceiveStorageStatus` (NewUIStorageInventory.cpp:283). */
@@ -606,7 +606,7 @@ export const Economy = new (class _Economy {
       }
       this.mixItems = items;
     });
-    prefetchItemIcons(this.mixItems);
+    prefetchLiveItemIcons(this.mixItems);
   }
 
   /**
@@ -865,7 +865,7 @@ export const Economy = new (class _Economy {
   setYourTradeItem(slot: number, item: Item | null): void {
     if (slot < 0 || slot >= TRADE_SLOTS) return;
 
-    prefetchItemIcons([item]);
+    prefetchLiveItemIcons([item]);
     const afterAccept = this.myTradeConfirm;
     runInAction(() => {
       if (afterAccept) this.yourTradeChanged = new Set([...this.yourTradeChanged, slot]);
@@ -1223,7 +1223,7 @@ export const Economy = new (class _Economy {
 
   /** `PlayerShopItemList` (0x3F 0x05). */
   showShop(browse: ShopBrowse): void {
-    prefetchItemIcons(browse.items.map(stock => stock?.item));
+    prefetchLiveItemIcons(browse.items.map(stock => stock?.item));
     runInAction(() => {
       this.browsing = browse;
     });

@@ -89,7 +89,6 @@ export default {
   'download.group.core': 'Batayang laro',
   'download.group.monsters': 'Mga Halimaw',
   'download.group.audio': 'Musika at tunog',
-  'download.group.icons': 'Icon ng item',
   'download.total': 'Kabuuan',
   'download.withPack': 'pack',
   'download.start': 'I-download',

@@ -40,13 +40,14 @@ import { loadMapIntoScene, onHeroPlaced, onMapChange } from '../controllers/terr
 import { setRepairCursor } from '../controllers/interface/components/game_cursor';
 import { setLiveItemIcons, setLiveItemSpin } from '../controllers/interface/item_icons';
 import { liveItemIconSource, liveItemSpinSource } from '../controllers/actors/itemIcon';
-import { Merchant } from '../modules/npc_shop';
+import { Merchant, prefetchShopStock } from '../modules/npc_shop';
 import { Bag } from '../modules/inventory';
 import { initControllers } from '../controllers/controllers';
 import { resetForMapChange } from './lifecycle';
 import { warpShowsScreen } from './warpScreen';
 import { prefetchWorldTerrain } from '../controllers/assets/prefetchWorld';
 import { townPrefetch } from './townPrefetch';
+import { shopStockWarmup } from './shopStockWarmup';
 import { warpFades } from '../controllers/loading/fade';
 import { assetWorldNum } from '../controllers/assets/worldAssets';
 import { gameVersion } from '../version';
@@ -397,6 +398,15 @@ EventBus.on('requestWarp', ({ map, pos }) => {
 
   loadMapIntoScene(world, map, pos);
 });
+
+// Leo's shop icons warm the moment the hero enters the world (shopStockWarmup.ts), before the
+// towns' terrain below: his 62 model files are ~300 KB on a cold cache, the shop is opened within
+// seconds of entering, and a /move to another town is minutes away - so the icons go first and
+// townPrefetch keeps its 3 s delay behind them.
+EventBus.on(
+  'warpCompleted',
+  shopStockWarmup(() => AppState.uiState === UIState.World, prefetchShopStock)
+);
 
 // The towns' terrain downloads in the background once in the world (townPrefetch.ts), the ones
 // this version ships.

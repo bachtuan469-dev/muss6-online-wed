@@ -8,7 +8,6 @@ export default {
   'autoDownload.cancel': '取消',
   'autoDownload.hide': '隐藏（继续下载）',
   'autoDownload.phase.map': '正在加载地图：{name}',
-  'autoDownload.phase.icons': '正在加载物品',
   'autoDownload.phase.audio': '正在加载音乐和音效',
   'autoDownload.phase.monsters': '正在加载角色和怪物',
   'autoDownload.phase.core': '正在加载界面和特效',

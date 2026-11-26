@@ -53,6 +53,8 @@ export default {
   'cmd.addvit': 'Cheltuiește puncte de nivel pe vitalitate',
   'cmd.addene': 'Cheltuiește puncte de nivel pe energie',
   'cmd.addcmd': 'Cheltuiește puncte de nivel pe comandă',
+  'cmd.reset': 'Resetează personajul',
+  'cmd.resetinfo': 'Afișează informațiile despre reset',
   'cmd.move': 'Deplasează-te pe o hartă',
   'cmd.war': 'Cere un război de guild',
   'cmd.battlesoccer': 'Cere un meci de Battle Soccer',

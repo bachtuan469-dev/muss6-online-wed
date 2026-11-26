@@ -34,7 +34,6 @@ const GROUP_LABEL = {
   core: 'download.group.core',
   monsters: 'download.group.monsters',
   audio: 'download.group.audio',
-  icons: 'download.group.icons',
 } as const satisfies Partial<Record<AssetGroup['kind'], TextKey>>;
 
 const mb = (bytes: number) =>

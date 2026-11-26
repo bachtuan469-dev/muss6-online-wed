@@ -128,7 +128,7 @@ type loads. Its door is `index.ts`; older readers still import some modules dire
 - A transformation skin (`characterSkinBody`) is either a part file worn on the player rig in place
   of the armor (`transformedBodyFactory`, ZzzCharacter.cpp:9345-9440) or a whole monster model that
   plays monster clips (`monsterClipFor`, WSclient.cpp:2760-2800).
-- A bag icon the pack has no file for (`itemIcon.ts`) is drawn as `RenderItem3D` draws every icon
+- A bag icon (`itemIcon.ts`) is drawn as `RenderItem3D` draws every icon
   (ZzzInventory.cpp:9707): the original's item camera has an identity view, a 1 degree field over
   the 640 x 480 screen and puts the item 200 units out (0.1 of `RENDER_ITEMVIEW_FAR`), so a bag pixel
   is `ITEM_ICON_UNITS_PER_PIXEL` units there. The shot covers the item's squares (20 pixels each),
@@ -136,9 +136,13 @@ type loads. Its door is `index.ts`; older readers still import some modules dire
   `RenderObjectScreen` does (`interface/item_icons/itemIconPose.ts`, two-handed by `isTwoHanded`, the
   item's own `TwoHand`) and scales it by `itemIconScale.ts`; its meshes carry the item's
   `itemVisualTier` as worn gear does (the level and excellent passes, RenderPartObject at the item's
-  level and options, ZzzInventory.cpp:9699); `render/iconShot.ts` draws it once. The item under the
+  level and options, ZzzInventory.cpp:9699); `render/iconShot.ts` draws it once. That picture is
+  what the bag and the shop show first, so the item's glow is on it; the pre-rendered pack is the
+  placeholder while it draws and the fallback when the item has no model. The item under the
   cursor (nothing held) turns: `Angle[1] = WorldTime * 0.45f` (ZzzInventory.cpp:8856-8859), its other
-  angles kept, drawn every frame by the shot's spin onto the icon's canvas, pack icons too. A picture is kept
+  angles kept, drawn every frame by the shot's spin onto the icon's canvas, pack icons too. The icon's
+  baked halo is its own ladder, twice the world's (`ICON_HALO_GAIN`, clamped per channel, slice 2 of
+  the glow-097 fix), so the glow reads at icon size without touching the world halo. A picture is kept
   per look (group, number, level, excellent, ancient) until the item-effects option (or the effect
   limit) changes: `liveItemIconSource` then forgets the shots and the interface's pictures, and every
   look is drawn again.

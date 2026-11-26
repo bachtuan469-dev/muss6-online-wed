@@ -86,7 +86,6 @@ export default {
   'download.group.core': 'เกมพื้นฐาน',
   'download.group.monsters': 'มอนสเตอร์',
   'download.group.audio': 'เพลงและเสียง',
-  'download.group.icons': 'ไอคอนไอเทม',
   'download.total': 'รวม',
   'download.withPack': 'แพ็ก',
   'download.start': 'ดาวน์โหลด',

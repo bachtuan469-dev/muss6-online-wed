@@ -17,7 +17,7 @@ import { assetsIndexUrl } from './resolveUrlToDataFolder';
 
 export type AssetGroup = {
   id: string;
-  kind: 'core' | 'monsters' | 'audio' | 'icons' | 'map';
+  kind: 'core' | 'monsters' | 'audio' | 'map';
   name: string;
   world?: number;
   files: number;

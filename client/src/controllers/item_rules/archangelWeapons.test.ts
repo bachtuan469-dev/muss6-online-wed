@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { buildItemTooltip, itemDisplayName, itemNameColor } from '../interface/itemTooltip';
 import { dropTier } from './dropTier';
 import { dropLabel } from './dropLabel';
-import { itemIconPackChain } from '../assets/itemIconPack';
+import { itemIconPose } from '../interface/item_icons/itemIconPose';
 import type { HeroStats } from './itemStats';
 
 const DIVINE: [group: number, num: number][] = [
@@ -58,10 +58,13 @@ describe('the Weapon of Archangel', () => {
     expect(text.some(l => l.startsWith('Durability'))).toBe(false);
   });
 
-  it('is drawn in the bag as its Divine weapon', () => {
-    expect(itemIconPackChain(weapon(0))[0]).toBe('/items/item_13_19_0.png');
-    expect(itemIconPackChain(weapon(1))[0]).toBe('/items/item_0_19_0.png');
-    expect(itemIconPackChain(weapon(2))[0]).toBe('/items/item_4_18_0.png');
+  it('is posed in the bag at its own anchor at each level, not one shared picture', () => {
+    // The live draw has no Divine-weapon model swap for these levels (that
+    // lived only in the pack icons): each level is posed at its own anchor
+    // (ZzzInventory.cpp:9833-9835), so the three pictures still differ.
+    expect(itemIconPose(13, 19, 0, false).anchor).toEqual([0.5, 0.5]);
+    expect(itemIconPose(13, 19, 1, false).anchor).toEqual([0.7, 0.8]);
+    expect(itemIconPose(13, 19, 2, false).anchor).toEqual([0.7, 0.7]);
   });
 
   it('lies on the ground in the Divine weapons\' purple', () => {

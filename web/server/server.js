@@ -38,6 +38,7 @@
 const http = require('http');
 const net = require('net');
 const crypto = require('crypto');
+const { execFile } = require('child_process');
 const bcrypt = require('bcryptjs');
 const { createPool, createAccount } = require('./openmu-accounts');
 
@@ -475,6 +476,85 @@ function checkPort(host, port, timeoutMs) {
   });
 }
 
+// Cổng GameServer của OpenMU (6 game server). Mỗi người chơi đang trong game
+// giữ đúng 1 kết nối TCP established tới 1 cổng GS qua bridge — kiểm chứng
+// live 2026-11-25: đúng 1 kết nối trong lúc 1 phiên eval-driver mở, 0 trước
+// và sau phiên. Đếm phía GS (cổng local) để không đếm trùng 2 đầu socket.
+const GAME_SERVER_PORTS = new Set([45911, 45912, 45913, 45914, 45915, 45916]);
+
+// Đếm người đang online. Trả null khi không đo được (ss lỗi/timeout) —
+// endpoint giữ "—" chứ không bịa số.
+// LƯU Ý: `ss -tn state established` KHÔNG in cột State (ss lược cột này khi
+// đã lọc theo state) nên mỗi dòng chỉ có 4 trường Recv-Q/Send-Q/Local/Peer
+// — vì vậy lấy địa chỉ local ở trường áp chót (parts[len-2]) thay vì vị trí
+// cố định, để đúng với cả 2 dạng output (có/không có cột State).
+function countOnlinePlayers() {
+  return new Promise((resolve) => {
+    execFile('ss', ['-tn', 'state', 'established'], { timeout: 1500 }, (err, stdout) => {
+      if (err || !stdout) return resolve(null);
+      let n = 0;
+      for (const line of stdout.split('\n')) {
+        const parts = line.trim().split(/\s+/);
+        if (parts.length < 4) continue;
+        const local = parts[parts.length - 2];
+        const m = /:(\d+)$/.exec(local || '');
+        if (m && GAME_SERVER_PORTS.has(Number(m[1]))) n += 1;
+      }
+      resolve(n);
+    });
+  });
+}
+
+// Presence từ proxy Bun (proxy/main.ts + proxy/presence.ts — ĐƯỜNG GAME
+// THẬT: mọi client web đều qua proxy này, port 3002; presence server
+// nghe loopback ở PRESENCE_PORT, live = 3003). Proxy tự giải mã gói login
+// và chỉ ghi tên khi GameServer trả LoginResponse Okay, xóa khi socket
+// đóng. GET /presence trả { online: [...] } (mảng login lowercase).
+// Cầu nối Node 18793 cũng có GET /presence riêng ({ logins: [...] }) nhưng
+// KHÔNG mang lưu lượng game thật — chỉ là đường dự phòng qua front-proxy;
+// portal KHÔNG dùng nó. Trả Set (lowercase) — rỗng khi presence không trả
+// lời / timeout / JSON lỗi. Lỗi presence KHÔNG làm fail request gọi nó
+// (giống countOnlinePlayers trả null): endpoint vẫn trả, cột Online chỉ
+// hiện Offline cho mọi tài khoản.
+const BRIDGE_PRESENCE_URL = 'http://127.0.0.1:3003/presence';
+function getOnlineLogins() {
+  return new Promise((resolve) => {
+    let done = false;
+    const finish = (v) => { if (!done) { done = true; resolve(v); } };
+    let req;
+    try {
+      req = http.get(BRIDGE_PRESENCE_URL, { timeout: 1500 }, (res) => {
+        let body = '';
+        res.on('data', (c) => { body += c; });
+        res.on('end', () => {
+          try {
+            const j = JSON.parse(body);
+            // Presence Bun trả { online: [...] }; cầu nối Node trả { logins: [...] }.
+            const list = Array.isArray(j.online) ? j.online : (Array.isArray(j.logins) ? j.logins : []);
+            finish(new Set(list.map((s) => String(s).toLowerCase())));
+          } catch (err) {
+            logError(`presence: bridge trả JSON lỗi message=${err.message}`);
+            finish(new Set());
+          }
+        });
+        res.on('error', (err) => {
+          logError(`presence: lỗi đọc phản hồi bridge message=${err.message}`);
+          finish(new Set());
+        });
+      });
+    } catch (err) {
+      logError(`presence: lỗi tạo request message=${err.message}`);
+      finish(new Set());
+      return;
+    }
+    req.on('timeout', () => { req.destroy(new Error('presence timeout')); });
+    req.on('error', (err) => {
+      logError(`presence: không lấy được từ bridge message=${err.message}`);
+      finish(new Set());
+    });
+  });
+}
+
 /* ---------------- feedback (báo bug / góp ý) ---------------- */
 
 const FB_STATUSES = new Set(['moi', 'dang_xu_ly', 'xong']);
@@ -562,20 +642,24 @@ async function route(pool, req, res) {
 
   if (method === 'GET' && path === '/api/server-stats') {
     let status = 'offline';
+    let online = null;
     try {
-      const [cs, gs] = await Promise.all([
+      const [cs, gs, n] = await Promise.all([
         checkPort('127.0.0.1', 44415, 800),
         checkPort('127.0.0.1', 45911, 800),
+        countOnlinePlayers(),
       ]);
       status = cs && gs ? 'online' : 'offline';
+      online = n;
     } catch (err) {
       logError(`server-stats: kiểm tra cổng lỗi message=${err.message}`);
     }
     try {
       const a = await pool.query('SELECT count(*)::int AS n FROM data."Account"');
       const c = await pool.query('SELECT count(*)::int AS n FROM data."Character"');
-      // online: null — OpenMU không có API đếm người online; không bịa số.
-      sendJson(res, 200, { success: true, online: null, status, accounts: a.rows[0].n, characters: c.rows[0].n });
+      // online: số nguyên đếm từ kết nối TCP thật tới GameServer, hoặc null
+      // khi không đo được — trang chủ hiện "—", không bịa số.
+      sendJson(res, 200, { success: true, online, status, accounts: a.rows[0].n, characters: c.rows[0].n });
     } catch (err) {
       logError(`server-stats: lỗi DB message=${err.message}`);
       sendJson(res, 500, { success: false, message: 'Hệ thống bận, vui lòng thử lại sau.' });
@@ -656,7 +740,9 @@ async function route(pool, req, res) {
     }
     const banned = authed.State === 4 || authed.State === 5;
     if (path === '/api/user/info') {
-      sendJson(res, 200, { success: true, user: { username: authed.LoginName, email: authed.EMail } });
+      // online: tài khoản này có đang trong game không (presence từ bridge).
+      const onlineLogins = await getOnlineLogins();
+      sendJson(res, 200, { success: true, user: { username: authed.LoginName, email: authed.EMail, online: onlineLogins.has(String(authed.LoginName).toLowerCase()) } });
     } else {
       sendJson(res, 200, {
         success: true,
@@ -749,9 +835,11 @@ async function route(pool, req, res) {
              FROM data."Account" ${where} ORDER BY "RegistrationDate" DESC LIMIT $${params.length + 1} OFFSET $${params.length + 2}`,
           [...params, limit, offset],
         );
+        // online: presence từ bridge (so khớp LoginName không phân biệt hoa thường).
+        const onlineLogins = await getOnlineLogins();
         sendJson(res, 200, {
           success: true, total: total.rows[0].n,
-          accounts: rows.rows.map((r) => ({ ...r, is_admin: ADMIN_LOGINS.has(r.username) })),
+          accounts: rows.rows.map((r) => ({ ...r, is_admin: ADMIN_LOGINS.has(r.username), online: onlineLogins.has(String(r.username).toLowerCase()) })),
         });
       } catch (err) {
         logError(`admin accounts: lỗi DB message=${err.message}`);
@@ -770,10 +858,12 @@ async function route(pool, req, res) {
         );
         if (a.rowCount === 0) { sendJson(res, 404, { success: false, message: 'Không tìm thấy tài khoản.' }); return; }
         const chars = await pool.query(`${CHAR_SELECT} WHERE c."AccountId" = $1 ORDER BY c."CharacterSlot"`, [accOne[1]]);
+        // online: presence từ bridge (so khớp LoginName không phân biệt hoa thường).
+        const onlineLogins = await getOnlineLogins();
         sendJson(res, 200, {
           success: true,
-          account: { ...a.rows[0], is_admin: ADMIN_LOGINS.has(a.rows[0].username) },
-          characters: chars.rows.map(toCharRow),
+          account: { ...a.rows[0], is_admin: ADMIN_LOGINS.has(a.rows[0].username), online: onlineLogins.has(String(a.rows[0].username).toLowerCase()) },
+          characters: chars.rows.map((r) => ({ ...toCharRow(r), online: onlineLogins.has(String(r.account_username).toLowerCase()) })),
         });
       } catch (err) {
         logError(`admin account ${accOne[1]}: lỗi DB message=${err.message}`);
@@ -846,7 +936,8 @@ async function route(pool, req, res) {
           `${CHAR_SELECT} ${where} ORDER BY sa."Value" DESC, c."Experience" DESC LIMIT $${params.length + 1} OFFSET $${params.length + 2}`,
           [...params, limit, offset],
         );
-        sendJson(res, 200, { success: true, total: total.rows[0].n, characters: rows.rows.map(toCharRow) });
+        const onlineLogins = await getOnlineLogins();
+        sendJson(res, 200, { success: true, total: total.rows[0].n, characters: rows.rows.map((r) => ({ ...toCharRow(r), online: onlineLogins.has(String(r.account_username).toLowerCase()) })) });
       } catch (err) {
         logError(`admin characters: lỗi DB message=${err.message}`);
         sendJson(res, 500, { success: false, message: 'Hệ thống bận, vui lòng thử lại sau.' });
@@ -864,9 +955,187 @@ async function route(pool, req, res) {
                   "RegistrationDate" AS created_at FROM data."Account" WHERE "Id" = $1`,
           [c.account_id],
         );
-        sendJson(res, 200, { success: true, character: c, account: a.rows[0] || null });
+        const onlineLogins = await getOnlineLogins();
+        sendJson(res, 200, { success: true, character: { ...c, online: onlineLogins.has(String(c.account_username).toLowerCase()) }, account: a.rows[0] || null });
       } catch (err) {
         logError(`admin character ${charOne[1]}: lỗi DB message=${err.message}`);
+        sendJson(res, 500, { success: false, message: 'Hệ thống bận, vui lòng thử lại sau.' });
+      }
+      return;
+    }
+    // ---- Tặng thưởng (admin): cộng trực tiếp vào số hiện tại ----
+    // Chỉ tặng khi nhân vật OFFLINE: server game giữ dữ liệu nhân vật
+    // trong bộ nhớ lúc đang chơi, sửa DB lúc online sẽ bị ghi đè khi
+    // thoát game. Zen kẹp trần int 2.147.483.647, Level kẹp 1..400.
+    const ZEN_MAX = 2147483647;
+    const LEVEL_MAX = 400;
+    function validGiftAmount(v) {
+      return Number.isInteger(v) && v > 0;
+    }
+    async function loadGiftChar(client, charId) {
+      const r = await client.query(
+        `SELECT c."Id" AS id, c."Name" AS name, c."AccountId" AS account_id,
+                c."InventoryId" AS inventory_id, c."LevelUpPoints" AS points,
+                a."LoginName" AS login_name, COALESCE(s."Money", 0) AS zen,
+                sa."Value" AS level
+           FROM data."Character" c
+           JOIN data."Account" a ON a."Id" = c."AccountId"
+           JOIN data."StatAttribute" sa ON sa."CharacterId" = c."Id"
+           JOIN config."AttributeDefinition" ad ON ad."Id" = sa."DefinitionId" AND ad."Designation" = 'Level'
+           LEFT JOIN data."ItemStorage" s ON s."Id" = c."InventoryId"
+          WHERE c."Id" = $1`,
+        [charId],
+      );
+      if (r.rowCount === 0) return null;
+      const row = r.rows[0];
+      return {
+        id: row.id, name: row.name, accountId: row.account_id,
+        inventoryId: row.inventory_id, points: Number(row.points) || 0,
+        loginName: row.login_name, zen: Number(row.zen) || 0,
+        level: Math.trunc(Number(row.level) || 0),
+      };
+    }
+    async function giftLog(client, adminLogin, action, ch, detail) {
+      await client.query(
+        'INSERT INTO web.admin_log ("AdminLogin", "Action", "AccountId", "TargetLogin", "Detail") VALUES ($1, $2, $3, $4, $5)',
+        [adminLogin, action, ch.accountId, ch.loginName, detail],
+      );
+    }
+    async function checkGiftOnline(ch) {
+      const onlineLogins = await getOnlineLogins();
+      return onlineLogins.has(String(ch.loginName).toLowerCase());
+    }
+    const giftZen = /^\/api\/admin\/characters\/([0-9a-f-]{36})\/give-zen$/.exec(path);
+    if (method === 'POST' && giftZen) {
+      let body;
+      try {
+        body = await readJsonBody(req);
+      } catch (err) {
+        sendJson(res, 400, { success: false, message: 'Dữ liệu gửi lên không hợp lệ.' });
+        return;
+      }
+      if (!validGiftAmount(body.amount)) {
+        sendJson(res, 400, { success: false, message: 'Số Zen phải là số nguyên lớn hơn 0.' });
+        return;
+      }
+      try {
+        const ch = await loadGiftChar(pool, giftZen[1]);
+        if (!ch) { sendJson(res, 404, { success: false, message: 'Không tìm thấy nhân vật.' }); return; }
+        if (await checkGiftOnline(ch)) {
+          sendJson(res, 403, { success: false, message: 'Nhân vật đang online — không tặng được. Đợi nhân vật thoát game rồi tặng lại.' });
+          return;
+        }
+        const newZen = Math.min(ch.zen + body.amount, ZEN_MAX);
+        const clamped = newZen < ch.zen + body.amount;
+        const client = await pool.connect();
+        try {
+          await client.query('BEGIN');
+          const u = await client.query('UPDATE data."ItemStorage" SET "Money" = $1 WHERE "Id" = $2', [newZen, ch.inventoryId]);
+          if (u.rowCount === 0) throw new Error('không tìm thấy kho đồ nhân vật');
+          await giftLog(client, authed.LoginName, 'give-zen', ch,
+            `tặng Zen ${ch.name}: ${ch.zen.toLocaleString('vi-VN')} → ${newZen.toLocaleString('vi-VN')} (+${body.amount.toLocaleString('vi-VN')})${clamped ? ' (trần tối đa 2.147.483.647)' : ''}`);
+          await client.query('COMMIT');
+        } catch (e) {
+          try { await client.query('ROLLBACK'); } catch (e2) { /* bỏ qua */ }
+          throw e;
+        } finally {
+          client.release();
+        }
+        logInfo(`admin give-zen: admin=${authed.LoginName} char=${ch.name} zen ${ch.zen} -> ${newZen}`);
+        sendJson(res, 200, { success: true, zen: newZen, clamped });
+      } catch (err) {
+        logError(`admin give-zen ${giftZen[1]}: lỗi DB message=${err.message}`);
+        sendJson(res, 500, { success: false, message: 'Hệ thống bận, vui lòng thử lại sau.' });
+      }
+      return;
+    }
+    const giftPoints = /^\/api\/admin\/characters\/([0-9a-f-]{36})\/give-points$/.exec(path);
+    if (method === 'POST' && giftPoints) {
+      let body;
+      try {
+        body = await readJsonBody(req);
+      } catch (err) {
+        sendJson(res, 400, { success: false, message: 'Dữ liệu gửi lên không hợp lệ.' });
+        return;
+      }
+      if (!validGiftAmount(body.points)) {
+        sendJson(res, 400, { success: false, message: 'Số Point phải là số nguyên lớn hơn 0.' });
+        return;
+      }
+      try {
+        const ch = await loadGiftChar(pool, giftPoints[1]);
+        if (!ch) { sendJson(res, 404, { success: false, message: 'Không tìm thấy nhân vật.' }); return; }
+        if (await checkGiftOnline(ch)) {
+          sendJson(res, 403, { success: false, message: 'Nhân vật đang online — không tặng được. Đợi nhân vật thoát game rồi tặng lại.' });
+          return;
+        }
+        const newPoints = ch.points + body.points;
+        const client = await pool.connect();
+        try {
+          await client.query('BEGIN');
+          const u = await client.query('UPDATE data."Character" SET "LevelUpPoints" = $1 WHERE "Id" = $2', [newPoints, giftPoints[1]]);
+          if (u.rowCount === 0) throw new Error('không tìm thấy nhân vật');
+          await giftLog(client, authed.LoginName, 'give-points', ch,
+            `tặng Point ${ch.name}: ${ch.points.toLocaleString('vi-VN')} → ${newPoints.toLocaleString('vi-VN')} (+${body.points.toLocaleString('vi-VN')})`);
+          await client.query('COMMIT');
+        } catch (e) {
+          try { await client.query('ROLLBACK'); } catch (e2) { /* bỏ qua */ }
+          throw e;
+        } finally {
+          client.release();
+        }
+        logInfo(`admin give-points: admin=${authed.LoginName} char=${ch.name} points ${ch.points} -> ${newPoints}`);
+        sendJson(res, 200, { success: true, points: newPoints });
+      } catch (err) {
+        logError(`admin give-points ${giftPoints[1]}: lỗi DB message=${err.message}`);
+        sendJson(res, 500, { success: false, message: 'Hệ thống bận, vui lòng thử lại sau.' });
+      }
+      return;
+    }
+    if (method === 'PATCH' && charOne) {
+      let body;
+      try {
+        body = await readJsonBody(req);
+      } catch (err) {
+        sendJson(res, 400, { success: false, message: 'Dữ liệu gửi lên không hợp lệ.' });
+        return;
+      }
+      if (!Number.isInteger(body.level) || body.level < 1) {
+        sendJson(res, 400, { success: false, message: 'Level phải là số nguyên từ 1 đến 400.' });
+        return;
+      }
+      try {
+        const ch = await loadGiftChar(pool, charOne[1]);
+        if (!ch) { sendJson(res, 404, { success: false, message: 'Không tìm thấy nhân vật.' }); return; }
+        if (await checkGiftOnline(ch)) {
+          sendJson(res, 403, { success: false, message: 'Nhân vật đang online — không tặng được. Đợi nhân vật thoát game rồi tặng lại.' });
+          return;
+        }
+        const newLevel = Math.min(body.level, LEVEL_MAX);
+        const clamped = newLevel < body.level;
+        const client = await pool.connect();
+        try {
+          await client.query('BEGIN');
+          const u = await client.query(
+            `UPDATE data."StatAttribute" SET "Value" = $1
+              WHERE "CharacterId" = $2
+                AND "DefinitionId" = (SELECT "Id" FROM config."AttributeDefinition" WHERE "Designation" = 'Level')`,
+            [newLevel, charOne[1]],
+          );
+          if (u.rowCount === 0) throw new Error('không tìm thấy dòng Level của nhân vật');
+          await giftLog(client, authed.LoginName, 'give-level', ch,
+            `tặng Level ${ch.name}: ${ch.level} → ${newLevel} (+${newLevel - ch.level})${clamped ? ' (trần tối đa 400)' : ''}`);
+          await client.query('COMMIT');
+        } catch (e) {
+          try { await client.query('ROLLBACK'); } catch (e2) { /* bỏ qua */ }
+          throw e;
+        } finally {
+          client.release();
+        }
+        logInfo(`admin give-level: admin=${authed.LoginName} char=${ch.name} level ${ch.level} -> ${newLevel}`);
+        sendJson(res, 200, { success: true, level: newLevel, clamped });
+      } catch (err) {
+        logError(`admin give-level ${charOne[1]}: lỗi DB message=${err.message}`);
         sendJson(res, 500, { success: false, message: 'Hệ thống bận, vui lòng thử lại sau.' });
       }
       return;

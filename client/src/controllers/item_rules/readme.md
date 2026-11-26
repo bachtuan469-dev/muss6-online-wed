@@ -17,7 +17,10 @@ the table would import itself.
 - `itemStats(item)`: damage, defence, durability and requirements for one item. `calcMaxDurability`.
 - `HeroStats`, `classOf(charClass)`, `classCanUse(def, hero)`, `classUnrestricted(def)`: who may use an item.
 - `itemValue(item, goldType)`, `repairCost`, `repairAllCost`, `isSellingBanned`, `isRepairBanned`,
-  `needsRepair`, `withTax`: zen for the shop and repair windows.
+  `needsRepair`, `withTax`: zen for the shop and repair windows. `npcBuyPrice`, `npcSellPrice`,
+  `npcRepairCost`, `npcRepairAllCost`: the same prices divided by 50, the way this server's
+  NPC shops charge (`ItemPriceCalculator.NpcShopPriceDivisor`); the chaos mix keeps the
+  undivided `itemValue` as its crafting reference price.
 - `itemLevelLook(group, num, lvl)`, `itemLevelName(...)`: items shown as another item at one level.
 - `comparedItem(item, worn, hero)`, `compareTooltipsOn(shift)`, `CompareTooltips`,
   `COMPARE_TOOLTIP_LABEL_KEYS`, `COMPARE_TOOLTIP_MAX`: the second tooltip.
@@ -95,7 +98,7 @@ the table would import itself.
 - used by: every net that reads item bytes (`inventory`, `drops`, `npc_shop`, `trade`, `chaos_mix`,
   `personal_shop`, `scope`, `quests`, `chat/chatItemLinks.ts`), `inventory` and `npc_shop` (prices, repair, requirements),
   `inventory`, `drops`, `mu_helper`, `events`, `skills`, controllers (`interface/itemTooltip.ts`,
-  `components/item_tooltip`, `components/item_icon`, `assets/itemIconPack.ts`, `sound/drops.ts`).
+  `components/item_tooltip`, `components/item_icon`, `sound/drops.ts`).
 - windows: `inventory`, `vault`, `trade`, `npc_shop` (`goldColor`, `itemValue`), `economy_prompts`, `options`,
   `events/goldenArcherWindow.tsx`.
 

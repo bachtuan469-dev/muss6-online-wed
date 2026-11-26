@@ -166,6 +166,9 @@
       <dt data-i18n="account.online">Đang online</dt>
       <dd><span id="accOnline">—</span> <span class="note" id="accOnlineNote"></span></dd>
     </dl>
+    <div class="actions" id="playNowRow" style="display:none">
+      <a id="playNow" class="btn" href="#" target="_blank" rel="noopener" data-i18n="account.playNow">Chơi ngay</a>
+    </div>
     <p class="note" data-i18n="status.note">Tài khoản bị khóa sẽ không đăng nhập được vào game và trang web.</p>
   </section>
 
@@ -214,6 +217,7 @@
       'account.onlineYes': 'Đang online', 'account.onlineNo': 'Offline',
       'account.onlinePending': 'đang cập nhật',
       'account.noEmail': 'Chưa có email',
+      'account.playNow': 'Chơi ngay',
       'common.home': 'Về trang chủ',
       'common.loading': 'Đang tải…',
       'common.error': 'Không tải được dữ liệu, vui lòng thử lại sau.',
@@ -279,6 +283,7 @@
       'account.onlineYes': 'Online', 'account.onlineNo': 'Offline',
       'account.onlinePending': 'updating',
       'account.noEmail': 'No email yet',
+      'account.playNow': 'Play now',
       'common.home': 'Back to home',
       'common.loading': 'Loading…',
       'common.error': 'Could not load data, please try again later.',
@@ -403,7 +408,7 @@
   }
 
   /* ---------- dữ liệu cache để render lại khi đổi ngôn ngữ ---------- */
-  var lastAccount = null, lastInfo = null, lastChars = [], lastPublic = null, lastPublicName = '';
+  var lastAccount = null, lastInfo = null, lastChars = [], lastPublic = null, lastPublicName = '', lastPlayUrl = '';
 
   function renderAccount() {
     var a = lastAccount;
@@ -425,6 +430,17 @@
     } else {
       on.textContent = '—';
       note.textContent = '(' + t('account.onlinePending') + ')';
+    }
+    // "Chơi ngay": mở game với tên tài khoản điền sẵn (?account=). Chỉ hiện
+    // khi đã có tên tài khoản và địa chỉ game từ /api/config; mật khẩu không
+    // đi kèm (web chỉ lưu hash), gõ 1 lần rồi game tự nhớ bằng token.
+    var playRow = document.getElementById('playNowRow');
+    var playLink = document.getElementById('playNow');
+    if (lastPlayUrl && a.username) {
+      playLink.href = lastPlayUrl + '?account=' + encodeURIComponent(a.username);
+      playRow.style.display = '';
+    } else {
+      playRow.style.display = 'none';
     }
   }
 
@@ -480,6 +496,10 @@
       if (ch && ch.success) lastChars = Array.isArray(ch.characters) ? ch.characters : [];
       else if (ch && !ch.success) showMsg(ch.message || t('common.error'), false);
     } catch (e) { if (e.message !== 'unauthorized') showMsg(t('common.error'), false); }
+    try {
+      var cfg = await api('GET', '/api/config');
+      if (cfg && cfg.success && cfg.config && cfg.config.play_url) lastPlayUrl = cfg.config.play_url;
+    } catch (e) { /* /api/config lỗi thì nút Chơi ngay giữ ẩn */ }
     renderAll();
   }
 

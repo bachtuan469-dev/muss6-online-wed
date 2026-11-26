@@ -84,7 +84,6 @@ export default {
   'download.group.core': 'Gra podstawowa',
   'download.group.monsters': 'Potwory',
   'download.group.audio': 'Muzyka i dźwięki',
-  'download.group.icons': 'Ikony przedmiotów',
   'download.total': 'Razem',
   'download.withPack': 'pakiet',
   'download.start': 'Pobierz',

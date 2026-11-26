@@ -84,7 +84,6 @@ export default {
   'download.group.core': 'Базова гра',
   'download.group.monsters': 'Монстри',
   'download.group.audio': 'Музика і звуки',
-  'download.group.icons': 'Іконки предметів',
   'download.total': 'Усього',
   'download.withPack': 'набір',
   'download.start': 'Завантажити',

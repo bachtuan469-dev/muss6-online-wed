@@ -23,7 +23,9 @@ controller never imports a module). Windows, HUD elements and pages import them 
   but swallows clicks (the trade partner's grid). `hoverRelease.ts`: `useHoverRelease` drops a hover
   the pointer left without a pointerleave (a grid turning busy under it); the inventory uses it too.
   `stackNumber.tsx`: `StackNumber`, a stack or pack count in the original's bitmap digits (`MuNumber`) at
-  x + width - 6, y + 1 (`RenderNumberOfItem`); the inventory and the NPC shop draw it too.
+  x + width - 6, y + 1 (`RenderNumberOfItem`); the inventory and the NPC shop draw it too. It draws at
+  scale 0.8: at scale 1 a 3-digit count spans 21.84 px, wider than its 20 px square, so neighbours
+  overlap into one string ("255255...").
 - `item_tooltip`: `ItemTooltip` (`RenderItemInfo` lines from `controllers/interface/itemTooltip.ts`):
   the price, the repair cost, the pet's level and life, the compare with worn gear; reads `Hero`,
   `Merchant`, `Pets`. `placement.ts` places it at the cursor. `stallPrice.ts`: the stall price colour
